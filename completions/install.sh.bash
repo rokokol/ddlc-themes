@@ -7,7 +7,7 @@
 # check-sh.sh -c in scripts-lint: a flag added to the installer fails the gate until it
 # lands here and in the zsh file too
 _install_sh_completion() {
-  local cur prev
+  local cur prev word
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD - 1]}"
 
@@ -16,7 +16,10 @@ _install_sh_completion() {
 
   case "$prev" in
     --component)
-      mapfile -t COMPREPLY < <(compgen -W "kitty btop matplotlib claude-code opencode all" -- "$cur")
+      COMPREPLY=()
+      while IFS= read -r word; do
+        [[ -n "$word" ]] && COMPREPLY+=("$word")
+      done < <(compgen -W "kitty btop matplotlib claude-code opencode all" -- "$cur")
       return
       ;;
     --config-home | --claude-home | --destdir)
@@ -25,6 +28,9 @@ _install_sh_completion() {
       return
       ;;
   esac
-  mapfile -t COMPREPLY < <(compgen -W "${flags[*]}" -- "$cur")
+  COMPREPLY=()
+  while IFS= read -r word; do
+    [[ -n "$word" ]] && COMPREPLY+=("$word")
+  done < <(compgen -W "${flags[*]}" -- "$cur")
 }
 complete -F _install_sh_completion install.sh ./install.sh
