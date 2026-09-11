@@ -45,6 +45,10 @@
         name = "ddlc-themes-tests";
         path = ./tests;
       };
+      checkSh = builtins.path {
+        name = "check-sh.sh";
+        path = ./check-sh.sh;
+      };
       completionsDir = builtins.path {
         name = "ddlc-themes-completions";
         path = ./completions;
@@ -193,7 +197,7 @@
               ];
             }
             ''
-              files="${generator} ${installer} ${testsDir}/run.sh ${testsDir}/distro.sh ${testsDir}/check-completions.sh ${completionsDir}/install.sh.bash"
+              files="${generator} ${installer} ${testsDir}/run.sh ${testsDir}/distro.sh ${checkSh} ${completionsDir}/install.sh.bash"
               # shellcheck disable=SC2086
               shellcheck $files
               # shellcheck disable=SC2086
@@ -201,12 +205,13 @@
               # zsh is not shellcheck's language; a parse is what can be checked
               zsh -n ${completionsDir}/install.sh.zsh
 
-              # install.sh and its completions must not drift apart
-              mkdir -p repo/tests
+              # install.sh, its help and its completions must not drift apart
+              mkdir -p repo
               cp ${installer} repo/install.sh
+              cp ${versionFile} repo/VERSION
               cp -r ${completionsDir} repo/completions
-              cp ${testsDir}/check-completions.sh repo/tests/
-              bash repo/tests/check-completions.sh
+              cp ${checkSh} repo/check-sh.sh
+              (cd repo && bash ./check-sh.sh -c completions/install.sh.bash completions/install.sh.zsh install.sh)
               touch $out
             '';
 
@@ -224,7 +229,8 @@
               cp ${versionFile} repo/VERSION
               cp -r ${dist} repo/dist
               cp -r ${completionsDir} repo/completions
-              cp ${testsDir}/run.sh ${testsDir}/check-completions.sh repo/tests/
+              cp ${checkSh} repo/check-sh.sh
+              cp ${testsDir}/run.sh repo/tests/
               chmod +x repo/install.sh repo/tests/*.sh
               patchShebangs repo >/dev/null
               HOME=$PWD bash repo/tests/run.sh "$PWD/repo"

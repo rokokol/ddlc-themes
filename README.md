@@ -173,5 +173,7 @@ nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix
 install.sh    for systems without Nix; VERSION is the one source of version
 completions/  tab completion for install.sh, sourced from the checkout
-tests/        run.sh (fast, sandboxed), distro.sh (containers), check-completions.sh
+check-sh.sh   vendored from bash-best-practices, holds install.sh's help
+              and completions to its parser
+tests/        run.sh (fast, sandboxed), distro.sh (containers)
 ```

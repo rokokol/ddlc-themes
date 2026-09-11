@@ -18,7 +18,7 @@ nix flake check          # dist/ current, every slot filled, module wiring, scri
 nix fmt -- --ci
 ```
 
-`VERSION` is the one source of version: the package reads it, `install.sh -v` prints it, CI asserts `CHANGELOG.md` has a matching heading. `install.sh` is standard huix-standard grammar adapted to a config tree: no `--prefix` (themes live in `~/.config` and `~/.claude`), components are **additive** with a per-component sweep, and `--uninstall --component C` takes one out selectively — the manifest lines carry the owning component first. New flags update both `completions/` files in the same commit, or `check-completions.sh` fails the flake check
+`VERSION` is the one source of version: the package reads it, `install.sh -v` prints it, CI asserts `CHANGELOG.md` has a matching heading. `install.sh` is standard huix-standard grammar adapted to a config tree: no `--prefix` (themes live in `~/.config` and `~/.claude`), components are **additive** with a per-component sweep, and `--uninstall --component C` takes one out selectively — the manifest lines carry the owning component first. New flags update both `completions/` files in the same commit, or `check-sh.sh -c` fails the flake check
 
 ## Layout
 
@@ -28,7 +28,9 @@ nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix
 install.sh    for systems without Nix, VERSION its one source of version
 completions/  tab completion for install.sh, drift-checked against it
-tests/        run.sh (fast), distro.sh (containers), check-completions.sh
+check-sh.sh   vendored from bash-best-practices, holds install.sh's help
+              and completions to its parser
+tests/        run.sh (fast), distro.sh (containers)
 ```
 
 ## Changing a colour
