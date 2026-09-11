@@ -2,6 +2,12 @@
 
 Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioned by [semver](https://semver.org/spec/v2.0.0.html)
 
+## [Unreleased]
+
+### Changed
+
+- `install.sh` now exits 2, not 1, on a usage error — an unknown flag, a relative `--config-home`/`--claude-home`, or an unknown `--component` — and `--help` ends with the `Exit` sentence naming every code it can produce; a missing dependency in the preflight still exits 1
+
 ## [2.0.1] - 2026-09-02
 
 ### Added

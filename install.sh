@@ -46,7 +46,15 @@ themes as ddlc-dark.json and ddlc-light.json, and ddlc-opencode.json as ddlc.jso
 matplotlib keeps its names — they are the API: plt.style.use("ddlc"), import ddlc_cmaps.
 Everything lands as a plain file, yours to edit; only Claude Code reads outside
 ~/.config, which is what --claude-home covers
+
+Exit 0 done, 1 when the install could not be made — a dependency missing, a manifest
+that cannot be written — and 2 on a usage error.
 EOF
+}
+
+die() { # the request itself is wrong
+  printf 'install.sh: %s\n' "$1" >&2
+  exit 2
 }
 
 UNINSTALL=0
@@ -66,19 +74,24 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --component)
-      COMPONENT="${2:?component required by $1}"
+      # Not ${2:?}: that exits 1 with bash's own message, and a usage error is 2
+      (($# >= 2)) || die "$1 needs a component"
+      COMPONENT="$2"
       shift 2
       ;;
     --config-home)
-      config="${2:?directory required by $1}"
+      (($# >= 2)) || die "$1 needs a directory"
+      config="$2"
       shift 2
       ;;
     --claude-home)
-      claude_home="${2:?directory required by $1}"
+      (($# >= 2)) || die "$1 needs a directory"
+      claude_home="$2"
       shift 2
       ;;
     --destdir)
-      DESTDIR="${2:?directory required by $1}"
+      (($# >= 2)) || die "$1 needs a directory"
+      DESTDIR="$2"
       shift 2
       ;;
     --uninstall)
@@ -87,26 +100,17 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       usage >&2
-      exit 1
+      exit 2
       ;;
   esac
 done
 
-if [[ "$config" != /* ]]; then
-  echo "install.sh: config home must be absolute: $config" >&2
-  exit 1
-fi
-if [[ "$claude_home" != /* ]]; then
-  echo "install.sh: claude home must be absolute: $claude_home" >&2
-  exit 1
-fi
+[[ "$config" == /* ]] || die "config home must be absolute: $config"
+[[ "$claude_home" == /* ]] || die "claude home must be absolute: $claude_home"
 
 case "$COMPONENT" in
   all | kitty | btop | matplotlib | claude-code | opencode) ;;
-  *)
-    echo "install.sh: component must be kitty, btop, matplotlib, claude-code, opencode, or all: $COMPONENT" >&2
-    exit 1
-    ;;
+  *) die "component must be kitty, btop, matplotlib, claude-code, opencode, or all: $COMPONENT" ;;
 esac
 
 root="${DESTDIR%/}$config"

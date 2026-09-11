@@ -36,11 +36,19 @@ done
 [[ "$("$REPO/install.sh" -v)" == "ddlc-themes $(cat "$REPO/VERSION")" ]] ||
   die "-v does not print 'ddlc-themes \$(cat VERSION)'"
 
-say "bad arguments are refused"
-if run --config-home relative/path >/dev/null 2>&1; then die "a relative config home was accepted"; fi
-if run --claude-home relative >/dev/null 2>&1; then die "a relative claude home was accepted"; fi
-if run --component emacs >/dev/null 2>&1; then die "an unknown component was accepted"; fi
-if run --no-such-flag >/dev/null 2>&1; then die "an unknown flag was accepted"; fi
+say "bad arguments are refused with exit 2, the usage-error code"
+rc=0
+run --config-home relative/path >/dev/null 2>&1 || rc=$?
+((rc == 2)) || die "a relative config home exited $rc, not the usage-error code 2"
+rc=0
+run --claude-home relative >/dev/null 2>&1 || rc=$?
+((rc == 2)) || die "a relative claude home exited $rc, not the usage-error code 2"
+rc=0
+run --component emacs >/dev/null 2>&1 || rc=$?
+((rc == 2)) || die "an unknown component exited $rc, not the usage-error code 2"
+rc=0
+run --no-such-flag >/dev/null 2>&1 || rc=$?
+((rc == 2)) || die "an unknown flag exited $rc, not the usage-error code 2"
 
 say "a full install lands every component and writes the manifest"
 run >/dev/null
@@ -108,7 +116,7 @@ echo "ID=debian" >"$tmp/os-release" # the flake-check sandbox has no /etc/os-rel
 rc=0
 out=$(OS_RELEASE="$tmp/os-release" PATH="$stub" bash "$REPO/install.sh" \
   --config-home "$tmp/refused" --claude-home "$tmp/refused-claude" 2>&1) || rc=$?
-((rc != 0)) || die "the preflight accepted a system without install(1)"
+((rc == 1)) || die "the preflight exited $rc, not the missing-dependency code 1"
 grep -q 'missing dependencies' <<<"$out" || die "the refusal did not say what is missing"
 grep -q ' - install$' <<<"$out" || die "the refusal did not name install(1)"
 grep -qE '^  \$ ' <<<"$out" || die "the refusal printed no runnable guidance"
