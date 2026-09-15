@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Render dist/ from ddlc-palette. Run it after the palette moves and commit both
 set -euo pipefail
 
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,6 +8,8 @@ usage() {
   cat <<EOF
 generate.sh — render the kitty, btop, matplotlib, Claude Code and opencode themes
 out of ddlc-palette
+
+Render dist/ from ddlc-palette. Run it after the palette moves and commit both
 
   --light FILE     base16-ddlc-light.yaml   (or \$DDLC_BASE16_LIGHT)
   --dark FILE      base16-ddlc-dark.yaml    (or \$DDLC_BASE16_DARK)

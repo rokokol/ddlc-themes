@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Installer for ddlc-themes on systems without Nix. Copies the rendered themes out of
-# dist/ into a config tree — nothing is built — and records every path it wrote in
-# share-style manifest at <config-home>/ddlc-themes/install-manifest, which --uninstall
-# consumes. Components are additive: installing one never touches another, and
-# --uninstall --component takes one back out on its own
 set -euo pipefail
 
 here="$(cd -- "$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
@@ -19,9 +14,15 @@ usage() {
   cat <<EOF
 install the ddlc-themes $VERSION kitty, btop, matplotlib, Claude Code and opencode themes
 
+Installer for ddlc-themes on systems without Nix. Copies the rendered themes out of
+dist/ into a config tree — nothing is built — and records every path it wrote in
+share-style manifest at <config-home>/ddlc-themes/install-manifest, which --uninstall
+consumes. Components are additive: installing one never touches another, and
+--uninstall --component takes one back out on its own
+
 Re-running a component converges it: a file a previous install of that component wrote
 and this run does not is removed. Other components are never touched — install them one
-at a time, take them out one at a time.
+at a time, take them out one at a time
 
 usage: ./install.sh [options]
   -h, --help           show this help and exit
@@ -48,7 +49,7 @@ Everything lands as a plain file, yours to edit; only Claude Code reads outside
 ~/.config, which is what --claude-home covers
 
 Exit 0 done, 1 when the install could not be made — a dependency missing, a manifest
-that cannot be written — and 2 on a usage error.
+that cannot be written — and 2 on a usage error
 EOF
 }
 

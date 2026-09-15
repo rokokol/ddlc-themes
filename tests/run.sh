@@ -1,9 +1,26 @@
 #!/usr/bin/env bash
-# The fast suite for install.sh: flag surface, the manifest contract, the per-component
-# sweep, selective uninstall, staging, and the refusal path — everything that needs no
-# container. tests/distro.sh covers what a real distribution provides; this covers what
-# the installer promises
+# tests/distro.sh covers what a real distribution provides; this covers what the
+# installer promises
 set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+tests/run.sh — the fast suite for install.sh: flag surface, the manifest contract,
+the per-component sweep, selective uninstall, staging, and the refusal path —
+everything that needs no container
+
+  tests/run.sh [REPO]
+
+REPO is the checkout to install from (default: the one this script lives in)
+
+Nothing here reaches the network
+Exit: 0 all passed, 1 a check failed
+EOF
+}
+[[ "${1:-}" == "-h" || "${1:-}" == "--help" || "${1:-}" == "help" ]] && {
+  usage
+  exit 0
+}
 
 HERE=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO="${1:-$(dirname "$HERE")}"
