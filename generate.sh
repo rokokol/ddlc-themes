@@ -9,7 +9,8 @@ usage() {
 generate.sh — render the kitty, btop, matplotlib, Claude Code and opencode themes
 out of ddlc-palette
 
-Render dist/ from ddlc-palette. Run it after the palette moves and commit both
+It writes dist/, committed for consumers without Nix: run it after the palette moves and
+commit the bump with the rendered files
 
   --light FILE     base16-ddlc-light.yaml   (or \$DDLC_BASE16_LIGHT)
   --dark FILE      base16-ddlc-dark.yaml    (or \$DDLC_BASE16_DARK)

@@ -17,8 +17,7 @@ install the ddlc-themes $VERSION kitty, btop, matplotlib, Claude Code and openco
 Installer for ddlc-themes on systems without Nix. Copies the rendered themes out of
 dist/ into a config tree — nothing is built — and records every path it wrote in
 share-style manifest at <config-home>/ddlc-themes/install-manifest, which --uninstall
-consumes. Components are additive: installing one never touches another, and
---uninstall --component takes one back out on its own
+consumes
 
 Re-running a component converges it: a file a previous install of that component wrote
 and this run does not is removed. Other components are never touched — install them one

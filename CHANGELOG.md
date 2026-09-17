@@ -8,6 +8,8 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 - `install.sh` now exits 2, not 1, on a usage error — an unknown flag, a relative `--config-home`/`--claude-home`, or an unknown `--component` — and `--help` ends with the `Exit` sentence naming every code it can produce; a missing dependency in the preflight still exits 1
 - the installer's completions are now drift-checked against `install.sh` by the vendored [bash-best-practices](https://github.com/rokokol/bash-best-practices-skill) `check-sh.sh -c`, replacing `tests/check-completions.sh`
+- `install.sh --help` says once, not twice, that components are additive and that `--uninstall --component` takes one out on its own: the paragraph about re-running a component already carried it
+- `generate.sh --help` no longer repeats its own title line, and says instead that it writes `dist/`, which is committed for consumers without Nix
 - `generate.sh` and `install.sh` move their header's caller-facing paragraph into `--help`, leaving the header to editor-only notes. `tests/run.sh -h|--help|help` now documents the suite, including that it reaches no network
 
 ### Fixed
