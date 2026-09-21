@@ -226,7 +226,11 @@
           pkgs.runCommand "install-sh-works"
             {
               # tests/run.sh builds a deliberately install(1)-less PATH out of these
-              nativeBuildInputs = [ pkgs.coreutils ];
+              nativeBuildInputs = [
+                pkgs.coreutils
+                pkgs.jq
+                pkgs.shfmt
+              ];
             }
             ''
               mkdir -p repo/tests
