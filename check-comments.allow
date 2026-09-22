@@ -1,0 +1,8 @@
+# One entry per line: ID PATH [TEXT]
+
+# The four section dividers in generate.sh are how a 700-line generator is navigated, and
+# the user keeps such a divider even over a single line. This one sits above
+# claude_code_slots, whose name holds both of its words, so the rule reads it as a
+# restatement. The divider above opencode_slots is the same shape and escapes only
+# because one word is not enough for the rule to measure
+restates-code generate.sh --- Claude Code

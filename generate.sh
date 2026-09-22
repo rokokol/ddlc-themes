@@ -166,7 +166,7 @@ for V in light dark; do
 ANSI
   } >"$out/ddlc-kitty-$V.conf"
 
-  # btop has no base16 template anywhere upstream, so this mapping is ours. Meters that carry no
+  # btop has no base16 template anywhere upstream, so this mapping is local. Meters that carry no
   # scale are one colour — btop reads that as a start with an empty mid and end
   {
     echo "# $banner"
