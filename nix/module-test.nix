@@ -1,10 +1,7 @@
 # Evaluates the module against stubs of the options it writes to, so the wiring is checked
 # without a Home Manager generation. What it cannot check is the option names themselves —
 # those come from Home Manager, and a real configuration is what proves them
-{
-  lib,
-  module,
-}:
+{ lib, module }:
 
 let
   stubs = {

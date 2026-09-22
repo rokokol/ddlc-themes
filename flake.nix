@@ -128,7 +128,7 @@
       };
 
       checks = forAllSystems (pkgs: {
-        dist-is-current = pkgs.runCommand "dist-is-current" { nativeBuildInputs = [ pkgs.jq ]; } ''
+        dist-is-current = pkgs.runCommand "dist-is-current" { nativeBuildInputs = with pkgs; [ jq ]; } ''
           install -m755 ${generator} generate.sh
           DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
             DDLC_PALETTE_ENV=${palette} \
@@ -148,7 +148,7 @@
           in
           pkgs.runCommand "module-wiring"
             {
-              nativeBuildInputs = [ pkgs.jq ];
+              nativeBuildInputs = with pkgs; [ jq ];
               dump = builtins.toJSON wiring;
               passAsFile = [ "dump" ];
             }
@@ -190,15 +190,15 @@
         scripts-lint =
           pkgs.runCommand "scripts-lint"
             {
-              nativeBuildInputs = [
+              nativeBuildInputs = with pkgs; [
                 # check-sh.sh below is moving to reading the script it is given as a tree,
                 # out of `shfmt --to-json`, with jq flattening that tree into rows. This
                 # sandbox has a scrubbed PATH, so the dev shell's jq is not reachable here
                 # and the tool has to be named on this derivation
-                pkgs.jq
-                pkgs.shellcheck
-                pkgs.shfmt
-                pkgs.zsh
+                jq
+                shellcheck
+                shfmt
+                zsh
               ];
             }
             ''
@@ -226,10 +226,10 @@
           pkgs.runCommand "install-sh-works"
             {
               # tests/run.sh builds a deliberately install(1)-less PATH out of these
-              nativeBuildInputs = [
-                pkgs.coreutils
-                pkgs.jq
-                pkgs.shfmt
+              nativeBuildInputs = with pkgs; [
+                coreutils
+                jq
+                shfmt
               ];
             }
             ''
@@ -248,60 +248,62 @@
 
         # A theme is only usable if every colour reached it, and a missing slot renders as an
         # empty value rather than as an error
-        themes-are-filled = pkgs.runCommand "themes-are-filled" { nativeBuildInputs = [ pkgs.jq ]; } ''
-          for f in ${dist}/ddlc-kitty-*.conf; do
-            grep -Eq '^color21 #[0-9A-F]{6}$' "$f" || { echo "$f: the ANSI table is short"; exit 1; }
-            if grep -Ev '^(#|$)' "$f" | grep -Ev ' #[0-9A-F]{6}$'; then
-              echo "$f: the value above is not a hex colour" >&2
-              exit 1
-            fi
-          done
-          for f in ${dist}/ddlc-btop-*.theme; do
-            grep -q 'theme\[main_bg\]="#' "$f" || { echo "$f: no background"; exit 1; }
-            # Only the mid and end of a scaleless meter are deliberately empty
-            if grep -Ev '^(#|$)' "$f" | grep -Ev '^theme\[[a-z_]+\]="(#[0-9A-F]{6})?"$'; then
-              echo "$f: the line above is not a theme[key]=\"#hex\"" >&2
-              exit 1
-            fi
-          done
-          # matplotlib takes its hex bare, so every colour-carrying rcparam must end in six hex
-          # digits — except the cycler, which is a list of them
-          for f in ${dist}/ddlc.mplstyle ${dist}/ddlc-dark.mplstyle; do
-            grep -Eq "^axes.prop_cycle:  cycler\('color', \['[0-9A-F]{6}'" "$f" \
-              || { echo "$f: no cycler"; exit 1; }
-            if grep -E 'colou?r:' "$f" | grep -Ev '(color:( +[0-9A-F]{6}| +cycler.*)|labelcolor: +[0-9A-F]{6})$'; then
-              echo "$f: the value above is not a bare hex colour" >&2
-              exit 1
-            fi
-          done
-          # Every token the stylesheet defines is a hex; the element rules only reference them
-          if grep -E '^ *--ddlc-' ${dist}/ddlc-report.css | grep -Ev '^ *--ddlc-[a-z0-9-]+: #[0-9A-F]{6};$'; then
-            echo "ddlc-report.css: the token above is not a hex colour" >&2
-            exit 1
-          fi
-          for f in ${dist}/ddlc-claude-code-*.json; do
-            jq -e '(.overrides | length) > 0
-              and ([.overrides[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' "$f" >/dev/null \
-              || { echo "$f: an override is not a hex colour"; exit 1; }
-          done
-          # Every def is a hex and every theme value resolves: a def by name, or "none"
-          jq -e '. as $r
-            | (.defs | length > 0)
-            and ([.defs[] | select(test("^#[0-9A-F]{6}$") | not)] == [])
-            and ([.theme[] | if type == "object" then .dark, .light else . end
-                  | . as $v | select(($v == "none" or ($r.defs | has($v))) | not)] == [])' \
-            ${dist}/ddlc-opencode.json >/dev/null \
-            || { echo "ddlc-opencode.json: a value does not resolve against defs"; exit 1; }
-          touch $out
-        '';
+        themes-are-filled =
+          pkgs.runCommand "themes-are-filled" { nativeBuildInputs = with pkgs; [ jq ]; }
+            ''
+              for f in ${dist}/ddlc-kitty-*.conf; do
+                grep -Eq '^color21 #[0-9A-F]{6}$' "$f" || { echo "$f: the ANSI table is short"; exit 1; }
+                if grep -Ev '^(#|$)' "$f" | grep -Ev ' #[0-9A-F]{6}$'; then
+                  echo "$f: the value above is not a hex colour" >&2
+                  exit 1
+                fi
+              done
+              for f in ${dist}/ddlc-btop-*.theme; do
+                grep -q 'theme\[main_bg\]="#' "$f" || { echo "$f: no background"; exit 1; }
+                # Only the mid and end of a scaleless meter are deliberately empty
+                if grep -Ev '^(#|$)' "$f" | grep -Ev '^theme\[[a-z_]+\]="(#[0-9A-F]{6})?"$'; then
+                  echo "$f: the line above is not a theme[key]=\"#hex\"" >&2
+                  exit 1
+                fi
+              done
+              # matplotlib takes its hex bare, so every colour-carrying rcparam must end in six hex
+              # digits — except the cycler, which is a list of them
+              for f in ${dist}/ddlc.mplstyle ${dist}/ddlc-dark.mplstyle; do
+                grep -Eq "^axes.prop_cycle:  cycler\('color', \['[0-9A-F]{6}'" "$f" \
+                  || { echo "$f: no cycler"; exit 1; }
+                if grep -E 'colou?r:' "$f" | grep -Ev '(color:( +[0-9A-F]{6}| +cycler.*)|labelcolor: +[0-9A-F]{6})$'; then
+                  echo "$f: the value above is not a bare hex colour" >&2
+                  exit 1
+                fi
+              done
+              # Every token the stylesheet defines is a hex; the element rules only reference them
+              if grep -E '^ *--ddlc-' ${dist}/ddlc-report.css | grep -Ev '^ *--ddlc-[a-z0-9-]+: #[0-9A-F]{6};$'; then
+                echo "ddlc-report.css: the token above is not a hex colour" >&2
+                exit 1
+              fi
+              for f in ${dist}/ddlc-claude-code-*.json; do
+                jq -e '(.overrides | length) > 0
+                  and ([.overrides[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' "$f" >/dev/null \
+                  || { echo "$f: an override is not a hex colour"; exit 1; }
+              done
+              # Every def is a hex and every theme value resolves: a def by name, or "none"
+              jq -e '. as $r
+                | (.defs | length > 0)
+                and ([.defs[] | select(test("^#[0-9A-F]{6}$") | not)] == [])
+                and ([.theme[] | if type == "object" then .dark, .light else . end
+                      | . as $v | select(($v == "none" or ($r.defs | has($v))) | not)] == [])' \
+                ${dist}/ddlc-opencode.json >/dev/null \
+                || { echo "ddlc-opencode.json: a value does not resolve against defs"; exit 1; }
+              touch $out
+            '';
       });
 
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
-          packages = [
-            pkgs.shellcheck
-            pkgs.shfmt
-            pkgs.jq
+          packages = with pkgs; [
+            shellcheck
+            shfmt
+            jq
           ];
           # So generate.sh runs with no arguments inside the shell
           DDLC_BASE16_LIGHT = schemes.light;
