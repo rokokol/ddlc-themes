@@ -536,6 +536,12 @@ CSS
 # Contrast holds every foreground slot: on ink, blush 10.3:1, natsuki 10.0, sayoriEye 9.2,
 # sayori 8.1, monikaEye 7.3, jacket 6.2, monika 5.8, pink 5.6, plum 3.7, rule 3.2; on paper,
 # yuriShadow 15.3, ribbon 6.2, bow 5.8, skirt 5.7, rule 5.0, plum 4.3
+# A few slots are backgrounds under text the theme does not own. clawd_background fills the eye
+# cells beside half-blocks that show the terminal's own background, so it takes that background
+# (ink, paper), or the eyes get a visible frame. The diff word slots sit under the syntax theme's
+# text, which is dark on a light terminal, so the light column takes the light monikaEye (7.0:1
+# against yuriShadow) and monika (5.5). selectionBg is a cold blue, as in the built-in themes:
+# the pinks and purples fill the rest of the theme, and a selection in them disappears
 claude_code_slots="
 text                                  blush       yuriShadow
 inverseText                           ink         paper
@@ -549,7 +555,7 @@ claudeShimmer                         natsuki     pink
 claudeBlue_FOR_SYSTEM_SPINNER         rule        skirt
 claudeBlueShimmer_FOR_SYSTEM_SPINNER  sayoriEye   rule
 clawd_body                            bow         bow
-clawd_background                      yuriShadow  dot
+clawd_background                      ink         paper
 permission                            sayoriEye   skirt
 permissionShimmer                     rule        rule
 suggestion                            rule        rule
@@ -568,9 +574,9 @@ warningShimmer                        sayori      monika
 error                                 bow         bow
 diffAdded                             ribbon      -
 diffRemoved                           bowShadow   -
-diffAddedWord                         monikaEye   ribbon
-diffRemovedWord                       bow         bowShadow
-selectionBg                           yuri        blush
+diffAddedWord                         monikaEye   monikaEye
+diffRemovedWord                       bow         monika
+selectionBg                           skirt       sayoriEye
 userMessageBackground                 yuriShadow  dot
 userMessageBackgroundHover            yuri        blush
 composerSidebarBackground             yuriShadow  dot

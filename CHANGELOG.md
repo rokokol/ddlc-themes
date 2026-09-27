@@ -2,6 +2,14 @@
 
 Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioned by [semver](https://semver.org/spec/v2.0.0.html)
 
+## [Unreleased]
+
+### Fixed
+
+- Claude Code: Clawd's eyes take the terminal background (`paper` in light, `ink` in dark), so they no longer show as a framed pale block on the light theme
+- Claude Code light: the changed-word highlight in a diff is now the light `monikaEye` and `monika`, not the dark `ribbon` and `bowShadow`, so the syntax theme's dark text on it reads
+- Claude Code: the selection is a cold blue in both variants (`sayoriEye` in light, `skirt` in dark), and no longer shares its colour with the hovered user message or sinks into the theme's pinks
+
 ## [2.0.2] - 2026-09-21
 
 ### Changed
