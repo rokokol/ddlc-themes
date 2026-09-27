@@ -4,7 +4,13 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+### Changed
+
+- kitty light: the cursor, links, the active border and the active tab are `plum`, the colour of the site's links and download button; the dark variant is unchanged
+
 ### Fixed
+
+- kitty light: bright black (`color8`) is `jacket`, not `natsuki`, so shell suggestions and dimmed output no longer vanish on paper
 
 - Claude Code: Clawd's eyes take the terminal background (`paper` in light, `ink` in dark), so they no longer show as a framed pale block on the light theme
 - Claude Code light: the changed-word highlight in a diff is now the light `monikaEye` and `monika`, not the dark `ribbon` and `bowShadow`, so the syntax theme's dark text on it reads
