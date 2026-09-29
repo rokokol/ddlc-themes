@@ -98,21 +98,21 @@
     },
     "diffAddedBg": {
       "dark": "ribbon",
-      "light": "none"
+      "light": "#E4F3D6"
     },
     "diffRemovedBg": {
       "dark": "bowShadow",
-      "light": "none"
+      "light": "natsuki"
     },
     "diffContextBg": "none",
     "diffLineNumber": "jacket",
     "diffAddedLineNumberBg": {
       "dark": "ribbon",
-      "light": "none"
+      "light": "#E4F3D6"
     },
     "diffRemovedLineNumberBg": {
       "dark": "bowShadow",
-      "light": "none"
+      "light": "natsuki"
     },
     "markdownText": {
       "dark": "dot",

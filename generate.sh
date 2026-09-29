@@ -639,10 +639,17 @@ done
 # the theme reads like the tables above. Its schema allows nothing extra (additionalProperties
 # is false at the top and in theme), so there is no banner field and no key beyond the schema's
 # own; defs naming the palette is the provenance the file carries. "none" is the schema's word
-# for the terminal's own colour — the light diff backgrounds take it for the reason the
-# claude-code light diff slots read "-". The light column stays off the warm pastels — they
-# fall under 3:1 on paper — and the dark one keeps its quiet roles a step brighter than
-# claude-code's, because opencode paints whole panels with them
+# for the terminal's own colour. The light column stays off the warm pastels — they fall under
+# 3:1 on paper — and the dark one keeps its quiet roles a step brighter than claude-code's,
+# because opencode paints whole panels with them
+# A diff line's text is the syntax theme's, so only its background tells an added line from a
+# removed one. The palette holds no pale green, and a full monikaEye or monika leaves plum at
+# 2.0:1 and 1.6:1. So the light diff backgrounds read "name@NN": NN percent of the palette colour
+# over the variant's background, mixed here into an opaque hex: monikaEye@20 is #E4F3D6, where
+# plum keeps 3.7:1 and yuriShadow 13.2:1. An alpha hex would blend in opencode instead, but over
+# the dot of the tool panel the diff sits in, where green turns beige. Context lines stay on
+# that dot, as paper there opens the panel into the page. A pale red mix sits too close to dot,
+# so removed lines take natsuki: 17 ΔE from dot, plum 2.7:1, yuriShadow 9.6:1
 opencode_slots="
 primary                    pink        plum
 secondary                  sayoriEye   skirt
@@ -666,12 +673,12 @@ diffContext                jacket      jacket
 diffHunkHeader             jacket      jacket
 diffHighlightAdded         monikaEye   ribbon
 diffHighlightRemoved       bow         bowShadow
-diffAddedBg                ribbon      none
-diffRemovedBg              bowShadow   none
+diffAddedBg                ribbon      monikaEye@20
+diffRemovedBg              bowShadow   natsuki
 diffContextBg              none        none
 diffLineNumber             jacket      jacket
-diffAddedLineNumberBg      ribbon      none
-diffRemovedLineNumberBg    bowShadow   none
+diffAddedLineNumberBg      ribbon      monikaEye@20
+diffRemovedLineNumberBg    bowShadow   natsuki
 markdownText               dot         yuriShadow
 markdownHeading            pink        plum
 markdownLink               rule        rule
@@ -698,15 +705,42 @@ syntaxPunctuation          dot         yuriShadow
 "
 
 while read -r oc_key oc_dark oc_light; do
-  need "opencode key $oc_key" "$oc_dark" "$oc_light"
+  need "opencode key $oc_key" "${oc_dark%@*}" "${oc_light%@*}"
+  for oc_value in "$oc_dark" "$oc_light"; do
+    [[ $oc_value != *@* || $oc_value =~ @([1-9][0-9]?)$ ]] || {
+      echo "generate.sh: opencode key $oc_key reads $oc_value, whose share is not 1 to 99" >&2
+      exit 1
+    }
+  done
 done < <(awk 'NF == 3' <<<"$opencode_slots")
+
+oc_background() { # <dark|light>
+  awk -v c="$([[ $1 == light ]] && echo 3 || echo 2)" '$1 == "background" { print $c }' <<<"$opencode_slots"
+}
+
+# A def name stays a reference; "name@NN" becomes the opaque hex of NN percent of the def over
+# the variant's background
+oc_value() { # <dark|light> <name | name@NN>
+  [[ $2 == *@* ]] || {
+    printf '%s' "$2"
+    return
+  }
+  local fg="${pal[${2%@*}]}" bg="${pal[$(oc_background "$1")]}" share="${2#*@}" i
+  printf '#'
+  for i in 0 2 4; do
+    printf '%02X' $(((16#${fg:i:2} * share + 16#${bg:i:2} * (100 - share) + 50) / 100))
+  done
+}
 
 oc_defs=$(
   for name in "${pal_names[@]}"; do printf '%s\t#%s\n' "$name" "${pal[$name]}"; done |
     jq -Rn '[inputs | split("\t") | { key: .[0], value: .[1] }] | from_entries'
 )
 oc_theme=$(
-  awk 'NF == 3 { print $1 "\t" $2 "\t" $3 }' <<<"$opencode_slots" |
+  awk 'NF == 3' <<<"$opencode_slots" |
+    while read -r oc_key oc_dark oc_light; do
+      printf '%s\t%s\t%s\n' "$oc_key" "$(oc_value dark "$oc_dark")" "$(oc_value light "$oc_light")"
+    done |
     jq -Rn '[inputs | split("\t") | {
       key: .[0],
       value: (if .[1] == .[2] then .[1] else { dark: .[1], light: .[2] } end)

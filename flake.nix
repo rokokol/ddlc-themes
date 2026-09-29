@@ -286,12 +286,14 @@
                   and ([.overrides[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' "$f" >/dev/null \
                   || { echo "$f: an override is not a hex colour"; exit 1; }
               done
-              # Every def is a hex and every theme value resolves: a def by name, or "none"
+              # Every def is a hex and every theme value resolves: a def by name, "none", or the
+              # hex generate.sh mixes out of a def
               jq -e '. as $r
                 | (.defs | length > 0)
                 and ([.defs[] | select(test("^#[0-9A-F]{6}$") | not)] == [])
                 and ([.theme[] | if type == "object" then .dark, .light else . end
-                      | . as $v | select(($v == "none" or ($r.defs | has($v))) | not)] == [])' \
+                      | . as $v | select(($v == "none" or ($r.defs | has($v))
+                        or test("^#[0-9A-F]{6}$")) | not)] == [])' \
                 ${dist}/ddlc-opencode.json >/dev/null \
                 || { echo "ddlc-opencode.json: a value does not resolve against defs"; exit 1; }
               touch $out

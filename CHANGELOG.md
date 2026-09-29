@@ -15,6 +15,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 - Claude Code: Clawd's eyes take the terminal background (`paper` in light, `ink` in dark), so they no longer show as a framed pale block on the light theme
 - Claude Code light: the changed-word highlight in a diff is now the light `monikaEye` and `monika`, not the dark `ribbon` and `bowShadow`, so the syntax theme's dark text on it reads
 - Claude Code: the selection is a cold blue in both variants (`sayoriEye` in light, `skirt` in dark), and no longer shares its colour with the hovered user message or sinks into the theme's pinks
+- opencode light: added diff lines have a pale green background (20% of `monikaEye` over `paper`) and removed ones `natsuki`, so a diff no longer shows its lines alike on the pink tool panel
 
 ## [2.0.2] - 2026-09-21
 
