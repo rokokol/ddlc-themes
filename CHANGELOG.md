@@ -4,6 +4,10 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## Unreleased
 
+### Added
+
+- kind roles that colour a note by its kind, as an Obsidian callout type does: `--ddlc-kind-note`, `-summary`, `-tip`, `-success`, `-warning`, `-danger`, `-example`, `-quote` and `-experiment`, each in its own hue
+
 ### Changed
 
 - the web kit keeps the brand's mark and the gaps in the bar on a phone; it no longer hides them under 480 px

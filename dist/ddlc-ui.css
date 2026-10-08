@@ -73,6 +73,15 @@
   --ddlc-board-shade: light-dark(color-mix(in srgb, var(--ddlc-board) 80%, var(--ddlc-jacket)), color-mix(in srgb, var(--ddlc-board) 60%, var(--ddlc-ink)));
   --ddlc-board-frame: light-dark(var(--ddlc-dot), var(--ddlc-board-shade));
   --ddlc-board-drop: var(--ddlc-blush);
+  --ddlc-kind-note: var(--ddlc-sayori-eye);
+  --ddlc-kind-summary: var(--ddlc-rule);
+  --ddlc-kind-tip: var(--ddlc-pink);
+  --ddlc-kind-success: var(--ddlc-ok);
+  --ddlc-kind-warning: var(--ddlc-sayori);
+  --ddlc-kind-danger: var(--ddlc-danger);
+  --ddlc-kind-example: var(--ddlc-yuri);
+  --ddlc-kind-quote: var(--ddlc-jacket);
+  --ddlc-kind-experiment: var(--ddlc-ribbon);
   --ddlc-window-ground: var(--ddlc-base00);
   --ddlc-window-text: var(--ddlc-base05);
   --ddlc-window-bar: var(--ddlc-base01);

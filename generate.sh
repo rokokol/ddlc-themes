@@ -368,7 +368,9 @@ EOF
 # Where the web pages and the Obsidian theme disagreed, the Obsidian value is here: muted text
 # mixes the jacket with the ink on paper and with the paper on ink, because the bare jacket
 # reads 2.55:1 on paper. A role never takes the name of a palette colour, so a page can link
-# palette.css and a stylesheet from here together
+# palette.css and a stylesheet from here together.
+# A kind role colours a note by its kind, as an Obsidian callout type does. Two kinds never
+# share a hue
 ui_roles="
 ground                ink                    paper
 text                  paper                  ink
@@ -397,6 +399,15 @@ board                 yuri@30:ink            dot@50:paper
 board-shade           board@60:ink           board@80:jacket
 board-frame           board-shade            dot
 board-drop            blush                  blush
+kind-note             sayoriEye              sayoriEye
+kind-summary          rule                   rule
+kind-tip              pink                   pink
+kind-success          ok                     ok
+kind-warning          sayori                 sayori
+kind-danger           danger                 danger
+kind-example          yuri                   yuri
+kind-quote            jacket                 jacket
+kind-experiment       ribbon                 ribbon
 window-ground         base00                 base00
 window-text           base05                 base05
 window-bar            base01                 base01
