@@ -1,0 +1,139 @@
+<!doctype html>
+<!-- The sample page behind docs/ui-{light,dark}.png: every class of ddlc-ui.css in the layout
+     it is built for. Open it from the checkout — it links dist/ relatively — and pin a variant
+     with ?theme=dark; without the parameter the theme button decides, starting from the system -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ddlc-ui.css demo</title>
+<link rel="stylesheet" href="../dist/ddlc-ui.css">
+<script>
+  const pinned = new URLSearchParams(location.search).get("theme")
+  try {
+    const t = pinned || localStorage.getItem("ddlc-ui-demo:theme")
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t
+  } catch {}
+</script>
+<script type="module">
+  import { initTheme } from "../dist/ddlc-theme.js"
+  import { startCloud, color, ditherDisc } from "../dist/ddlc-cloud.js"
+
+  // ?theme= pins a side by storing it, so the button starts from it rather than from the system
+  const pinned = new URLSearchParams(location.search).get("theme")
+  if (pinned === "light" || pinned === "dark") try { localStorage.setItem("ddlc-ui-demo:theme", pinned) } catch {}
+  const cloud = startCloud(document.getElementById("cloud"))
+  const stage = document.getElementById("stage")
+  const ctx = stage.getContext("2d")
+  // the stage shows a dithered glow, drawn with the same lattice as the cloud
+  function paint() {
+    ctx.fillStyle = color("--ddlc-code-ground")
+    ctx.fillRect(0, 0, stage.width, stage.height)
+    ditherDisc(ctx, { pitch: 8, cx: 240, cy: 240, r: 200, fill: color("--ddlc-accent") })
+  }
+  initTheme({
+    button: document.getElementById("theme"),
+    icon: document.getElementById("theme-icon"),
+    key: "ddlc-ui-demo:theme",
+    onChange: () => {
+      cloud.recolor()
+      paint()
+    },
+  })
+  document.getElementById("open-dialog").addEventListener("click", () => document.getElementById("dialog").showModal())
+</script>
+</head>
+<body>
+<canvas class="cloud" id="cloud" aria-hidden="true"></canvas>
+
+<header class="bar">
+  <h1 class="brand">
+    <svg class="pixel" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 1h2v1H1zM5 1h2v1H5zM0 2h8v2H0zM1 4h6v1H1zM2 5h4v1H2zM3 6h2v1H3z"/></svg>
+    <span>literature club</span>
+  </h1>
+  <p class="tagline">every class of the kit on one page</p>
+  <nav class="tabs" role="tablist" aria-label="Mode">
+    <button role="tab" aria-selected="true">Poems</button>
+    <button role="tab" aria-selected="false">Members</button>
+  </nav>
+  <div class="bar-end">
+    <label class="switch"><input type="checkbox" checked><span class="switch-track" aria-hidden="true"></span><span>on</span></label>
+    <label class="switch"><input type="checkbox"><span class="switch-track" aria-hidden="true"></span><span>off</span></label>
+    <button class="icon-button" id="theme" type="button" aria-label="Theme: system">
+      <svg class="pixel" viewBox="0 0 8 8" aria-hidden="true"><path id="theme-icon"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="work">
+  <aside class="tools" aria-label="Controls">
+    <section class="card">
+      <h2>how it works</h2>
+      <div class="prose"><p>Long text reads in the sans, off the pixel grid. <a href="#">A link</a> takes the accent.</p></div>
+    </section>
+    <section class="card">
+      <h2>who writes</h2>
+      <div class="tool-list" style="display: grid; gap: 4px">
+        <button class="tool" type="button" aria-pressed="true">sayori · cheerful</button>
+        <button class="tool" type="button" aria-pressed="false">yuri · deep</button>
+        <button class="tool" type="button" disabled>monika · locked</button>
+      </div>
+      <p class="note">A note under the choice</p>
+      <p class="note error">A note that went wrong</p>
+    </section>
+    <section class="card">
+      <h2>run</h2>
+      <div class="row">
+        <button class="button primary" type="button">Play</button>
+        <button class="button" type="button" id="open-dialog">Dialog</button>
+      </div>
+      <label class="field"><span>speed <output>14</output></span><input type="range" min="1" max="60" value="14"></label>
+      <label class="field"><span>title</span><input type="text" value="Ghost under the light"></label>
+      <div class="segmented"><button aria-pressed="true">8×8</button><button aria-pressed="false">16×16</button></div>
+      <label class="check"><input type="checkbox" checked> a plain checkbox</label>
+    </section>
+  </aside>
+
+  <section class="stage" aria-label="Stage">
+    <canvas class="framed" id="stage" width="480" height="480" aria-label="A dithered glow"></canvas>
+    <p class="status">The stage: framed in ink with a hard shadow</p>
+  </section>
+
+  <aside class="panel" aria-label="Readouts">
+    <section class="card done">
+      <h2>poem done</h2>
+      <dl class="kv"><dt>words</dt><dd>42</dd><dt>score</dt><dd>sayori +3</dd></dl>
+    </section>
+    <section class="card">
+      <h2>readout</h2>
+      <div class="meter"><span style="width: 60%"></span></div>
+      <div class="cap"><span>a caption</span><span><b>60</b> %</span></div>
+      <div class="meter" style="margin-top: 8px"><span style="width: 35%; --fill: var(--ddlc-ok)"></span></div>
+    </section>
+    <section class="card">
+      <h2>numbers</h2>
+      <div class="stats">
+        <div class="stat"><div class="n">12</div><div class="t">poems</div></div>
+        <div class="stat"><div class="n">4</div><div class="t">tea parties</div></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>code</h2>
+      <pre class="code">plt.style.use("ddlc")</pre>
+    </section>
+  </aside>
+</main>
+
+<footer class="more">
+  <section class="card"><h2>below the fold</h2><div class="prose"><p>Cards side by side, as wide as they fit</p></div></section>
+  <section class="card"><h2>and one more</h2><div class="prose"><p>The page ends here</p></div></section>
+</footer>
+
+<dialog id="dialog">
+  <h2>A dialog</h2>
+  <p>Framed in ink with the accent's shadow</p>
+  <form method="dialog"><button class="button">Close</button></form>
+</dialog>
+<div class="toast">a toast at the foot of the page</div>
+</body>
+</html>

@@ -2,6 +2,27 @@
 
 Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioned by [semver](https://semver.org/spec/v2.0.0.html)
 
+## Unreleased
+
+### Added
+
+- `ddlc-ui.css`, a web kit drawn on the Departure Mono grid: the bar, a three-column layout of tools, stage and readouts, cards, buttons, switches, fields, meters, dialogs and a toast, both variants in one file (`lib.ui`)
+- `ddlc-theme.js`, a theme button that cycles system, light and dark, and `ddlc-cloud.js`, the pointer's dithered cloud with a colour reader and the dithering for a canvas (`lib.js.theme`, `lib.js.cloud`)
+- Departure Mono 1.500 in `dist/`, beside the kit that reads it (`lib.font`)
+- `ddlc-mail.json`, the light colours, the faces and ready `style` values for an HTML letter, which cannot use `var()` (`lib.mail`)
+- `ddlc-tokens.css`, the roles alone for a theme with its own palette and selectors (`lib.tokens`)
+- `ddlc-syntax.json`, one table of syntax colours per variant for every editor theme (`lib.syntax`)
+- a flake template, `nix flake init -t github:rokokol/ddlc-themes#app`, with the bar, the three columns and the cards
+- `docs/ui-demo.html`, every class of the kit on one page
+
+### Changed
+
+- **Breaking:** the report stylesheet's roles are renamed and recomputed from the shared role table. `--ddlc-ink` is now `--ddlc-text`, `--ddlc-divider` is `--ddlc-line`, and `--ddlc-inform-ground` and `--ddlc-inform-border` are `--ddlc-popup-ground` and `--ddlc-popup-frame`. A role no longer takes the name of a palette colour, so the stylesheet no longer repaints `--ddlc-ink` when `palette.css` is linked beside it
+- **Breaking:** the report stylesheet's tokens are no longer hex literals but `light-dark()` over the palette. A letter that parsed them reads `ddlc-mail.json` instead
+- the report stylesheet: muted text is 55% ink over the jacket on paper and 75% jacket over the paper on ink, so it reads at 6.7:1 rather than 2.55:1 on paper
+- the report stylesheet: prose sets in Doki, a code block is a dark kitty window with a prompt and its `data-lang` in a title bar, `.ddlc-inform` is the "Just Monika." pop-up with an optional `.ddlc-inform-title`, and a quote is a note taped onto the page
+- opencode: the syntax and markdown colours come from the shared syntax table. Variables, operators and punctuation take the text colour, and in light comments and quotes are the muted mix and types are `rule`
+
 ## [2.1.0] - 2026-09-29
 
 ### Changed

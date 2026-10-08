@@ -115,12 +115,12 @@
       "light": "natsuki"
     },
     "markdownText": {
-      "dark": "dot",
+      "dark": "blush",
       "light": "yuriShadow"
     },
     "markdownHeading": {
-      "dark": "pink",
-      "light": "plum"
+      "dark": "sayoriEye",
+      "light": "skirt"
     },
     "markdownLink": "rule",
     "markdownLinkText": {
@@ -128,25 +128,28 @@
       "light": "skirt"
     },
     "markdownCode": {
-      "dark": "natsuki",
-      "light": "plum"
+      "dark": "monikaEye",
+      "light": "ribbon"
     },
-    "markdownBlockQuote": "jacket",
+    "markdownBlockQuote": {
+      "dark": "jacket",
+      "light": "#64595B"
+    },
     "markdownEmph": {
-      "dark": "monika",
-      "light": "yuri"
+      "dark": "blush",
+      "light": "yuriShadow"
     },
     "markdownStrong": {
-      "dark": "sayori",
-      "light": "plum"
+      "dark": "blush",
+      "light": "yuriShadow"
     },
     "markdownHorizontalRule": {
       "dark": "yuriShadow",
       "light": "ash"
     },
     "markdownListItem": {
-      "dark": "dot",
-      "light": "yuriShadow"
+      "dark": "pink",
+      "light": "plum"
     },
     "markdownListEnumeration": {
       "dark": "pink",
@@ -158,10 +161,13 @@
       "light": "skirt"
     },
     "markdownCodeBlock": {
-      "dark": "dot",
+      "dark": "blush",
       "light": "yuriShadow"
     },
-    "syntaxComment": "jacket",
+    "syntaxComment": {
+      "dark": "jacket",
+      "light": "#64595B"
+    },
     "syntaxKeyword": {
       "dark": "pink",
       "light": "plum"
@@ -171,7 +177,7 @@
       "light": "skirt"
     },
     "syntaxVariable": {
-      "dark": "dot",
+      "dark": "blush",
       "light": "yuriShadow"
     },
     "syntaxString": {
@@ -187,11 +193,11 @@
       "light": "rule"
     },
     "syntaxOperator": {
-      "dark": "natsuki",
-      "light": "bowShadow"
+      "dark": "blush",
+      "light": "yuriShadow"
     },
     "syntaxPunctuation": {
-      "dark": "dot",
+      "dark": "blush",
       "light": "yuriShadow"
     }
   }

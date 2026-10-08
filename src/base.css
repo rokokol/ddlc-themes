@@ -1,0 +1,40 @@
+/* What the web kit and the report stylesheet share after the head: the ground, the links,
+   the selection and the focus ring. generate.sh drops this comment and appends the rest */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Only the root has a ground: a body ground would paint over a canvas laid behind the page */
+html {
+  background: var(--ddlc-ground);
+  color: var(--ddlc-text);
+}
+
+::selection {
+  background: var(--ddlc-selection);
+}
+
+a {
+  color: var(--ddlc-accent);
+}
+
+a:hover {
+  color: var(--ddlc-accent-live);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ddlc-accent);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+mark {
+  background: var(--ddlc-highlight);
+  color: inherit;
+}

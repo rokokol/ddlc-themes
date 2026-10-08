@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>App</title>
+<link rel="preload" href="vendor/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vendor/ddlc-ui.css">
+<link rel="stylesheet" href="app.css">
+<script>
+  // Applies a pinned theme before the first paint; "system" leaves data-theme unset
+  try {
+    const t = localStorage.getItem("app:theme")
+    if (t === "light" || t === "dark") document.documentElement.dataset.theme = t
+  } catch {}
+</script>
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<canvas class="cloud" id="cloud" aria-hidden="true"></canvas>
+
+<header class="bar">
+  <h1 class="brand">
+    <svg class="pixel" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 1h2v1H1zM5 1h2v1H5zM0 2h8v2H0zM1 4h6v1H1zM2 5h4v1H2zM3 6h2v1H3z"/></svg>
+    <span>app</span>
+  </h1>
+  <p class="tagline">what this page is for, in one line</p>
+  <nav class="tabs" role="tablist" aria-label="Mode">
+    <button role="tab" aria-selected="true">First</button>
+    <button role="tab" aria-selected="false">Second</button>
+  </nav>
+  <div class="bar-end">
+    <button class="icon-button" id="theme" type="button" aria-label="Theme: system">
+      <svg class="pixel" viewBox="0 0 8 8" aria-hidden="true"><path id="theme-icon"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="work">
+  <aside class="tools" aria-label="Controls">
+    <section class="card">
+      <h2>how it works</h2>
+      <div class="prose"><p>A sentence or two in the sans, off the pixel grid.</p></div>
+    </section>
+    <section class="card">
+      <h2>controls</h2>
+      <div class="row">
+        <button class="button primary" type="button">Run</button>
+        <button class="button" type="button">Reset</button>
+      </div>
+      <label class="field">
+        <span>speed <output>14</output></span>
+        <input type="range" min="1" max="60" value="14">
+      </label>
+    </section>
+  </aside>
+
+  <section class="stage" aria-label="Stage">
+    <canvas class="framed" width="480" height="480" aria-label="The thing this page is about"></canvas>
+    <p class="status">One line of status under the stage</p>
+  </section>
+
+  <aside class="panel" aria-label="Readouts">
+    <section class="card">
+      <h2>readout</h2>
+      <div class="meter"><span style="width: 60%"></span></div>
+      <div class="cap"><span>a caption</span><span><b>60</b> %</span></div>
+    </section>
+    <section class="card">
+      <h2>numbers</h2>
+      <div class="stats">
+        <div class="stat"><div class="n">12</div><div class="t">one</div></div>
+        <div class="stat"><div class="n">34</div><div class="t">two</div></div>
+      </div>
+    </section>
+  </aside>
+</main>
+</body>
+</html>

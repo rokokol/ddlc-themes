@@ -37,6 +37,16 @@
         name = "ddlc-themes-dist";
         path = ./dist;
       };
+      # What generate.sh reads beside itself: the stylesheet and script sources, and the
+      # vendored font it copies into dist/
+      srcDir = builtins.path {
+        name = "ddlc-themes-src";
+        path = ./src;
+      };
+      vendorDir = builtins.path {
+        name = "ddlc-themes-vendor";
+        path = ./vendor;
+      };
       versionFile = builtins.path {
         name = "VERSION";
         path = ./VERSION;
@@ -91,14 +101,34 @@
           dark = ./dist/ddlc-dark.mplstyle;
           cmaps = ./dist/ddlc_cmaps.py;
         };
-        # The matplotlib roles as a stylesheet for HTML reports; one file, light and dark
+        # Everything that is not a terminal reads one table of roles. Each stylesheet is one
+        # file with both variants; tokens is the roles alone, for a theme with its own
+        # palette and selectors
+        tokens = ./dist/ddlc-tokens.css;
+        ui = ./dist/ddlc-ui.css;
         report = ./dist/ddlc-report.css;
+        # A letter cannot use var(), so it reads literal styles out of this JSON
+        mail = ./dist/ddlc-mail.json;
+        # The syntax colours per variant, for an editor theme
+        syntax = ./dist/ddlc-syntax.json;
+        js = {
+          theme = ./dist/ddlc-theme.js;
+          cloud = ./dist/ddlc-cloud.js;
+        };
+        font = ./dist/DepartureMono-Regular.woff2;
         claude-code = {
           light = ./dist/ddlc-claude-code-light.json;
           dark = ./dist/ddlc-claude-code-dark.json;
         };
         # One file, both variants: opencode reads {dark, light} out of each value itself
         opencode = ./dist/ddlc-opencode.json;
+      };
+
+      # A page laid out the way the DDLC web pages are: the bar, three columns of tools, stage
+      # and readouts, cards. Its README says how to vendor the kit into it
+      templates.app = {
+        path = ./templates/app;
+        description = "A page on the DDLC web kit: the bar, three columns and cards";
       };
 
       packages = forAllSystems (pkgs: {
@@ -130,6 +160,8 @@
       checks = forAllSystems (pkgs: {
         dist-is-current = pkgs.runCommand "dist-is-current" { nativeBuildInputs = with pkgs; [ jq ]; } ''
           install -m755 ${generator} generate.sh
+          cp -r ${srcDir} src
+          cp -r ${vendorDir} vendor
           DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
             DDLC_PALETTE_ENV=${palette} \
             bash generate.sh >/dev/null
@@ -276,11 +308,19 @@
                   exit 1
                 fi
               done
-              # Every token the stylesheet defines is a hex; the element rules only reference them
-              if grep -E '^ *--ddlc-' ${dist}/ddlc-report.css | grep -Ev '^ *--ddlc-[a-z0-9-]+: #[0-9A-F]{6};$'; then
-                echo "ddlc-report.css: the token above is not a hex colour" >&2
-                exit 1
-              fi
+              # A letter reads literal colours only: every colour is a hex, every style is filled
+              # and carries no var(), which Gmail would drop
+              jq -e '(.colors | length > 0)
+                and ([.colors[] | select(test("^#[0-9A-F]{6}$") | not)] == [])
+                and (.styles | length > 0)
+                and ([.styles[] | select(test("[{}]|var\\(")) ] == [])' \
+                ${dist}/ddlc-mail.json >/dev/null \
+                || { echo "ddlc-mail.json: a colour is not a hex or a style is not literal"; exit 1; }
+              # The syntax table names the same roles in both variants, each a hex
+              jq -e '(.dark | keys) == (.light | keys) and (.dark | length > 0)
+                and ([.dark[], .light[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' \
+                ${dist}/ddlc-syntax.json >/dev/null \
+                || { echo "ddlc-syntax.json: the variants differ or a colour is not a hex"; exit 1; }
               for f in ${dist}/ddlc-claude-code-*.json; do
                 jq -e '(.overrides | length) > 0
                   and ([.overrides[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' "$f" >/dev/null \

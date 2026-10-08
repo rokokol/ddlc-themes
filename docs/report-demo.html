@@ -15,8 +15,8 @@
 <body>
 <h1>Literature club — weekly report</h1>
 <p class="ddlc-muted">monday · club activities</p>
-<div class="ddlc-inform">Just Monika.</div>
-<p>Body text with <a href="#">a link to the poems</a>, a bit of <code>inline code</code> and the matplotlib series: <b class="ddlc-series-1">plum</b>, <b class="ddlc-series-2">bow</b>, <b class="ddlc-series-3">rule</b>, <b class="ddlc-series-4">monikaEye</b> and <b class="ddlc-series-5">yuri</b>.</p>
+<div class="ddlc-inform"><span class="ddlc-inform-title">Just Monika.</span>Three poems are still unread. <a href="#">Read them</a></div>
+<p>Body text with <a href="#">a link to the poems</a>, a bit of <code>inline code</code>, a <mark>highlight</mark> and the matplotlib series: <b class="ddlc-series-1">plum</b>, <b class="ddlc-series-2">bow</b>, <b class="ddlc-series-3">rule</b>, <b class="ddlc-series-4">monikaEye</b> and <b class="ddlc-series-5">yuri</b>.</p>
 <h2>Poems this week</h2>
 <table>
 <tr><th>member</th><th>poems</th><th>tea parties</th></tr>
@@ -25,7 +25,10 @@
 <tr><td>Yuri</td><td>15</td><td>2</td></tr>
 </table>
 <blockquote>Quote of the week — on the depth and strangeness of the sea.</blockquote>
-<pre><code>plt.style.use("ddlc")  # a code block on its own ground</code></pre>
+<pre data-lang="python"><code><span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+<span class="hljs-comment"># the code window is dark on both sides</span>
+plt.style.use(<span class="hljs-string">"ddlc"</span>)
+plt.plot([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>])<span class="hljs-punctuation">;</span> <span class="hljs-built_in">print</span>(<span class="hljs-string">"ok"</span>)</code></pre>
 <hr>
 <p class="ddlc-muted">report footer, after the divider</p>
 </body>

@@ -3,14 +3,17 @@ set -euo pipefail
 
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 out="$here/dist"
+src="$here/src"
+vendor="$here/vendor"
 
 usage() {
   cat <<EOF
-generate.sh — render the kitty, btop, matplotlib, Claude Code and opencode themes
-out of ddlc-palette
+generate.sh — render the kitty, btop, matplotlib, Claude Code and opencode themes, the
+web kit, the report stylesheet, the letter styles and the syntax table out of ddlc-palette
 
-It writes dist/, committed for consumers without Nix: run it after the palette moves and
-commit the bump with the rendered files
+It writes dist/, committed for consumers without Nix: run it after the palette moves, or
+after an edit to src/, and commit the result with the rendered files. It reads src/ and
+vendor/ beside itself
 
   --light FILE     base16-ddlc-light.yaml   (or \$DDLC_BASE16_LIGHT)
   --dark FILE      base16-ddlc-dark.yaml    (or \$DDLC_BASE16_DARK)
@@ -355,188 +358,434 @@ for _name, _colours in _MAPS.items():
             colormaps.register(LinearSegmentedColormap.from_list(_key, _steps))
 EOF
 
-# --- report css -------------------------------------------------------------------------------
-# The matplotlib roles, spoken in CSS for an HTML report: the same grounds, the same grid
-# discipline, the same series — five on paper, three on ink, for the mplstyle's own reason.
-# The element choices follow the site itself: links plum with a pink hover, dividers blush,
-# neutral rules ash. Light is the default; dark answers prefers-color-scheme and an explicit
-# data-theme wins over both
+# --- roles ------------------------------------------------------------------------------------
+# Everything that is not a terminal reads this one table: the web kit, the report stylesheet,
+# the letters and the Obsidian theme, which vendors ddlc-tokens.css. So a role is the same
+# colour on every surface. The columns are dark and light, as in the tables above. A value is
+# a palette colour, a role defined above it, a slot of the dark base16 scheme, "transparent",
+# or "a@NN:b" for NN percent of a over b. The stylesheets carry the dark scheme alone, because
+# the code window is dark on both sides.
+# Where the web pages and the Obsidian theme disagreed, the Obsidian value is here: muted text
+# mixes the jacket with the ink on paper and with the paper on ink, because the bare jacket
+# reads 2.55:1 on paper. A role never takes the name of a palette colour, so a page can link
+# palette.css and a stylesheet from here together
+ui_roles="
+ground                ink                    paper
+text                  paper                  ink
+muted                 jacket@75:paper        ink@55:jacket
+faint                 jacket                 jacket
+line                  yuri                   blush
+line-live             plum                   pink
+grid                  yuri@70:ink            ash
+accent                pink                   plum
+accent-live           blush                  pink
+on-accent             paper                  paper
+panel                 ground@92:transparent  ground@92:transparent
+selection             yuri@90:transparent    blush@80:transparent
+highlight             plum@55:transparent    blush@85:transparent
+code-ground           yuriShadow             dot
+cloud                 yuriShadow             dot
+danger                bow                    bow
+ok                    monikaEye              monikaEye
+switch-off            jacket@55:ink          jacket
+popup-ground          dot                    dot@70:paper
+popup-frame           blush                  blush
+popup-text            ink                    ink
+popup-accent          plum@70:ink            plum
+tape                  pink@60:transparent    blush@70:transparent
+board                 yuri@30:ink            dot@50:paper
+board-shade           board@60:ink           board@80:jacket
+board-frame           board-shade            dot
+board-drop            blush                  blush
+window-ground         base00                 base00
+window-text           base05                 base05
+window-bar            base01                 base01
+window-border         base02                 base02
+window-title          base05@80:base01       base05@80:base01
+window-control        base05@14:base01       base05@14:base01
+window-control-hover  base05@28:base01       base05@28:base01
+window-control-live   base07                 base07
+window-prompt         base0E                 base0E
+window-selection      base02                 base02
+window-caret          base05@65:transparent  base05@65:transparent
+"
 
-need report paper ink jacket ash dot blush pink plum yuri yuriShadow bow rule monikaEye
+# One table of syntax colours for every editor and viewer: ddlc.nvim vendors ddlc-syntax.json,
+# opencode reads it below, and the code window takes the dark column. The roles and the dark
+# column are ddlc.nvim's own groups. A base16 slot here reads the scheme of its own column.
+# Each role holds 3:1 on its variant's ground, so the dark column moves builtin off bow (2.8:1)
+# to natsuki and delimiter off bowShadow (1.7:1) to ash, and the light column moves number off
+# sayori (2.0:1) and type off monika (2.8:1) to the colours opencode already took there, and
+# comment and quote to the muted role
+syntax_slots="
+comment     base03     muted
+keyword     base0E     base0E
+function    base0D     base0D
+string      base0B     base0B
+number      base09     yuri
+type        base0A     rule
+text        base05     base05
+builtin     natsuki    base08
+special     base0C     base0C
+delimiter   ash        base0F
+heading     base0D     base0D
+link        base0D     base0D
+url         base0C     base0C
+link-label  base0E     base0E
+raw         base0B     base0B
+list        base0E     base0E
+quote       base03     muted
+"
+syntax_floor=3
 
-css_light_tokens() {
-  cat <<EOF
-  --ddlc-ground: #${pal[paper]};
-  --ddlc-ink: #${pal[ink]};
-  --ddlc-muted: #${pal[jacket]};
-  --ddlc-grid: #${pal[ash]};
-  --ddlc-divider: #${pal[blush]};
-  --ddlc-accent: #${pal[plum]};
-  --ddlc-accent-live: #${pal[pink]};
-  --ddlc-code-ground: #${pal[dot]};
-  --ddlc-selection: #${pal[blush]};
-  --ddlc-inform-ground: #${pal[dot]};
-  --ddlc-inform-border: #${pal[blush]};
-  --ddlc-series-1: #${pal[plum]};
-  --ddlc-series-2: #${pal[bow]};
-  --ddlc-series-3: #${pal[rule]};
-  --ddlc-series-4: #${pal[monikaEye]};
-  --ddlc-series-5: #${pal[yuri]};
-EOF
+# The faces, for the stylesheets and the letters alike. A letter cannot load a web font, so
+# every stack names the faces a reader may have installed and ends in an honest fallback
+font_stacks="
+prose  Doki, Spectral, Georgia, 'Times New Roman', serif
+data   'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace
+sans   system-ui, -apple-system, 'Segoe UI', sans-serif
+"
+
+kebab() { # monikaEye -> monika-eye, the spelling palette.css uses
+  local s="$1" out="" c i
+  for ((i = 0; i < ${#s}; i++)); do
+    c="${s:i:1}"
+    if [[ $c == [A-Z] ]]; then out+="-${c,,}"; else out+="$c"; fi
+  done
+  printf '%s' "$out"
 }
 
-css_dark_tokens() {
-  cat <<EOF
-  --ddlc-ground: #${pal[ink]};
-  --ddlc-ink: #${pal[paper]};
-  --ddlc-muted: #${pal[jacket]};
-  --ddlc-grid: #${pal[yuri]};
-  --ddlc-divider: #${pal[yuri]};
-  --ddlc-accent: #${pal[pink]};
-  --ddlc-accent-live: #${pal[blush]};
-  --ddlc-code-ground: #${pal[yuriShadow]};
-  --ddlc-selection: #${pal[yuri]};
-  --ddlc-inform-ground: #${pal[yuriShadow]};
-  --ddlc-inform-border: #${pal[yuri]};
-  --ddlc-series-1: #${pal[plum]};
-  --ddlc-series-2: #${pal[bow]};
-  --ddlc-series-3: #${pal[rule]};
-  --ddlc-series-4: #${pal[jacket]};
-  --ddlc-series-5: #${pal[jacket]};
-EOF
+declare -A pal_kebab
+for name in "${pal_names[@]}"; do pal_kebab[$(kebab "$name")]=1; done
+
+# NN percent of one six-digit hex over another, as an opaque six-digit hex
+mix_hex() { # <fg> <bg> <share>
+  local i
+  for i in 0 2 4; do
+    printf '%02X' $(((16#${1:i:2} * $3 + 16#${2:i:2} * (100 - $3) + 50) / 100))
+  done
 }
 
+# WCAG contrast of two six-digit hex colours, two decimals
+contrast() { # <hex> <hex>
+  awk -v a="$1" -v b="$2" '
+    function ch(h, i,   c) { c = index("0123456789ABCDEF", substr(h, i, 1)) * 16 - 16
+      c += index("0123456789ABCDEF", substr(h, i + 1, 1)) - 1; c /= 255
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ^ 2.4 }
+    function lum(h) { return 0.2126 * ch(h, 1) + 0.7152 * ch(h, 3) + 0.0722 * ch(h, 5) }
+    BEGIN { x = lum(a); y = lum(b); if (x < y) { t = x; x = y; y = t }
+      printf "%.2f", (x + 0.05) / (y + 0.05) }'
+}
+
+declare -A role
+role_names=()
+# An operand of a role value: a palette colour, a role already in the table, a base16 slot or
+# "transparent". Anything else is a typo, and a typo would ship a stylesheet with a hole in it
+role_operand() { # <where> <operand>
+  [[ $2 == transparent || $2 =~ ^base0[0-9A-F]$ || -n ${pal[$2]:-} || -n ${role["dark/$2"]:-} ]] || {
+    echo "generate.sh: $1 names $2, which is no palette colour, earlier role or base16 slot" >&2
+    exit 1
+  }
+}
+role_value() { # <where> <value>
+  if [[ $2 == *@*:* ]]; then
+    local share="${2#*@}"
+    share="${share%%:*}"
+    [[ $share =~ ^[1-9][0-9]?$ ]] || {
+      echo "generate.sh: $1 reads $2, whose share is not 1 to 99" >&2
+      exit 1
+    }
+    role_operand "$1" "${2%%@*}"
+    role_operand "$1" "${2#*:}"
+  else
+    role_operand "$1" "$2"
+  fi
+}
+
+while read -r r_name r_dark r_light; do
+  [[ -z ${pal_kebab[$r_name]:-} ]] || {
+    echo "generate.sh: the role $r_name has the name of a palette colour" >&2
+    exit 1
+  }
+  role_value "role $r_name" "$r_dark"
+  role_value "role $r_name" "$r_light"
+  role["dark/$r_name"]="$r_dark"
+  role["light/$r_name"]="$r_light"
+  role_names+=("$r_name")
+done < <(awk 'NF == 3' <<<"$ui_roles")
+
+# The series continue the matplotlib cycles, so a chart and the table beside it agree. Dark
+# has three; its fourth and fifth collapse into the muted grey, so a tail that was not folded
+# into the three stays visible but stops pretending to be a series
+read -r -a cycle_dark <<<"$mpl_cycle_dark"
+read -r -a cycle_light <<<"$mpl_cycle_light"
+for i in 0 1 2 3 4; do
+  role["dark/series-$((i + 1))"]="${cycle_dark[i]:-jacket}"
+  role["light/series-$((i + 1))"]="${cycle_light[i]}"
+  role_names+=("series-$((i + 1))")
+done
+
+css_ref() { # <operand>
+  if [[ $1 == transparent ]]; then
+    printf 'transparent'
+  elif [[ -n ${pal[$1]:-} ]]; then
+    printf 'var(--ddlc-%s)' "$(kebab "$1")"
+  else
+    printf 'var(--ddlc-%s)' "$1"
+  fi
+}
+
+css_value() { # <value>
+  if [[ $1 == *@*:* ]]; then
+    local share="${1#*@}"
+    printf 'color-mix(in srgb, %s %s%%, %s)' "$(css_ref "${1%%@*}")" "${share%%:*}" "$(css_ref "${1#*:}")"
+  else
+    css_ref "$1"
+  fi
+}
+
+# The opaque hex a value comes to in a variant; base16 slots read the scheme named by the
+# third argument. A letter has no transparency to blend against, so transparent is refused
+hex_of() { # <variant> <value> <scheme variant>
+  local v="$2"
+  if [[ $v == *@*:* ]]; then
+    local share="${v#*@}"
+    mix_hex "$(hex_of "$1" "${v%%@*}" "$3")" "$(hex_of "$1" "${v#*:}" "$3")" "${share%%:*}"
+  elif [[ $v =~ ^base0[0-9A-F]$ ]]; then
+    printf '%s' "${slot["$3/$v"]#\#}"
+  elif [[ -n ${pal[$v]:-} ]]; then
+    printf '%s' "${pal[$v]}"
+  elif [[ -n ${role["$1/$v"]:-} ]]; then
+    hex_of "$1" "${role["$1/$v"]}" "$3"
+  else
+    echo "generate.sh: $v has no opaque hex" >&2
+    return 1
+  fi
+}
+
+# Syntax roles: the light column may name a role, the dark one may not, because the code
+# window reads the dark column under a page that may be light
+declare -A syn
+syn_names=()
+while read -r s_name s_dark s_light; do
+  for s_column in dark light; do
+    s_value="$s_dark"
+    [[ $s_column == light ]] && s_value="$s_light"
+    [[ $s_value =~ ^base0[0-9A-F]$ || -n ${pal[$s_value]:-} ||
+      ($s_column == light && -n ${role["light/$s_value"]:-}) ]] || {
+      echo "generate.sh: syntax $s_name names $s_value in the $s_column column, which it cannot read" >&2
+      exit 1
+    }
+  done
+  syn["dark/$s_name"]=$(hex_of dark "$s_dark" dark)
+  syn["light/$s_name"]=$(hex_of light "$s_light" light)
+  syn["css/$s_name"]=$(css_ref "$s_dark")
+  for V in dark light; do
+    ratio=$(contrast "${syn["$V/$s_name"]}" "$(hex_of "$V" ground dark)")
+    awk -v r="$ratio" -v f="$syntax_floor" 'BEGIN { exit !(r >= f) }' || {
+      echo "generate.sh: syntax $s_name reads $ratio:1 on the $V ground, under $syntax_floor:1" >&2
+      exit 1
+    }
+  done
+  syn_names+=("$s_name")
+done < <(awk 'NF == 3' <<<"$syntax_slots")
+
+declare -A font
+while read -r f_name f_stack; do
+  font[$f_name]="$f_stack"
+done < <(awk 'NF >= 2' <<<"$font_stacks")
+
+# The roles as custom properties, two spaces in. A role that reads the same on both sides is
+# one value; the rest are light-dark(), which the element's color-scheme resolves
+css_roles() {
+  local r
+  for r in "${role_names[@]}"; do
+    if [[ ${role["dark/$r"]} == "${role["light/$r"]}" ]]; then
+      printf '  --ddlc-%s: %s;\n' "$r" "$(css_value "${role["dark/$r"]}")"
+    else
+      printf '  --ddlc-%s: light-dark(%s, %s);\n' "$r" \
+        "$(css_value "${role["light/$r"]}")" "$(css_value "${role["dark/$r"]}")"
+    fi
+  done
+  for r in "${syn_names[@]}"; do
+    printf '  --ddlc-syntax-%s: %s;\n' "$r" "${syn["css/$r"]}"
+  done
+}
+
+# What a self-contained stylesheet starts with: the palette, the dark base16 scheme, the faces
+# and the roles, then the switch between the variants. The system decides until data-theme on
+# the root pins a side
+css_head() {
+  local name f
+  echo ":root {"
+  for name in "${pal_names[@]}"; do printf '  --ddlc-%s: #%s;\n' "$(kebab "$name")" "${pal[$name]}"; done
+  for name in $(printf '%s\n' "${!slot[@]}" | sed -n 's|^dark/||p' | sort); do
+    printf '  --ddlc-%s: %s;\n' "$name" "${slot["dark/$name"]}"
+  done
+  for f in prose data sans; do printf '  --ddlc-font-%s: %s;\n' "$f" "${font[$f]}"; done
+  css_roles
+  echo "  color-scheme: light dark;"
+  echo "}"
+  echo
+  echo ":root[data-theme=\"light\"] { color-scheme: light; }"
+  echo ":root[data-theme=\"dark\"] { color-scheme: dark; }"
+}
+
+# Every name a stylesheet in src/ reads must exist, or the browser drops the declaration in
+# silence. And a name it defines must not be a palette colour, or it would repaint palette.css
+css_known() { # <name without --ddlc->
+  local n="$1"
+  [[ -n ${pal_kebab[$n]:-} || $n =~ ^base0[0-9A-F]$ || -n ${role["dark/$n"]:-} ]] && return
+  [[ $n == syntax-* && -n ${syn["dark/${n#syntax-}"]:-} ]] && return
+  [[ $n == font-* && -n ${font[${n#font-}]:-} ]] && return
+  return 1
+}
+for source in "$src"/*.css; do
+  defined=$(sed -n 's/^ *--ddlc-\([a-z0-9-]*\):.*/\1/p' "$source")
+  while read -r name; do
+    [[ -n $name && -n ${pal_kebab[$name]:-} ]] || continue
+    echo "generate.sh: $source defines --ddlc-$name, the name of a palette colour" >&2
+    exit 1
+  done <<<"$defined"
+  while read -r name; do
+    css_known "$name" || grep -qx "$name" <<<"$defined" || {
+      echo "generate.sh: $source reads --ddlc-$name, which nothing defines" >&2
+      exit 1
+    }
+  done < <(grep -o 'var(--ddlc-[a-z0-9-]*' "$source" | sed 's/^var(--ddlc-//' | sort -u)
+done
+
+# The roles alone, for a theme that brings its own palette and selectors — Obsidian's
 {
   echo "/* $named_banner"
-  echo "   The DDLC matplotlib theme as a stylesheet for HTML reports: link it and write prose."
-  echo "   Light by default, dark under prefers-color-scheme, data-theme=\"dark|light\" wins."
-  echo "   A dark report gets three series where a light one gets five — the palette is"
-  echo "   polarised, and the other two do not survive on ink; there --ddlc-series-4 and -5"
-  echo "   collapse into the muted grey on purpose, so a tail that was not folded into the"
-  echo "   remaining three is visible but stops pretending to be a series."
-  echo "   The inform block is the game's own dialog box: a dot ground under the ink"
-  echo "   with a blush frame in light, yuriShadow under a yuri frame on dark — the"
-  echo "   level lives in the frame, not in a hue the palette does not have */"
+  echo "   The DDLC roles as custom properties, with no palette and no selectors of an"
+  echo "   application. It reads the palette's --ddlc-* colours and the dark base16 slots"
+  echo "   --ddlc-base00 to --ddlc-base0F from the page, and a role that differs between"
+  echo "   the variants is light-dark(), so the element's color-scheme picks the side */"
   echo
   echo ":root {"
-  css_light_tokens
+  css_roles
   echo "}"
-  echo
-  echo "@media (prefers-color-scheme: dark) {"
-  echo "  :root:not([data-theme=\"light\"]) {"
-  css_dark_tokens | sed 's/^/  /'
-  echo "  }"
-  echo "}"
-  echo
-  echo "[data-theme=\"dark\"] {"
-  css_dark_tokens
-  echo "}"
-  echo
-  cat <<'CSS'
-body {
-  background: var(--ddlc-ground);
-  color: var(--ddlc-ink);
-  font-size: 1rem;
-  line-height: 1.55;
-  max-width: 46rem;
-  margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+} >"$out/ddlc-tokens.css"
+
+# The web kit and the report stylesheet: each one file a page links, carrying everything it
+# reads. They share the head and src/base.css, and add their own elements
+for sheet in ui report; do
+  {
+    echo "/* $named_banner */"
+    echo
+    # the sheet's own opening comment says what it is for
+    sed -n '1,/\*\//p' "$src/$sheet.css"
+    echo
+    css_head
+    echo
+    sed '1,/\*\//d' "$src/base.css"
+    echo
+    sed '1,/\*\//d' "$src/$sheet.css"
+  } >"$out/ddlc-$sheet.css"
+done
+
+# The scripts are not generated from anything, only copied, so a consumer vendors the whole
+# kit out of one directory
+for script in theme cloud; do
+  {
+    echo "// Copied by generate.sh from src/$script.js — do not edit"
+    cat "$src/$script.js"
+  } >"$out/ddlc-$script.js"
+done
+for file in "$vendor"/departure-mono/*; do
+  cat "$file" >"$out/$(basename "$file")"
+done
+
+# --- letters ----------------------------------------------------------------------------------
+# A letter cannot use var(): Gmail drops any declaration that carries one. So a letter gets
+# literal styles, each a ready value for a style attribute, with the light roles and the faces
+# already in them. A name in braces is a light role or a face. The sizes follow the report
+# stylesheet; the inform block is the popup the report draws, square and thick-framed
+mail_styles="
+page          background:{ground};color:{text};font-family:{prose};line-height:1.55;padding:28px 20px 48px
+column        max-width:736px;margin:0 auto
+h1            margin:0;padding-bottom:6px;border-bottom:2px solid {line};font-size:27px;line-height:1.25;font-weight:normal;color:{text}
+h2            margin:32px 0 8px;font-size:19px;line-height:1.25;font-weight:normal;color:{text}
+h3            margin:18px 0 4px;font-size:15px;line-height:1.3;font-weight:normal;color:{text}
+sub           margin:2px 0 10px;font-size:13px;color:{muted}
+p             margin:8px 0;font-size:14px;line-height:1.55;color:{text}
+list          margin:6px 0;padding-left:20px;font-size:14px;line-height:1.6;color:{text}
+item          margin:3px 0
+table         border-collapse:collapse;width:100%;margin:6px 0 4px
+th            padding:6px 18px 6px 0;border-bottom:1px solid {muted};text-align:left;font-size:11px;font-family:{data};font-weight:normal;color:{muted}
+td            padding:6px 18px 6px 0;border-bottom:1px solid {grid};font-size:14px;font-family:{prose};color:{text}
+td-data       padding:6px 18px 6px 0;border-bottom:1px solid {grid};font-size:12px;font-family:{data};color:{text}
+td-cell       padding:6px 18px 6px 0;border-bottom:1px solid {grid};vertical-align:middle
+kpi           border-collapse:collapse;margin:2px 0
+kpi-cell      padding:14px 28px 14px 0;vertical-align:top
+kpi-label     font-size:13px;font-family:{prose};color:{muted}
+kpi-value     font-size:24px;line-height:1.3;font-family:{data};color:{text}
+meter         border-collapse:separate;border-spacing:2px 0;width:100%;max-width:320px
+meter-cell    height:10px;font-size:0;line-height:0
+inform        margin:18px 0;padding:20px 24px;border:6px solid {popup-frame};background:{popup-ground};color:{popup-text};text-align:center
+inform-title  font-size:17px;font-weight:normal
+inform-list   margin:8px 0 0;padding:0;list-style:none;font-size:14px;line-height:1.6
+inform-item   margin:5px 0
+details       margin:16px 0
+summary       font-size:16px;font-weight:normal;color:{text};cursor:pointer
+journal       margin-top:8px;padding:12px 16px;border-radius:4px;background:{code-ground};font-family:{data};font-size:12px
+journal-line  padding:2px 0;color:{text}
+divider       margin-top:32px;border-top:2px solid {line}
+image         display:block;max-width:100%;height:auto;margin:10px 0 4px
+"
+
+# The light roles that come to an opaque colour; a window role reads the dark scheme and a
+# translucent one has nothing to blend against in a letter, so neither is offered
+declare -A mail_colour
+mail_colour_names=()
+for r in "${role_names[@]}"; do
+  [[ ${role["light/$r"]} != *transparent* && ${role["light/$r"]} != *base0* && $r != window-* ]] || continue
+  mail_colour[$r]=$(hex_of light "$r" light)
+  mail_colour_names+=("$r")
+done
+
+mail_fill() { # <style>
+  local s="$1" key
+  while [[ $s =~ \{([a-z0-9-]+)\} ]]; do
+    key="${BASH_REMATCH[1]}"
+    if [[ -n ${font[$key]:-} ]]; then
+      s="${s//"{$key}"/${font[$key]}}"
+    elif [[ -n ${mail_colour[$key]:-} ]]; then
+      s="${s//"{$key}"/#${mail_colour[$key]}}"
+    else
+      echo "generate.sh: the letter style reads {$key}, which is no light role or face" >&2
+      exit 1
+    fi
+  done
+  printf '%s' "$s"
 }
 
-/* Bold, left, a step over the body — the mplstyle's title, spelled for a page */
-h1, h2, h3, h4 {
-  color: var(--ddlc-ink);
-  font-weight: bold;
-  text-align: left;
-  line-height: 1.25;
-}
+# Filled before the pipe below: an exit inside a substitution there would not stop the run
+mail_rows=()
+while read -r m_name m_style; do
+  m_filled=$(mail_fill "$m_style")
+  mail_rows+=("$(printf 'styles\t%s\t%s' "$m_name" "$m_filled")")
+done < <(awk 'NF' <<<"$mail_styles")
 
-h1 {
-  border-bottom: 2px solid var(--ddlc-divider);
-  padding-bottom: 0.3rem;
-}
+{
+  for r in "${mail_colour_names[@]}"; do printf 'colors\t%s\t#%s\n' "$r" "${mail_colour[$r]}"; done
+  for f in prose data; do printf 'fonts\t%s\t%s\n' "$f" "${font[$f]}"; done
+  printf '%s\n' "${mail_rows[@]}"
+} | jq -Rn --arg banner "$named_banner" '
+  [inputs | split("\t")] as $rows
+  | { _generated: $banner }
+    + ([$rows | group_by(.[0])[] | { key: .[0][0], value: (map({ key: .[1], value: .[2] }) | from_entries) }]
+       | from_entries)' >"$out/ddlc-mail.json"
 
-a {
-  color: var(--ddlc-accent);
-}
-
-a:hover {
-  color: var(--ddlc-accent-live);
-}
-
-::selection {
-  background: var(--ddlc-selection);
-}
-
-hr {
-  border: 0;
-  border-top: 2px solid var(--ddlc-divider);
-}
-
-/* The grid stays under the data here too: rules between rows only, no vertical lines */
-table {
-  border-collapse: collapse;
-}
-
-th, td {
-  text-align: left;
-  padding: 0.3rem 1rem 0.3rem 0;
-  border-bottom: 1px solid var(--ddlc-grid);
-}
-
-th {
-  border-bottom-color: var(--ddlc-muted);
-}
-
-code, pre {
-  background: var(--ddlc-code-ground);
-  border-radius: 4px;
-}
-
-code {
-  padding: 0.1em 0.3em;
-}
-
-pre {
-  padding: 0.75rem 1rem;
-  overflow-x: auto;
-}
-
-pre code {
-  padding: 0;
-}
-
-blockquote {
-  margin-left: 0;
-  padding-left: 1rem;
-  border-left: 3px solid var(--ddlc-accent);
-  color: var(--ddlc-muted);
-}
-
-/* The one block allowed to interrupt, shaped like the game's own dialog box:
-   a pink ground framed on all sides, everything centred, the ink doing the
-   talking */
-.ddlc-inform {
-  background: var(--ddlc-inform-ground);
-  border: 2px solid var(--ddlc-inform-border);
-  border-radius: 6px;
-  padding: 1.25rem 1.5rem;
-  text-align: center;
-  color: var(--ddlc-ink);
-}
-
-figcaption, .ddlc-muted {
-  color: var(--ddlc-muted);
-  font-size: 0.9em;
-}
-
-.ddlc-series-1 { color: var(--ddlc-series-1); }
-.ddlc-series-2 { color: var(--ddlc-series-2); }
-.ddlc-series-3 { color: var(--ddlc-series-3); }
-.ddlc-series-4 { color: var(--ddlc-series-4); }
-.ddlc-series-5 { color: var(--ddlc-series-5); }
-CSS
-} >"$out/ddlc-report.css"
+# --- syntax -----------------------------------------------------------------------------------
+for name in "${syn_names[@]}"; do
+  printf '%s\t#%s\t#%s\n' "$name" "${syn["dark/$name"]}" "${syn["light/$name"]}"
+done | jq -Rn --arg banner "$named_banner" '
+  [inputs | split("\t")] as $rows
+  | { _generated: $banner,
+      dark: ($rows | map({ key: .[0], value: .[1] }) | from_entries),
+      light: ($rows | map({ key: .[0], value: .[2] }) | from_entries) }' >"$out/ddlc-syntax.json"
 
 # --- Claude Code ------------------------------------------------------------------------------
 # Claude Code reads a theme from ~/.claude/themes/<slug>.json: a base theme plus overrides, and
@@ -679,34 +928,41 @@ diffContextBg              none        none
 diffLineNumber             jacket      jacket
 diffAddedLineNumberBg      ribbon      monikaEye@20
 diffRemovedLineNumberBg    bowShadow   natsuki
-markdownText               dot         yuriShadow
-markdownHeading            pink        plum
-markdownLink               rule        rule
-markdownLinkText           sayoriEye   skirt
-markdownCode               natsuki     plum
-markdownBlockQuote         jacket      jacket
-markdownEmph               monika      yuri
-markdownStrong             sayori      plum
+markdownText               =text       =text
+markdownHeading            =heading    =heading
+markdownLink               =url        =url
+markdownLinkText           =link       =link
+markdownCode               =raw        =raw
+markdownBlockQuote         =quote      =quote
+markdownEmph               =text       =text
+markdownStrong             =text       =text
 markdownHorizontalRule     yuriShadow  ash
-markdownListItem           dot         yuriShadow
-markdownListEnumeration    pink        plum
-markdownImage              rule        rule
-markdownImageText          sayoriEye   skirt
-markdownCodeBlock          dot         yuriShadow
-syntaxComment              jacket      jacket
-syntaxKeyword              pink        plum
-syntaxFunction             sayoriEye   skirt
-syntaxVariable             dot         yuriShadow
-syntaxString               monikaEye   ribbon
-syntaxNumber               sayori      yuri
-syntaxType                 monika      rule
-syntaxOperator             natsuki     bowShadow
-syntaxPunctuation          dot         yuriShadow
+markdownListItem           =list       =list
+markdownListEnumeration    =list       =list
+markdownImage              =url        =url
+markdownImageText          =link       =link
+markdownCodeBlock          =text       =text
+syntaxComment              =comment    =comment
+syntaxKeyword              =keyword    =keyword
+syntaxFunction             =function   =function
+syntaxVariable             =text       =text
+syntaxString               =string     =string
+syntaxNumber               =number     =number
+syntaxType                 =type       =type
+syntaxOperator             =text       =text
+syntaxPunctuation          =text       =text
 "
 
 while read -r oc_key oc_dark oc_light; do
-  need "opencode key $oc_key" "${oc_dark%@*}" "${oc_light%@*}"
   for oc_value in "$oc_dark" "$oc_light"; do
+    if [[ $oc_value == =* ]]; then
+      [[ -n ${syn["dark/${oc_value#=}"]:-} ]] || {
+        echo "generate.sh: opencode key $oc_key reads $oc_value, which is no syntax role" >&2
+        exit 1
+      }
+      continue
+    fi
+    need "opencode key $oc_key" "${oc_value%@*}"
     [[ $oc_value != *@* || $oc_value =~ @([1-9][0-9]?)$ ]] || {
       echo "generate.sh: opencode key $oc_key reads $oc_value, whose share is not 1 to 99" >&2
       exit 1
@@ -719,17 +975,23 @@ oc_background() { # <dark|light>
 }
 
 # A def name stays a reference; "name@NN" becomes the opaque hex of NN percent of the def over
-# the variant's background
-oc_value() { # <dark|light> <name | name@NN>
-  [[ $2 == *@* ]] || {
+# the variant's background; "=role" is the syntax table's colour, by its def name where the
+# palette has it
+oc_value() { # <dark|light> <name | name@NN | =role>
+  if [[ $2 == =* ]]; then
+    local hex="${syn["$1/${2#=}"]}" name
+    for name in "${pal_names[@]}"; do
+      [[ ${pal[$name]} == "$hex" ]] && {
+        printf '%s' "$name"
+        return
+      }
+    done
+    printf '#%s' "$hex"
+  elif [[ $2 == *@* ]]; then
+    printf '#%s' "$(mix_hex "${pal[${2%@*}]}" "${pal[$(oc_background "$1")]}" "${2#*@}")"
+  else
     printf '%s' "$2"
-    return
-  }
-  local fg="${pal[${2%@*}]}" bg="${pal[$(oc_background "$1")]}" share="${2#*@}" i
-  printf '#'
-  for i in 0 2 4; do
-    printf '%02X' $(((16#${fg:i:2} * share + 16#${bg:i:2} * (100 - share) + 50) / 100))
-  done
+  fi
 }
 
 oc_defs=$(
@@ -753,4 +1015,5 @@ jq -n --argjson defs "$oc_defs" --argjson theme "$oc_theme" '{
 }' >"$out/ddlc-opencode.json"
 
 echo "wrote, per variant, $out/{ddlc-kitty-VARIANT.conf,ddlc-btop-VARIANT.theme,ddlc-claude-code-VARIANT.json}"
-echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-report.css,ddlc-opencode.json}"
+echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-opencode.json}"
+echo "and $out/{ddlc-tokens.css,ddlc-ui.css,ddlc-report.css,ddlc-mail.json,ddlc-syntax.json,ddlc-theme.js,ddlc-cloud.js}"
