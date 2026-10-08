@@ -47,19 +47,6 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 
 ## What it looks like
 
-![kitty running fastfetch and a directory listing](docs/screenshot-kitty.png)
-
-![btop, all four panels](docs/screenshot-btop.png)
-
-> The wallpaper comes through because kitty runs at `background_opacity 0.9` — neither theme sets an opacity of its own, and btop simply inherits the terminal's
-
-![opencode](docs/opencode.png)
-
-| ![the matplotlib demo figure, light variant](docs/matplotlib-light.png) | ![the matplotlib demo figure, dark variant](docs/matplotlib-dark.png) |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
-
-> [`docs/matplotlib-demo.py`](docs/matplotlib-demo.py) renders both: the cycler on lines and bars — five series on paper, three on ink, which is the theme's own statement — and the two colormap families on the heatmaps
-
 ![the web kit, light variant](docs/ui-light.png)
 
 ![the web kit, dark variant](docs/ui-dark.png)
@@ -70,6 +57,20 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 | -------------------------------------------------------------- | ------------------------------------------------------------ |
 
 > [`docs/report-demo.html`](docs/report-demo.html) is the page behind these. Open it from the checkout and pin a variant with `?theme=dark`
+
+| ![the matplotlib demo figure, light variant](docs/matplotlib-light.png) | ![the matplotlib demo figure, dark variant](docs/matplotlib-dark.png) |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
+
+> [`docs/matplotlib-demo.py`](docs/matplotlib-demo.py) renders both: the cycler on lines and bars — five series on paper, three on ink, which is the theme's own statement — and the two colormap families on the heatmaps
+
+
+![kitty running fastfetch and a directory listing](docs/screenshot-kitty.png)
+
+![btop, all four panels](docs/screenshot-btop.png)
+
+> The wallpaper comes through because kitty runs at `background_opacity 0.9` — neither theme sets an opacity of its own, and btop simply inherits the terminal's
+
+![opencode](docs/opencode.png)
 
 ## In use
 
