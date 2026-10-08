@@ -35,6 +35,7 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 ## Contents
 
 - [What it looks like](#what-it-looks-like)
+- [In use](#in-use)
 - [Install](#install)
   - [Home Manager](#home-manager)
   - [Any other distribution](#any-other-distribution)
@@ -69,6 +70,12 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 | -------------------------------------------------------------- | ------------------------------------------------------------ |
 
 > [`docs/report-demo.html`](docs/report-demo.html) is the page behind these. Open it from the checkout and pin a variant with `?theme=dark`
+
+## In use
+
+- [bitmap.rokokol.art](https://bitmap.rokokol.art) ([source](https://github.com/rokokol/easy-bitmap)): an editor for 1-bit pictures on Arduino displays, drawn with the web kit
+- [fly.rokokol.art](https://fly.rokokol.art) ([source](https://github.com/rokokol/fly-vs-cybersafe-lct2026)): an interactive page where a fly smells its way to a safe's PIN, drawn with the web kit
+- [ddlc-obsidian-theme](https://github.com/rokokol/ddlc-obsidian-theme): an Obsidian theme on the same roles
 
 ## Install
 
