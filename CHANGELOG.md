@@ -8,6 +8,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 - the web kit keeps the brand's mark and the gaps in the bar on a phone; it no longer hides them under 480 px
 - the web kit draws a checkbox itself, as a square frame with the switch's knob in it when it is on, instead of the browser's rounded box in the accent colour
+- the report's "Just Monika." pop-up centres a list with its markers and a table as a whole, and keeps a code block's left edge
 
 ## [3.0.0] - 2026-10-08
 

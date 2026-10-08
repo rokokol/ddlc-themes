@@ -360,6 +360,20 @@ blockquote > :last-child {
   color: var(--ddlc-popup-accent);
 }
 
+/* A list centres with its markers beside the items; code keeps its left edge */
+.ddlc-inform :is(ul, ol) {
+  padding-inline-start: 0;
+  list-style-position: inside;
+}
+
+.ddlc-inform table {
+  margin-inline: auto;
+}
+
+.ddlc-inform pre {
+  text-align: start;
+}
+
 .ddlc-inform-title {
   display: block;
   margin-bottom: 0.3em;
