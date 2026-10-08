@@ -38,6 +38,11 @@ jobs:
       # dist-is-current, themes-are-filled, module-wiring, scripts-lint, install-sh-works
       - run: nix flake check --no-write-lock-file
 
+      # Each guard of generate.sh is broken on purpose and the generator must refuse the
+      # run. Before install.sh below, because falsify needs the tree the checkout left
+      - name: Generator guards
+        run: nix develop --no-write-lock-file -c scripts/t.sh falsify -d tests/defects.sh -- bash generate.sh
+
       # The full installer contract lives in tests/run.sh (run by flake check); this is
       # the smoke that the same script behaves on a real filesystem outside the sandbox
       - name: install.sh works

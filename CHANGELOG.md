@@ -2,6 +2,12 @@
 
 Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioned by [semver](https://semver.org/spec/v2.0.0.html)
 
+## Unreleased
+
+### Changed
+
+- the web kit keeps the brand's mark and the gaps in the bar on a phone; it no longer hides them under 480 px
+
 ## [3.0.0] - 2026-10-08
 
 ### Added

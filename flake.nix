@@ -234,7 +234,7 @@
               ];
             }
             ''
-              files="${generator} ${installer} ${testsDir}/run.sh ${testsDir}/distro.sh ${checkSh} ${completionsDir}/install.sh.bash"
+              files="${generator} ${installer} ${testsDir}/run.sh ${testsDir}/distro.sh ${testsDir}/defects.sh ${checkSh} ${completionsDir}/install.sh.bash"
               # shellcheck disable=SC2086
               shellcheck $files
               # shellcheck disable=SC2086

@@ -13,3 +13,5 @@ check-pins.sh rokokol/ci-skill templates/check-pins.sh fc54eb000b55d210a9a54fa61
 check-sh.sh rokokol/bash-best-practices-skill check-sh.sh a4f5f26191417564d0ebe122bf652dd7e3f74b50 37cb4b54dc245288c711b9665c9b4aedc496b1ce
 vendor/departure-mono/DepartureMono-Regular.woff2 rektdeckard/departure-mono public/assets/DepartureMono-Regular.woff2 75152a3f1e6dacdd248a6c397c97dbf27e33eea0 b4a23dc1dad1c934005d0862e62c0294636afb08
 vendor/departure-mono/DepartureMono-LICENSE.txt rektdeckard/departure-mono public/assets/LICENSE 75152a3f1e6dacdd248a6c397c97dbf27e33eea0 de52476183807bbfc04e8ae7bced1dc9cbcbfd2f
+scripts/t.sh rokokol/tests-skill t.sh 21a30a9515d39bab39cf0b51f9db09bb3057aab6 5f1f9f634b9d9c689592ec95a196c4734189eb14
+scripts/markers/ rokokol/tests-skill markers/ 21a30a9515d39bab39cf0b51f9db09bb3057aab6 65d141bbf07ecb99a3bd6ebfe4e0d3050a2c1ab4
