@@ -33,6 +33,10 @@
           p.brotli
         ]);
 
+      # The Nerd Fonts release archive of Departure Mono, with the font's and the icons' licences.
+      # nixpkgs fetches it by hash, so the lock pins it like the palette
+      nerdDeparture = pkgs: pkgs.nerd-fonts.departure-mono.src;
+
       # Each piece isolated, so a README edit doesn't rebuild anything
       generator = builtins.path {
         name = "generate.sh";
@@ -130,6 +134,8 @@
           regular = ./dist/Nunito.woff2;
           italic = ./dist/Nunito-Italic.woff2;
         };
+        # Departure Mono with the Nerd Fonts icons, for code that shows them
+        nerd = ./dist/DepartureMonoNerdFontMono-Regular.woff2;
         claude-code = {
           light = ./dist/ddlc-claude-code-light.json;
           dark = ./dist/ddlc-claude-code-dark.json;
@@ -185,7 +191,7 @@
               cp -r ${srcDir} src
               cp -r ${vendorDir} vendor
               DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
-                DDLC_PALETTE_ENV=${palette} \
+                DDLC_PALETTE_ENV=${palette} DDLC_NERD_DEPARTURE=${nerdDeparture pkgs} \
                 bash generate.sh >/dev/null
               diff -r ${dist} dist
               touch $out
@@ -374,6 +380,7 @@
           DDLC_BASE16_LIGHT = schemes.light;
           DDLC_BASE16_DARK = schemes.dark;
           DDLC_PALETTE_ENV = palette;
+          DDLC_NERD_DEPARTURE = nerdDeparture pkgs;
         };
       });
 

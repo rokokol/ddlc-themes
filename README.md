@@ -152,6 +152,7 @@ These have no switch and no installer, because they belong next to a page and no
 | `DepartureMono-Regular.woff2` | the face the kit is drawn in, expected beside `ddlc-ui.css` | `lib.font` |
 | `ddlc-report.css` | an HTML report: prose, tables, code as a kitty window, the "Just Monika." pop-up, quotes taped on | `lib.report` |
 | `Nunito.woff2`, `Nunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`; a heading takes Doki where it is installed and Nunito Black otherwise | `lib.nunito.{regular,italic}` |
+| `DepartureMonoNerdFontMono-Regular.woff2` | Departure Mono with the [Nerd Fonts](https://www.nerdfonts.com) icons, for code that shows them; its licences are the two `DepartureMonoNerdFont-*` files beside it | `lib.nerd` |
 | `ddlc-mail.json` | an HTML letter: the light colours, the faces and ready values for `style` attributes | `lib.mail` |
 | `ddlc-tokens.css` | a theme that brings its own palette and selectors: the roles alone | `lib.tokens` |
 | `ddlc-syntax.json` | an editor theme: the syntax colours per variant | `lib.syntax` |

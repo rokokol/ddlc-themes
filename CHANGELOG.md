@@ -9,6 +9,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 - kind roles that colour a note by its kind, as an Obsidian callout type does: `--ddlc-kind-note`, `-summary`, `-tip`, `-success`, `-warning`, `-danger`, `-example`, `-quote` and `-experiment`, each in its own hue
 - Nunito in `dist/` as `Nunito.woff2` and `Nunito-Italic.woff2`, every script and weight, with its licence (`lib.nunito`)
 - the faces `--ddlc-font-heading` and a `heading` face in the letter styles
+- Departure Mono with the Nerd Fonts icons in `dist/` as `DepartureMonoNerdFontMono-Regular.woff2`, with the font's licence and the icon sets' licences beside it (`lib.nerd`)
 
 ### Changed
 

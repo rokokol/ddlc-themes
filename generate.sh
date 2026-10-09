@@ -18,12 +18,14 @@ vendor/ beside itself
   --light FILE     base16-ddlc-light.yaml   (or \$DDLC_BASE16_LIGHT)
   --dark FILE      base16-ddlc-dark.yaml    (or \$DDLC_BASE16_DARK)
   --palette FILE   palette.env              (or \$DDLC_PALETTE_ENV)
+  --nerd FILE      DepartureMono.tar.xz     (or \$DDLC_NERD_DEPARTURE)
 
-All three come from ddlc-palette, and nix develop puts them in the environment already.
-Without Nix, take them from the palette repository:
+The schemes and the palette come from ddlc-palette, the archive from the Nerd Fonts release,
+and nix develop puts each of them in the environment already. Without Nix, take them there:
 
   curl -sSLO https://raw.githubusercontent.com/rokokol/ddlc-palette/master/dist/base16-ddlc-dark.yaml
   curl -sSLO https://raw.githubusercontent.com/rokokol/ddlc-palette/master/dist/palette.env
+  curl -sSLO https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.0/DepartureMono.tar.xz
 EOF
 }
 
@@ -32,6 +34,7 @@ declare -A scheme=(
   [dark]="${DDLC_BASE16_DARK:-}"
 )
 palette_env="${DDLC_PALETTE_ENV:-}"
+nerd_archive="${DDLC_NERD_DEPARTURE:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -45,6 +48,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --palette)
       palette_env="${2:?file required}"
+      shift 2
+      ;;
+    --nerd)
+      nerd_archive="${2:?file required}"
       shift 2
       ;;
     -h | --help)
@@ -734,6 +741,22 @@ for style in "" -Italic; do
     "$vendor/nunito/Nunito$style-wght.ttf" >/dev/null
 done
 cat "$vendor/nunito/Nunito-LICENSE.txt" >"$out/Nunito-LICENSE.txt"
+
+# Departure Mono with the Nerd Fonts icons, for code that shows them. The fonts are only in
+# the Nerd Fonts release archive, not in that repository's tree, so the archive is an input
+# like the palette. Its LICENSE is the font's, and its README carries the icon sets' licences,
+# so both go beside the font unchanged. The Mono build keeps every icon one cell wide
+[ -n "$nerd_archive" ] || {
+  echo "generate.sh: no Nerd Fonts archive — pass --nerd or set DDLC_NERD_DEPARTURE" >&2
+  exit 1
+}
+nerd=$(mktemp -d "${TMPDIR:-/tmp}/ddlc-nerd.XXXXXX")
+trap 'rm -rf "$nerd"' EXIT
+tar -xJf "$nerd_archive" -C "$nerd" DepartureMonoNerdFontMono-Regular.otf LICENSE README.md
+fonttools ttLib.woff2 compress -o "$out/DepartureMonoNerdFontMono-Regular.woff2" \
+  "$nerd/DepartureMonoNerdFontMono-Regular.otf" >/dev/null
+cat "$nerd/LICENSE" >"$out/DepartureMonoNerdFont-LICENSE.txt"
+cat "$nerd/README.md" >"$out/DepartureMonoNerdFont-README.md"
 
 # --- letters ----------------------------------------------------------------------------------
 # A letter cannot use var(): Gmail drops any declaration that carries one. So a letter gets

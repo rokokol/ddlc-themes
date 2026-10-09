@@ -8,8 +8,9 @@
 | --- | --- | --- | --- |
 | `vendor/departure-mono/DepartureMono-Regular.woff2`, copied to `dist/` | [Departure Mono](https://github.com/rektdeckard/departure-mono) 1.500 | Helena Zhang | [SIL OFL 1.1](vendor/departure-mono/DepartureMono-LICENSE.txt) |
 | `vendor/nunito/Nunito-wght.ttf` and `Nunito-Italic-wght.ttf`, packed into `dist/Nunito.woff2` and `dist/Nunito-Italic.woff2` | [Nunito](https://github.com/googlefonts/nunito) | The Nunito Project Authors | [SIL OFL 1.1](vendor/nunito/Nunito-LICENSE.txt) |
+| `dist/DepartureMonoNerdFontMono-Regular.woff2`, packed from the Nerd Fonts v3.5.0 archive `DepartureMono.tar.xz` | [Departure Mono](https://github.com/rektdeckard/departure-mono) patched by [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) | Helena Zhang; the icon sets' authors | the font under [SIL OFL 1.1](dist/DepartureMonoNerdFont-LICENSE.txt), each icon set under the licence the [archive's README](dist/DepartureMonoNerdFont-README.md) names |
 
-The copies in `vendor/` are unmodified and kept byte-equal to their sources by `vendor-sync.sh`. The WOFF2 files in `dist/` hold the same glyphs, only compressed
+The copies in `vendor/` are unmodified and kept byte-equal to their sources by `vendor-sync.sh`. The Nerd Fonts archive is not vendored: nixpkgs fetches it by hash, so this flake's lock pins it, and its `LICENSE` and `README.md` are copied to `dist/` unchanged. The WOFF2 files in `dist/` hold the same glyphs, only compressed
 
 The headings name `Doki`, a font by 538Fonts from 2015, which is not part of the game. It is free for personal use only, so it is **not** shipped here; a reader who has it installed sees it, and everyone else sees Nunito Black
 
