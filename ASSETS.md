@@ -11,7 +11,7 @@
 
 The copies in `vendor/` are unmodified and kept byte-equal to their sources by `vendor-sync.sh`. The WOFF2 files in `dist/` hold the same glyphs, only compressed
 
-The headings name `Doki`, the game's display font by 538Fonts. It is for personal use only, so it is **not** shipped here; a reader who has it installed sees it, and everyone else sees Nunito Black
+The headings name `Doki`, a font by 538Fonts from 2015, which is not part of the game. It is free for personal use only, so it is **not** shipped here; a reader who has it installed sees it, and everyone else sees Nunito Black
 
 ## Doki Doki Literature Club
 
@@ -24,9 +24,6 @@ The following are derived from official DDLC material:
 | `dist/ddlc-kitty-*.conf`, `dist/ddlc-btop-*.theme`, `dist/ddlc*.mplstyle`, `dist/ddlc_cmaps.py`, `dist/ddlc-*.css`, `dist/ddlc-mail.json`, `dist/ddlc-syntax.json`, `dist/ddlc-claude-code-*.json`, `dist/ddlc-opencode.json` | the colours come from [ddlc-palette](https://github.com/rokokol/ddlc-palette), which measures them off [ddlc.moe](https://ddlc.moe/). Which colour fills which slot of which application is mine, the values are theirs |
 
 No official artwork is bundled. `docs/*.png` are screenshots of my own terminal and renders of `docs/matplotlib-demo.py`, `docs/ui-demo.html` and `docs/report-demo.html`
-
-The `Doki` font family is Team Salvato's and is **not** shipped here. The report stylesheet and the letters name it first in their font stack, so it is used only where a reader has it installed
-
 Use here follows [Team Salvato's IP guidelines](https://teamsalvato.com/ip-guidelines): this is non-commercial fan content, nothing containing official assets is sold, and no claim of affiliation is made. If you reuse any of it, the same conditions apply to you
 
 Team Salvato reserves the right to act on copyright or trademark infringement; nothing here grants a licence to their intellectual property
