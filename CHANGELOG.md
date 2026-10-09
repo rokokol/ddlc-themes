@@ -2,6 +2,13 @@
 
 Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioned by [semver](https://semver.org/spec/v2.0.0.html)
 
+## [Unreleased]
+
+### Added
+
+- the game menu's polka-dot paper: the role `--ddlc-dots` for its dots on the ground, and the sizes `--ddlc-polka-tile` and `--ddlc-polka-dot`
+- `dist/ddlc-roles.json` for a theme without CSS: every role as a hex per variant, `#RRGGBBAA` where it is translucent, and the paper's grid (`lib.roles`)
+
 ## [3.1.0] - 2026-10-09
 
 ### Added

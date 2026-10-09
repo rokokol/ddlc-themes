@@ -22,7 +22,7 @@ The following are derived from official DDLC material:
 
 | Path | What |
 | --- | --- |
-| `dist/ddlc-kitty-*.conf`, `dist/ddlc-btop-*.theme`, `dist/ddlc*.mplstyle`, `dist/ddlc_cmaps.py`, `dist/ddlc-*.css`, `dist/ddlc-mail.json`, `dist/ddlc-syntax.json`, `dist/ddlc-claude-code-*.json`, `dist/ddlc-opencode.json` | the colours come from [ddlc-palette](https://github.com/rokokol/ddlc-palette), which measures them off [ddlc.moe](https://ddlc.moe/). Which colour fills which slot of which application is mine, the values are theirs |
+| `dist/ddlc-kitty-*.conf`, `dist/ddlc-btop-*.theme`, `dist/ddlc*.mplstyle`, `dist/ddlc_cmaps.py`, `dist/ddlc-*.css`, `dist/ddlc-mail.json`, `dist/ddlc-syntax.json`, `dist/ddlc-roles.json`, `dist/ddlc-claude-code-*.json`, `dist/ddlc-opencode.json` | the colours come from [ddlc-palette](https://github.com/rokokol/ddlc-palette), which measures them off [ddlc.moe](https://ddlc.moe/). Which colour fills which slot of which application is mine, the values are theirs |
 
 No official artwork is bundled. `docs/*.png` are screenshots of my own terminal and renders of `docs/matplotlib-demo.py`, `docs/ui-demo.html` and `docs/report-demo.html`
 

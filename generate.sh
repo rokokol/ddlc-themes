@@ -383,9 +383,10 @@ EOF
 # palette.css and a stylesheet from here together.
 # A kind role colours a note by its kind, as an Obsidian callout type does. Two kinds never
 # share a hue. A link on ink is blush rather than the accent's pink, which reads dim beside
-# white text
+# white text. The dots are the polka-dot paper's, below, on the ground
 ui_roles="
 ground                ink                    paper
+dots                  yuriShadow@75:ink      dot
 text                  paper                  ink
 muted                 jacket@75:paper        ink@55:jacket
 faint                 jacket                 jacket
@@ -463,6 +464,12 @@ list        base0E     base0E
 quote       base03     muted
 "
 syntax_floor=3
+
+# The game menu's polka-dot paper, as ddlc.moe tiles it: a square tile holds two dots, at a
+# quarter and at three quarters of it on both axes, each a fifth of the tile in radius. The
+# sizes are CSS pixels; a surface that cannot repeat a tile draws the same grid at that size
+polka_tile=120
+polka_dot=$((polka_tile / 5))
 
 # The faces, for the stylesheets and the letters alike. A letter cannot load a web font, so
 # every stack names the faces a reader may have installed and ends in an honest fallback.
@@ -642,6 +649,7 @@ css_roles() {
   for r in "${syn_names[@]}"; do
     printf '  --ddlc-syntax-%s: %s;\n' "$r" "${syn["css/$r"]}"
   done
+  printf '  --ddlc-polka-tile: %spx;\n  --ddlc-polka-dot: %spx;\n' "$polka_tile" "$polka_dot"
 }
 
 # What a self-contained stylesheet starts with: the palette, the dark base16 scheme, the faces
@@ -848,6 +856,32 @@ done | jq -Rn --arg banner "$named_banner" '
   | { _generated: $banner,
       dark: ($rows | map({ key: .[0], value: .[1] }) | from_entries),
       light: ($rows | map({ key: .[0], value: .[2] }) | from_entries) }' >"$out/ddlc-syntax.json"
+
+# --- roles as data ------------------------------------------------------------------------------
+# The roles for a theme without CSS, such as a rofi window: every role a hex per variant, and the
+# paper's grid. A role laid over transparent becomes #RRGGBBAA. The window roles read the dark
+# scheme on both sides, as the stylesheets do
+role_hex() { # <variant> <value>
+  if [[ $2 =~ ^(.+)@([0-9]+):transparent$ ]]; then
+    printf '%s%02X' "$(hex_of "$1" "${BASH_REMATCH[1]}" dark)" $(((BASH_REMATCH[2] * 255 + 50) / 100))
+  else
+    hex_of "$1" "$2" dark
+  fi
+}
+# Filled before the pipe below: an exit inside a substitution there would not stop the run
+role_rows=()
+for r in "${role_names[@]}"; do
+  r_dark=$(role_hex dark "${role["dark/$r"]}") || exit 1
+  r_light=$(role_hex light "${role["light/$r"]}") || exit 1
+  role_rows+=("$(printf '%s\t#%s\t#%s' "$r" "$r_dark" "$r_light")")
+done
+printf '%s\n' "${role_rows[@]}" | jq -Rn --arg banner "$named_banner" \
+  --argjson tile "$polka_tile" --argjson dot "$polka_dot" '
+  [inputs | split("\t")] as $rows
+  | { _generated: $banner,
+      polka: { tile: $tile, dot: $dot },
+      dark: ($rows | map({ key: .[0], value: .[1] }) | from_entries),
+      light: ($rows | map({ key: .[0], value: .[2] }) | from_entries) }' >"$out/ddlc-roles.json"
 
 # --- Claude Code ------------------------------------------------------------------------------
 # Claude Code reads a theme from ~/.claude/themes/<slug>.json: a base theme plus overrides, and
@@ -1078,4 +1112,4 @@ jq -n --argjson defs "$oc_defs" --argjson theme "$oc_theme" '{
 
 echo "wrote, per variant, $out/{ddlc-kitty-VARIANT.conf,ddlc-btop-VARIANT.theme,ddlc-claude-code-VARIANT.json}"
 echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-opencode.json}"
-echo "and $out/{ddlc-tokens.css,ddlc-ui.css,ddlc-report.css,ddlc-mail.json,ddlc-syntax.json,ddlc-theme.js,ddlc-cloud.js}"
+echo "and $out/{ddlc-tokens.css,ddlc-ui.css,ddlc-report.css,ddlc-mail.json,ddlc-syntax.json,ddlc-roles.json,ddlc-theme.js,ddlc-cloud.js}"

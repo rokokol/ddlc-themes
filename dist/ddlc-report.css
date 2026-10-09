@@ -50,6 +50,7 @@
   --ddlc-font-data: 'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace;
   --ddlc-font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ddlc-ground: light-dark(var(--ddlc-paper), var(--ddlc-ink));
+  --ddlc-dots: light-dark(var(--ddlc-dot), color-mix(in srgb, var(--ddlc-yuri-shadow) 75%, var(--ddlc-ink)));
   --ddlc-text: light-dark(var(--ddlc-ink), var(--ddlc-paper));
   --ddlc-muted: light-dark(color-mix(in srgb, var(--ddlc-ink) 55%, var(--ddlc-jacket)), color-mix(in srgb, var(--ddlc-jacket) 75%, var(--ddlc-paper)));
   --ddlc-faint: var(--ddlc-jacket);
@@ -120,6 +121,8 @@
   --ddlc-syntax-raw: var(--ddlc-base0B);
   --ddlc-syntax-list: var(--ddlc-base0E);
   --ddlc-syntax-quote: var(--ddlc-base03);
+  --ddlc-polka-tile: 120px;
+  --ddlc-polka-dot: 24px;
   color-scheme: light dark;
 }
 

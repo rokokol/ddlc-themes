@@ -156,6 +156,7 @@ These have no switch and no installer, because they belong next to a page and no
 | `ddlc-mail.json` | an HTML letter: the light colours, the faces and ready values for `style` attributes | `lib.mail` |
 | `ddlc-tokens.css` | a theme that brings its own palette and selectors: the roles alone | `lib.tokens` |
 | `ddlc-syntax.json` | an editor theme: the syntax colours per variant | `lib.syntax` |
+| `ddlc-roles.json` | a theme without CSS: every role as a hex per variant, and the grid of the game menu's polka-dot paper, which CSS reads as `--ddlc-polka-*` | `lib.roles` |
 
 Each stylesheet is one `<link>` and carries both variants: it follows the system until `data-theme="light|dark"` on `<html>` pins a side. A colour in a page's own rules comes from a `--ddlc-*` role, so it follows both sides too
 

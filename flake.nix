@@ -124,6 +124,8 @@
         mail = ./dist/ddlc-mail.json;
         # The syntax colours per variant, for an editor theme
         syntax = ./dist/ddlc-syntax.json;
+        # The roles as hexes per variant and the paper's grid, for a theme without CSS
+        roles = ./dist/ddlc-roles.json;
         js = {
           theme = ./dist/ddlc-theme.js;
           cloud = ./dist/ddlc-cloud.js;
@@ -349,6 +351,14 @@
                 and ([.dark[], .light[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' \
                 ${dist}/ddlc-syntax.json >/dev/null \
                 || { echo "ddlc-syntax.json: the variants differ or a colour is not a hex"; exit 1; }
+              # The roles name the same set in both variants, each a hex with an optional alpha,
+              # and the paper has a grid in whole pixels
+              jq -e '(.dark | keys) == (.light | keys) and (.dark | length > 0)
+                and ([.dark[], .light[] | select(test("^#[0-9A-F]{6}([0-9A-F]{2})?$") | not)] == [])
+                and (.polka.tile | type == "number" and . > 0)
+                and (.polka.dot | type == "number" and . > 0)' \
+                ${dist}/ddlc-roles.json >/dev/null \
+                || { echo "ddlc-roles.json: the variants differ, a colour is not a hex or the grid is unset"; exit 1; }
               for f in ${dist}/ddlc-claude-code-*.json; do
                 jq -e '(.overrides | length) > 0
                   and ([.overrides[] | select(test("^#[0-9A-F]{6}$") | not)] == [])' "$f" >/dev/null \

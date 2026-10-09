@@ -10,6 +10,7 @@ Everything that is not a terminal reads two tables in `generate.sh`: `ui_roles` 
 - `ddlc.nvim` vendors `dist/ddlc-syntax.json`
 - `easy-bitmap.github.io` and `fly-vs-cybersafe-lct2026` vendor `ddlc-ui.css`, the two scripts and the font
 - `mail-node` and `skibidi-vpn` read `lib.mail` through their flake lock
+- `ddlc-rofi-theme` reads `lib.roles` through its flake lock
 
 Seams in `rokokol/huix`, and no module on any: `programs/term/kitty.nix` does `readFile lib.kitty.dark`, `programs/cli/btop.nix` sets `source = lib.btop.dark`, `programs/cli/matplotlib.nix` sets `source =` on the three `lib.matplotlib` paths. That is deliberate: the themes are files, and a module would only wrap `readFile`s. The Claude Code and opencode themes are NOT deployed declaratively there on purpose: the owner wants them as plain editable files, placed once by `install.sh`
 
