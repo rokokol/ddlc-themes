@@ -43,7 +43,8 @@
   --ddlc-base0D: #72D0FA;
   --ddlc-base0E: #DD77BB;
   --ddlc-base0F: #8C1132;
-  --ddlc-font-prose: Doki, Spectral, Georgia, 'Times New Roman', serif;
+  --ddlc-font-prose: Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ddlc-font-heading: Doki, Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ddlc-font-data: 'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace;
   --ddlc-font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ddlc-ground: light-dark(var(--ddlc-paper), var(--ddlc-ink));

@@ -450,11 +450,17 @@ quote       base03     muted
 syntax_floor=3
 
 # The faces, for the stylesheets and the letters alike. A letter cannot load a web font, so
-# every stack names the faces a reader may have installed and ends in an honest fallback
+# every stack names the faces a reader may have installed and ends in an honest fallback.
+# Prose is Nunito, which the stylesheets carry; after it come the faces each system draws
+# its own interface in. A heading is Doki where it is installed, since Doki may not be
+# shared, and Nunito Black otherwise; a stylesheet reaches Black through the variable
+# Nunito it carries, while a letter can only name a face, so the letter's stack differs
 font_stacks="
-prose  Doki, Spectral, Georgia, 'Times New Roman', serif
-data   'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace
-sans   system-ui, -apple-system, 'Segoe UI', sans-serif
+prose           Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
+heading         Doki, Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
+heading-letter  Doki, 'Nunito Black', 'Segoe UI Black', 'Arial Black', sans-serif
+data            'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace
+sans            system-ui, -apple-system, 'Segoe UI', sans-serif
 "
 
 kebab() { # monikaEye -> monika-eye, the spelling palette.css uses
@@ -633,7 +639,7 @@ css_head() {
   for name in $(printf '%s\n' "${!slot[@]}" | sed -n 's|^dark/||p' | sort); do
     printf '  --ddlc-%s: %s;\n' "$name" "${slot["dark/$name"]}"
   done
-  for f in prose data sans; do printf '  --ddlc-font-%s: %s;\n' "$f" "${font[$f]}"; done
+  for f in prose heading data sans; do printf '  --ddlc-font-%s: %s;\n' "$f" "${font[$f]}"; done
   css_roles
   echo "  color-scheme: light dark;"
   echo "}"
@@ -708,6 +714,19 @@ for file in "$vendor"/departure-mono/*; do
   cat "$file" >"$out/$(basename "$file")"
 done
 
+# Nunito comes as variable TrueType, every script and weight it has. fonttools packs it into
+# WOFF2 whole, at about two fifths of the size, so a page that carries it loses no script.
+# The packing is byte-stable for the same input and fonttools, so dist/ stays checkable
+command -v fonttools >/dev/null || {
+  echo "generate.sh: fonttools is missing; nix develop puts it in the environment" >&2
+  exit 1
+}
+for style in "" -Italic; do
+  fonttools ttLib.woff2 compress -o "$out/Nunito$style.woff2" \
+    "$vendor/nunito/Nunito$style-wght.ttf" >/dev/null
+done
+cat "$vendor/nunito/Nunito-LICENSE.txt" >"$out/Nunito-LICENSE.txt"
+
 # --- letters ----------------------------------------------------------------------------------
 # A letter cannot use var(): Gmail drops any declaration that carries one. So a letter gets
 # literal styles, each a ready value for a style attribute, with the light roles and the faces
@@ -716,9 +735,9 @@ done
 mail_styles="
 page          background:{ground};color:{text};font-family:{prose};line-height:1.55;padding:28px 20px 48px
 column        max-width:736px;margin:0 auto
-h1            margin:0;padding-bottom:6px;border-bottom:2px solid {line};font-size:27px;line-height:1.25;font-weight:normal;color:{text}
-h2            margin:32px 0 8px;font-size:19px;line-height:1.25;font-weight:normal;color:{text}
-h3            margin:18px 0 4px;font-size:15px;line-height:1.3;font-weight:normal;color:{text}
+h1            margin:0;padding-bottom:6px;border-bottom:2px solid {line};font-family:{heading-letter};font-size:27px;line-height:1.25;font-weight:normal;color:{text}
+h2            margin:32px 0 8px;font-family:{heading-letter};font-size:19px;line-height:1.25;font-weight:normal;color:{text}
+h3            margin:18px 0 4px;font-family:{heading-letter};font-size:15px;line-height:1.3;font-weight:normal;color:{text}
 sub           margin:2px 0 10px;font-size:13px;color:{muted}
 p             margin:8px 0;font-size:14px;line-height:1.55;color:{text}
 list          margin:6px 0;padding-left:20px;font-size:14px;line-height:1.6;color:{text}
@@ -735,11 +754,11 @@ kpi-value     font-size:24px;line-height:1.3;font-family:{data};color:{text}
 meter         border-collapse:separate;border-spacing:2px 0;width:100%;max-width:320px
 meter-cell    height:10px;font-size:0;line-height:0
 inform        margin:18px 0;padding:20px 24px;border:6px solid {popup-frame};background:{popup-ground};color:{popup-text};text-align:center
-inform-title  font-size:17px;font-weight:normal
+inform-title  font-family:{heading-letter};font-size:17px;font-weight:normal
 inform-list   margin:8px 0 0;padding:0;list-style:none;font-size:14px;line-height:1.6
 inform-item   margin:5px 0
 details       margin:16px 0
-summary       font-size:16px;font-weight:normal;color:{text};cursor:pointer
+summary       font-family:{heading-letter};font-size:16px;font-weight:normal;color:{text};cursor:pointer
 journal       margin-top:8px;padding:12px 16px;border-radius:4px;background:{code-ground};font-family:{data};font-size:12px
 journal-line  padding:2px 0;color:{text}
 divider       margin-top:32px;border-top:2px solid {line}
@@ -782,6 +801,7 @@ done < <(awk 'NF' <<<"$mail_styles")
 {
   for r in "${mail_colour_names[@]}"; do printf 'colors\t%s\t#%s\n' "$r" "${mail_colour[$r]}"; done
   for f in prose data; do printf 'fonts\t%s\t%s\n' "$f" "${font[$f]}"; done
+  printf 'fonts\theading\t%s\n' "${font["heading-letter"]}"
   printf '%s\n' "${mail_rows[@]}"
 } | jq -Rn --arg banner "$named_banner" '
   [inputs | split("\t")] as $rows

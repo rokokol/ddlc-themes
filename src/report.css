@@ -3,21 +3,45 @@
    five on paper and three on ink, where -4 and -5 collapse into the muted grey. A code
    block is a small kitty window, .ddlc-inform is the game's "Just Monika." pop-up and a
    quote is a note taped on, as in the DDLC Obsidian theme. Light or dark follows the
-   system until data-theme="light|dark" on <html> pins a side */
+   system until data-theme="light|dark" on <html> pins a side.
+   Nunito.woff2 and Nunito-Italic.woff2 are expected beside this file */
 
+@font-face {
+  font-family: Nunito;
+  src: url("Nunito.woff2") format("woff2");
+  font-weight: 200 1000;
+}
+
+@font-face {
+  font-family: Nunito;
+  src: url("Nunito-Italic.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: italic;
+}
+
+/* Prose is Nunito Medium, and bold steps up to Black so it stands out from the text */
 body {
   max-width: 46rem;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
-  font: 1rem / 1.55 var(--ddlc-font-prose);
+  font: 500 1rem / 1.55 var(--ddlc-font-prose);
 }
 
-/* Doki has one weight, and a synthetic bold smears it, so size alone carries the levels */
+b,
+strong {
+  font-weight: 900;
+}
+
+/* A heading is Doki where it is installed, and Nunito Black otherwise. Doki has one weight,
+   and a synthetic bold smears it, so the weight stays normal and Black comes through the
+   weight axis, which only the variable Nunito has */
 h1,
 h2,
 h3,
 h4 {
+  font-family: var(--ddlc-font-heading);
   font-weight: normal;
+  font-variation-settings: "wght" 900;
   line-height: 1.25;
 }
 

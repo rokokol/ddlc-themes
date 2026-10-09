@@ -1,14 +1,17 @@
 # Assets and third-party content
 
-`LICENSE` (MIT) covers the **code** in this repository: `generate.sh`, `install.sh`, `src/`, `templates/` and the Nix expressions. It does **not** cover the colours, which are Team Salvato's, or the font below; this repository only maps the colours onto applications and pages
+`LICENSE` (MIT) covers the **code** in this repository: `generate.sh`, `install.sh`, `src/`, `templates/` and the Nix expressions. It does **not** cover the colours, which are Team Salvato's, or the fonts below; this repository only maps the colours onto applications and pages
 
 ## Fonts
 
 | Path | Font | Author | Licence |
 | --- | --- | --- | --- |
 | `vendor/departure-mono/DepartureMono-Regular.woff2`, copied to `dist/` | [Departure Mono](https://github.com/rektdeckard/departure-mono) 1.500 | Helena Zhang | [SIL OFL 1.1](vendor/departure-mono/DepartureMono-LICENSE.txt) |
+| `vendor/nunito/Nunito-wght.ttf` and `Nunito-Italic-wght.ttf`, packed into `dist/Nunito.woff2` and `dist/Nunito-Italic.woff2` | [Nunito](https://github.com/googlefonts/nunito) | The Nunito Project Authors | [SIL OFL 1.1](vendor/nunito/Nunito-LICENSE.txt) |
 
-The copy is unmodified and kept byte-equal to its source by `vendor-sync.sh`
+The copies in `vendor/` are unmodified and kept byte-equal to their sources by `vendor-sync.sh`. The WOFF2 files in `dist/` hold the same glyphs, only compressed
+
+The headings name `Doki`, the game's display font by 538Fonts. It is for personal use only, so it is **not** shipped here; a reader who has it installed sees it, and everyone else sees Nunito Black
 
 ## Doki Doki Literature Club
 

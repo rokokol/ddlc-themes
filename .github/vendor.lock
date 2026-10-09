@@ -15,3 +15,6 @@ vendor/departure-mono/DepartureMono-Regular.woff2 rektdeckard/departure-mono pub
 vendor/departure-mono/DepartureMono-LICENSE.txt rektdeckard/departure-mono public/assets/LICENSE 75152a3f1e6dacdd248a6c397c97dbf27e33eea0 de52476183807bbfc04e8ae7bced1dc9cbcbfd2f
 scripts/t.sh rokokol/tests-skill t.sh 21a30a9515d39bab39cf0b51f9db09bb3057aab6 5f1f9f634b9d9c689592ec95a196c4734189eb14
 scripts/markers/ rokokol/tests-skill markers/ 21a30a9515d39bab39cf0b51f9db09bb3057aab6 65d141bbf07ecb99a3bd6ebfe4e0d3050a2c1ab4
+vendor/nunito/Nunito-wght.ttf googlefonts/nunito fonts/variable/Nunito[wght].ttf 8c6a9bb9732545b9ed53f29ec5e1ab0ff53c4e6f 2ec1f4b0676c83ef33049db87b311171699e9192
+vendor/nunito/Nunito-Italic-wght.ttf googlefonts/nunito fonts/variable/Nunito-Italic[wght].ttf 8c6a9bb9732545b9ed53f29ec5e1ab0ff53c4e6f e63b7a6b390495bfe2ec827b723b51679022b61e
+vendor/nunito/Nunito-LICENSE.txt googlefonts/nunito OFL.txt 8c6a9bb9732545b9ed53f29ec5e1ab0ff53c4e6f c8210f08ca3cece05b4f7baa428afe8e1abe3293

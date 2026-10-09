@@ -24,6 +24,15 @@
       ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
 
+      # generate.sh packs the vendored Nunito into WOFF2 with fonttools, which needs brotli for
+      # it; the shell and the dist check take the same environment
+      fontTools =
+        pkgs:
+        pkgs.python3.withPackages (p: [
+          p.fonttools
+          p.brotli
+        ]);
+
       # Each piece isolated, so a README edit doesn't rebuild anything
       generator = builtins.path {
         name = "generate.sh";
@@ -116,6 +125,11 @@
           cloud = ./dist/ddlc-cloud.js;
         };
         font = ./dist/DepartureMono-Regular.woff2;
+        # Nunito, every script and weight: the prose and the fallback headings
+        nunito = {
+          regular = ./dist/Nunito.woff2;
+          italic = ./dist/Nunito-Italic.woff2;
+        };
         claude-code = {
           light = ./dist/ddlc-claude-code-light.json;
           dark = ./dist/ddlc-claude-code-dark.json;
@@ -158,16 +172,24 @@
       };
 
       checks = forAllSystems (pkgs: {
-        dist-is-current = pkgs.runCommand "dist-is-current" { nativeBuildInputs = with pkgs; [ jq ]; } ''
-          install -m755 ${generator} generate.sh
-          cp -r ${srcDir} src
-          cp -r ${vendorDir} vendor
-          DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
-            DDLC_PALETTE_ENV=${palette} \
-            bash generate.sh >/dev/null
-          diff -r ${dist} dist
-          touch $out
-        '';
+        dist-is-current =
+          pkgs.runCommand "dist-is-current"
+            {
+              nativeBuildInputs = [
+                pkgs.jq
+                (fontTools pkgs)
+              ];
+            }
+            ''
+              install -m755 ${generator} generate.sh
+              cp -r ${srcDir} src
+              cp -r ${vendorDir} vendor
+              DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
+                DDLC_PALETTE_ENV=${palette} \
+                bash generate.sh >/dev/null
+              diff -r ${dist} dist
+              touch $out
+            '';
 
         # Enabling a switch has to be enough: the colours in kitty's config after its own
         # settings, both btop variants deployed and the theme named — and nothing while disabled
@@ -342,10 +364,11 @@
 
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
-          packages = with pkgs; [
-            shellcheck
-            shfmt
-            jq
+          packages = [
+            pkgs.shellcheck
+            pkgs.shfmt
+            pkgs.jq
+            (fontTools pkgs)
           ];
           # So generate.sh runs with no arguments inside the shell
           DDLC_BASE16_LIGHT = schemes.light;
