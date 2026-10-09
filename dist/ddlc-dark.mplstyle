@@ -23,9 +23,11 @@ ytick.labelcolor:  FFFFFF
 figure.dpi:          140
 savefig.dpi:         140
 savefig.bbox:        tight
+font.family:         sans-serif
+font.sans-serif:     Nunito, DejaVu Sans
 font.size:           9
 axes.titlesize:      11
-axes.titleweight:    bold
+axes.titleweight:    normal
 axes.titlelocation:  left
 axes.spines.top:     False
 axes.spines.right:   False

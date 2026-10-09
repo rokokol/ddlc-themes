@@ -14,7 +14,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 - **the prose face is Nunito**, Medium in the report with bold in Black, instead of Doki. The report stylesheet now expects `Nunito.woff2` and `Nunito-Italic.woff2` beside it. A heading is Doki where it is installed and Nunito Black otherwise; Doki is personal-use only and not shipped
 - a letter falls back from Nunito to the reader's system face, Segoe UI, Roboto or Helvetica, instead of Georgia
-
+- matplotlib draws in Nunito instead of its default DejaVu Sans. It cannot pick a weight from a variable font, so the text is Nunito's thin default weight, and a chart's title is no longer bold
 - the web kit keeps the brand's mark and the gaps in the bar on a phone; it no longer hides them under 480 px
 - the web kit draws a checkbox itself, as a square frame with the switch's knob in it when it is on, instead of the browser's rounded box in the accent colour
 - the report's "Just Monika." pop-up centres a list or a table as one block with its own left edge inside, so a list's markers stand in one column, and keeps a code block's left edge

@@ -265,15 +265,20 @@ EOF
 
 # No axes.grid in here: it would mean "on every axes", and a heatmap or an image draws above
 # the grid whatever axisbelow says, so the lines end up cutting across the data. A chart that
-# wants one calls ax.grid(axis="y") for the direction its values actually run
+# wants one calls ax.grid(axis="y") for the direction its values actually run.
+# The face is Nunito, the prose face. matplotlib reads no variation axis, so a variable
+# Nunito draws in its default instance, ExtraLight, and has no bold: the title stays
+# normal, or every chart would log that it found no bold weight
 mpl_common() {
   cat <<'EOF'
 figure.dpi:          140
 savefig.dpi:         140
 savefig.bbox:        tight
+font.family:         sans-serif
+font.sans-serif:     Nunito, DejaVu Sans
 font.size:           9
 axes.titlesize:      11
-axes.titleweight:    bold
+axes.titleweight:    normal
 axes.titlelocation:  left
 axes.spines.top:     False
 axes.spines.right:   False
