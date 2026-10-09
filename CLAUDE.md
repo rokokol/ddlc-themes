@@ -29,7 +29,7 @@ nix fmt -- --ci
 
 ## Changing a colour
 
-It comes from `ddlc-palette`, as a base16 scheme for kitty and btop and as a named colour out of `palette.env` for the rest, never a literal here. What this repo may change is which slot goes where, in `generate.sh`; then regenerate `dist/`, or `dist-is-current` fails. The weekly `palette-drift.yml` re-renders against the palette's HEAD rather than the lock and opens a pull request when a colour has moved upstream
+It comes from `ddlc-palette`, as a base16 scheme for kitty and btop and as a named colour out of `palette.env` for the rest, never a literal here. What this repo may change is which slot goes where, in `generate.sh`; then regenerate `dist/`, or `dist-is-current` fails. The weekly `update-lock.yml` takes the palette's HEAD with every other input, renders `dist/` again in the same commit and lands it on green, so a colour that moved upstream arrives with no pull request
 
 A role never takes the name of a palette colour, a stylesheet in `src/` reads only names something defines, and every syntax colour holds 3:1 on its ground: `generate.sh` refuses a run that breaks one of these. A stylesheet colour goes through a role, so it follows both variants; a palette name is read directly only where the colour is the same on both sides
 

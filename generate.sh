@@ -25,7 +25,7 @@ and nix develop puts each of them in the environment already. Without Nix, take 
 
   curl -sSLO https://raw.githubusercontent.com/rokokol/ddlc-palette/master/dist/base16-ddlc-dark.yaml
   curl -sSLO https://raw.githubusercontent.com/rokokol/ddlc-palette/master/dist/palette.env
-  curl -sSLO https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.0/DepartureMono.tar.xz
+  curl -sSLO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/DepartureMono.tar.xz
 EOF
 }
 
