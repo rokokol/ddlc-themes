@@ -10,6 +10,8 @@
     "grid": "#DADADA",
     "accent": "#BB5599",
     "accent-live": "#DD77BB",
+    "link": "#BB5599",
+    "link-live": "#DD77BB",
     "on-accent": "#FFFFFF",
     "code-ground": "#FFDBF0",
     "cloud": "#FFDBF0",

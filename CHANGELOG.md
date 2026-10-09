@@ -12,6 +12,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ### Changed
 
+- a link takes the new roles `--ddlc-link` and `--ddlc-link-live`: on ink it is blush and turns paper under the pointer, brighter than the accent's pink was; on paper it stays plum
 - **the prose face is Nunito**, Medium in the report with bold in Black, instead of Doki. The report stylesheet now expects `Nunito.woff2` and `Nunito-Italic.woff2` beside it. A heading is Doki where it is installed and Nunito Black otherwise; Doki is personal-use only and not shipped
 - a letter falls back from Nunito to the reader's system face, Segoe UI, Roboto or Helvetica, instead of Georgia
 - matplotlib draws in Nunito instead of its default DejaVu Sans. It cannot pick a weight from a variable font, so the text is Nunito's thin default weight, and a chart's title is no longer bold

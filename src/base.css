@@ -18,11 +18,11 @@ html {
 }
 
 a {
-  color: var(--ddlc-accent);
+  color: var(--ddlc-link);
 }
 
 a:hover {
-  color: var(--ddlc-accent-live);
+  color: var(--ddlc-link-live);
 }
 
 :focus-visible {

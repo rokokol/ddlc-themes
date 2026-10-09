@@ -375,7 +375,8 @@ EOF
 # reads 2.55:1 on paper. A role never takes the name of a palette colour, so a page can link
 # palette.css and a stylesheet from here together.
 # A kind role colours a note by its kind, as an Obsidian callout type does. Two kinds never
-# share a hue
+# share a hue. A link on ink is blush rather than the accent's pink, which reads dim beside
+# white text
 ui_roles="
 ground                ink                    paper
 text                  paper                  ink
@@ -386,6 +387,8 @@ line-live             plum                   pink
 grid                  yuri@70:ink            ash
 accent                pink                   plum
 accent-live           blush                  pink
+link                  blush                  plum
+link-live             paper                  pink
 on-accent             paper                  paper
 panel                 ground@92:transparent  ground@92:transparent
 selection             yuri@90:transparent    blush@80:transparent
