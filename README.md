@@ -10,6 +10,7 @@
 ![Claude Code](https://img.shields.io/badge/Claude_Code-theme-F1A796?style=flat)
 ![opencode](https://img.shields.io/badge/opencode-theme-DD77BB?style=flat)
 ![Nix](https://img.shields.io/badge/Nix-flake-7EBAE4?style=flat&logo=nixos&logoColor=white)
+[![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/rokokol/ddlc-themes/badge)](https://flakehub.com/flake/rokokol/ddlc-themes)
 [![palette](https://img.shields.io/badge/colours-ddlc--palette-FF80C0?style=flat)](https://github.com/rokokol/ddlc-palette)
 [![assets](https://img.shields.io/badge/assets-Team_Salvato-FF80C0?style=flat)](ASSETS.md)
 [![license](https://img.shields.io/badge/code-MIT-3DA639?style=flat)](LICENSE)
