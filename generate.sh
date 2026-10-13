@@ -1143,8 +1143,9 @@ jq -n --argjson defs "$oc_defs" --argjson theme "$oc_theme" '{
 # is the colour's three channels, which the app takes apart in rgba().
 # The pages climb from the ground: on ink each surface is a step lighter, on paper the cards are
 # paper on a pink board, as a poem sheet lies on the desk. A task is a card of its own, where the
-# app leaves it transparent over a project's background image, and a done task sinks back to a
-# different colour. The project's own primary colour is left alone, because the app tells
+# app leaves it transparent over a project's background image, a done task sinks back to a
+# different colour, and the task open in the side panel is an opaque mix rather than the app's
+# translucent state colour. The project's own primary colour is left alone, because the app tells
 # projects apart by it. A ddlc-* row is no token of the app's but a role the rules in
 # src/super-productivity.css read: the banner is the "Just Monika." pop-up of the Obsidian
 # callout, with its icon as the note's sticker, and a snack is the report's kitty window
@@ -1161,9 +1162,11 @@ ink-on-channel               text                 text
 separator                    grid                 line
 divider                      grid                 line
 scrim                        ink@60:transparent   ink@60:transparent
+sidenav-bg                   ground               board
 task-c-bg                    board-shade          ground
 sub-task-c-bg                board-shade          ground
 task-c-bg-done               ground               board-shade
+task-c-selected-bg           yuri@40:ink          blush@35:paper
 sub-task-c-bg-done           ground               board-shade
 link-color                   link                 link
 c-accent                     accent               accent

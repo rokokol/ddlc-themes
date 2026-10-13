@@ -4,6 +4,10 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+### Fixed
+
+- Super Productivity over a background image: the side menu and the vertical action bar are opaque instead of translucent, the task open in the side panel is an opaque colour, the buttons the pointer brings up on a done task take its colour instead of white, and the day's totals and a section's title stand on a pill of the page's colour
+
 ## [3.4.0] - 2026-10-13
 
 ### Added

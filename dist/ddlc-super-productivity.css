@@ -22,9 +22,11 @@ body {
   --separator: #FFBDE1;
   --divider: #FFBDE1;
   --scrim: #22222299;
+  --sidenav-bg: #FFEDF8;
   --task-c-bg: #FFFFFF;
   --sub-task-c-bg: #FFFFFF;
   --task-c-bg-done: #F0DDE7;
+  --task-c-selected-bg: #FFE8F5;
   --sub-task-c-bg-done: #F0DDE7;
   --link-color: #BB5599;
   --c-accent: #BB5599;
@@ -67,9 +69,11 @@ body.isDarkTheme {
   --separator: #563B65;
   --divider: #563B65;
   --scrim: #22222299;
+  --sidenav-bg: #222222;
   --task-c-bg: #2F2933;
   --sub-task-c-bg: #2F2933;
   --task-c-bg-done: #222222;
+  --task-c-selected-bg: #403048;
   --sub-task-c-bg-done: #222222;
   --link-color: #FFBDE1;
   --c-accent: #DD77BB;
@@ -117,6 +121,31 @@ task.isDone > swipe-block > .inner-wrapper > .inner-wrapper > .box {
 /* Every faded part reads the one property, so the pointer lifts the fade from all of them */
 task.isDone:hover {
   --task-is-done-dim-opacity: 1;
+}
+
+/* Inside a done task its colour is the task's colour, so the buttons the pointer brings up sit
+   on the same ground as the line rather than on an open task's */
+task.isDone {
+  --task-c-bg: var(--task-c-bg-done);
+}
+
+/* Over a background image the app makes the side menu translucent and blurred; it stays the
+   page's colour here, as the strip of the vertical action bar does through --sidenav-bg. The
+   app's rule for the dark side outweighs any plain selector, hence the !important */
+body.hasBgImage .nav-sidenav {
+  background: var(--sidenav-bg) !important;
+  backdrop-filter: none !important;
+}
+
+/* The words that sit straight on the page, the day's totals and a section's title, stand on a
+   pill of the page's colour, so a background image does not run through them */
+work-view .status-bar[class],
+work-view collapsible.task-section > .collapsible-header {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: var(--sidenav-bg);
 }
 
 /* A banner is the "Just Monika." pop-up, as a callout is in the Obsidian theme: a pale ground
