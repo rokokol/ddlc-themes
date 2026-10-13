@@ -151,13 +151,13 @@ Package recipes can stage another config root without duplicating the layout: `D
 
 ### Super Productivity
 
-Super Productivity keeps a theme inside its own storage rather than in a file, so neither the module nor `install.sh` places it. Upload [`dist/ddlc-super-productivity.css`](dist/ddlc-super-productivity.css) with "Install theme" in the theme section of its settings and select it there; it follows the app's own dark mode switch. The app loads nothing a theme names, so the faces are the ones installed on the system: Nunito for the prose and Departure Mono for a notice, each with a system fallback
+Super Productivity keeps a theme inside its own storage rather than in a file, so neither the module nor `install.sh` places it. Upload [`dist/ddlc-super-productivity.css`](dist/ddlc-super-productivity.css), which every [release](https://github.com/rokokol/ddlc-themes/releases/latest) also carries, with "Install theme" in the theme section of its settings and select it there; it follows the app's own dark mode switch. The app loads nothing a theme names, so the faces are the ones installed on the system: Nunito for the prose and Departure Mono for a notice, each with a system fallback
 
 For the polka-dot paper behind the tasks, pick the screen-sized WebP of the variant as a project's background image in that project's settings. The GIF of the same screen is larger than the app takes from a file
 
 ## Web pages, reports and letters
 
-These have no switch and no installer, because they belong next to a page and not in `~/.config`. Copy them out of `dist/`, take them from `lib` in the flake, or vendor them at a pinned commit:
+These have no switch and no installer, because they belong next to a page and not in `~/.config`. Copy them out of `dist/` or a release's files, take them from `lib` in the flake, or vendor them at a pinned commit:
 
 | file | for | in the flake |
 | --- | --- | --- |

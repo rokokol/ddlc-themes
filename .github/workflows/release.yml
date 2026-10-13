@@ -1,0 +1,69 @@
+name: release
+
+# A pushed tag v<x.y.z> is checked against VERSION, run through build.yml, and released with
+# the changelog's section as notes and every file of that tag's dist/ attached, so a theme is
+# one download from the release page. dist/ is attached whole: a list of its files here would
+# be a second one beside the directory. A dispatch with an existing tag attaches the files to
+# that tag's release, creating it if it is missing
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The existing tag whose release takes dist/
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ inputs.tag || github.ref_name }}
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: the tag is VERSION
+        run: |
+          version=$(cat VERSION)
+          [ "$TAG" = "v$version" ] || {
+            echo "tag $TAG but VERSION says $version" >&2
+            exit 1
+          }
+
+      # The notes are the changelog's section for this version: from its heading to the
+      # next one, without the heading itself
+      - name: release notes from CHANGELOG.md
+        run: |
+          awk -v head="## [${TAG#v}] - " '
+            index($0, head) == 1 { on = 1; next }
+            on && /^## / { exit }
+            on { print }
+          ' CHANGELOG.md >notes.md
+          grep -q '[^[:space:]]' notes.md || {
+            echo "CHANGELOG.md has no section for $TAG" >&2
+            exit 1
+          }
+
+      - name: publish the release with dist/
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md --verify-tag
+          fi
