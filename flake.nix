@@ -351,11 +351,12 @@
                 ${dist}/ddlc-syntax.json >/dev/null \
                 || { echo "ddlc-syntax.json: the variants differ or a colour is not a hex"; exit 1; }
               # The roles name the same set in both variants, each a hex with an optional alpha,
-              # and the paper has a grid in whole pixels
+              # and the paper has a grid in whole pixels and a drift period in seconds
               jq -e '(.dark | keys) == (.light | keys) and (.dark | length > 0)
                 and ([.dark[], .light[] | select(test("^#[0-9A-F]{6}([0-9A-F]{2})?$") | not)] == [])
                 and (.polka.tile | type == "number" and . > 0)
-                and (.polka.dot | type == "number" and . > 0)' \
+                and (.polka.dot | type == "number" and . > 0)
+                and (.polka.period | type == "number" and . > 0)' \
                 ${dist}/ddlc-roles.json >/dev/null \
                 || { echo "ddlc-roles.json: the variants differ, a colour is not a hex or the grid is unset"; exit 1; }
               for f in ${dist}/ddlc-claude-code-*.json; do

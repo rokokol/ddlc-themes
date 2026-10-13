@@ -4,6 +4,10 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+### Added
+
+- the polka-dot paper's drift: `--ddlc-polka-period` and `polka.period` in `ddlc-roles.json`, the seconds the paper takes to move one tile toward the bottom right
+
 ## [3.3.0] - 2026-10-11
 
 ### Changed

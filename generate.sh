@@ -467,9 +467,11 @@ syntax_floor=3
 
 # The game menu's polka-dot paper, as ddlc.moe tiles it: a square tile holds two dots, at a
 # quarter and at three quarters of it on both axes, each a fifth of the tile in radius. The
-# sizes are CSS pixels; a surface that cannot repeat a tile draws the same grid at that size
+# sizes are CSS pixels; a surface that cannot repeat a tile draws the same grid at that size.
+# The paper drifts toward the bottom right, one tile on each axis per period, in seconds
 polka_tile=120
 polka_dot=$((polka_tile / 5))
+polka_period=8
 
 # The faces, for the stylesheets and the letters alike. A letter cannot load a web font, so
 # every stack names the faces a reader may have installed and ends in an honest fallback.
@@ -649,7 +651,8 @@ css_roles() {
   for r in "${syn_names[@]}"; do
     printf '  --ddlc-syntax-%s: %s;\n' "$r" "${syn["css/$r"]}"
   done
-  printf '  --ddlc-polka-tile: %spx;\n  --ddlc-polka-dot: %spx;\n' "$polka_tile" "$polka_dot"
+  printf '  --ddlc-polka-tile: %spx;\n  --ddlc-polka-dot: %spx;\n  --ddlc-polka-period: %ss;\n' \
+    "$polka_tile" "$polka_dot" "$polka_period"
 }
 
 # What a self-contained stylesheet starts with: the palette, the dark base16 scheme, the faces
@@ -876,10 +879,10 @@ for r in "${role_names[@]}"; do
   role_rows+=("$(printf '%s\t#%s\t#%s' "$r" "$r_dark" "$r_light")")
 done
 printf '%s\n' "${role_rows[@]}" | jq -Rn --arg banner "$named_banner" \
-  --argjson tile "$polka_tile" --argjson dot "$polka_dot" '
+  --argjson tile "$polka_tile" --argjson dot "$polka_dot" --argjson period "$polka_period" '
   [inputs | split("\t")] as $rows
   | { _generated: $banner,
-      polka: { tile: $tile, dot: $dot },
+      polka: { tile: $tile, dot: $dot, period: $period },
       dark: ($rows | map({ key: .[0], value: .[1] }) | from_entries),
       light: ($rows | map({ key: .[0], value: .[2] }) | from_entries) }' >"$out/ddlc-roles.json"
 
