@@ -251,13 +251,25 @@ body.hasBgImage planner-day header {
   background: var(--bg);
 }
 
-body.hasBgImage planner-day .empty,
-body.hasBgImage planner-day add-task-inline button {
+body.hasBgImage planner-day .empty[class],
+body.hasBgImage planner-day add-task-inline button[class] {
   width: fit-content;
   margin-inline: auto;
-  padding-inline: 14px;
+  padding: 2px 8px;
   border-radius: 999px;
   background: var(--bg);
+}
+
+/* A Material button keeps a minimum width and a tall box, and the empty note the height of a
+   task row, which made both pills fat */
+body.hasBgImage planner-day add-task-inline button[class] {
+  min-width: 0;
+  height: 28px;
+}
+
+body.hasBgImage planner-day .empty[class] {
+  min-height: 0;
+  margin-block: var(--s-half);
 }
 
 /* In the schedule's row of controls the view switch is a card already; the date arrows and the

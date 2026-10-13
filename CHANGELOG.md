@@ -4,6 +4,10 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+### Fixed
+
+- Super Productivity: a planner day's empty note and add button are slim pills; they took the height of a task row and a Material button's minimum width
+
 ## [3.4.1] - 2026-10-13
 
 ### Fixed
