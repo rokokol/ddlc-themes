@@ -8,8 +8,8 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 - Super Productivity over a background image: the side menu and the vertical action bar are opaque instead of translucent, paper on the light side; the task's side panel has a ground of its own, the page's colour faded as a done task is, with the task's title on an opaque strip; a repeating task the planner projects into a future day takes a done task's colour; the task open in that panel is an opaque colour; the buttons the pointer brings up on a done task take its colour instead of white; and the day's totals stand on a pill of the page's colour
 - Super Productivity over a background image: the page's header is a bar of the page's colour, while a banner below it stays a window over the picture, and so are a task section's title row, the buttons on the task list, the empty list's note, and the settings page's search field, tab row and tab title, so the picture no longer runs through their words
-- Super Productivity over a background image: a planner day's title and load are a row of the page's colour and its empty note and add button are pills; the schedule's row of controls and its hour labels stand on the page's colour
-- Super Productivity: a line separates subtasks again, in the theme's line colour and fainter under a done one; the app laid the task's box over its separator
+- Super Productivity over a background image: a planner day's title and load are a row of the page's colour and its empty note and add button are pills; in the schedule the date arrows and the week's title are pills, the hour labels stand on the page's colour, and the grid's scroll track is no longer clear
+- Super Productivity: a line separates subtasks again, in the theme's line colour and fainter under a done one; the app laid the task's box over its separator. A done subtask under a done parent takes the parent's colour instead of doubling it
 - Super Productivity in the desktop app with its own title bar: the vertical action bar reaches the top of the window, where the background image showed in a gap above it
 
 ### Changed

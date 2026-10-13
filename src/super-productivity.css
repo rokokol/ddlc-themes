@@ -30,6 +30,12 @@ planner-repeat-projection > div {
   background: var(--task-c-bg-done);
 }
 
+/* A done parent's box lies under its subtasks too, so a done subtask's own faded box over it
+   doubled the colour; inside a done parent the subtask shows the parent's box instead */
+task.isDone task.isDone > swipe-block > .inner-wrapper > .inner-wrapper > .box {
+  background: transparent;
+}
+
 /* Every faded part reads the one property, so the pointer lifts the fade from all of them */
 task.isDone:hover {
   --task-is-done-dim-opacity: 1;
@@ -146,8 +152,18 @@ body.hasBgImage planner-day add-task-inline button {
   background: var(--bg);
 }
 
-body.hasBgImage schedule .schedule-nav-controls {
+/* In the schedule's row of controls the view switch is a card already; the date arrows and the
+   week's title each stand on a pill, and the grid's scroll track, which the app leaves clear,
+   is the page's colour, so the classic scrollbar's arrows do not float on the picture */
+body.hasBgImage schedule .date-nav-group,
+body.hasBgImage schedule .schedule-nav-controls > .title {
+  padding-inline: 10px;
+  border-radius: 999px;
   background: var(--bg);
+}
+
+body.hasBgImage schedule {
+  --scrollbar-track: var(--bg);
 }
 
 body.hasBgImage schedule-week .time {
