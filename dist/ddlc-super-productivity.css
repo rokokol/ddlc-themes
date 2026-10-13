@@ -265,6 +265,7 @@ body.hasBgImage planner-day add-task-inline button[class] {
 body.hasBgImage planner-day add-task-inline button[class] {
   min-width: 0;
   height: 28px;
+  margin-top: var(--s);
 }
 
 body.hasBgImage planner-day .empty[class] {

@@ -6,7 +6,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ### Fixed
 
-- Super Productivity: a planner day's empty note and add button are slim pills; they took the height of a task row and a Material button's minimum width
+- Super Productivity: a planner day's empty note and add button are slim pills; they took the height of a task row and a Material button's minimum width. The add button stands a little apart from the tasks above it
 
 ## [3.4.1] - 2026-10-13
 
