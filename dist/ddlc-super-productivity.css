@@ -269,13 +269,13 @@ banner[class] .buttons button {
    text through the app's own snack tokens, dark on both sides, and a bar on top with a prompt
    and the app's name */
 .mat-mdc-snack-bar-container .mat-mdc-snackbar-surface {
-  --bar-h: 1.9em;
+  --ddlc-bar-h: 1.9em;
   position: relative;
-  padding-top: var(--bar-h);
+  padding-top: var(--ddlc-bar-h);
   border: 1px solid var(--ddlc-window-border);
   border-radius: 0;
   background:
-    linear-gradient(var(--ddlc-window-bar), var(--ddlc-window-bar)) top / 100% var(--bar-h) no-repeat,
+    linear-gradient(var(--ddlc-window-bar), var(--ddlc-window-bar)) top / 100% var(--ddlc-bar-h) no-repeat,
     var(--mat-snack-bar-container-color);
   box-shadow: 4px 4px 0 var(--ddlc-board-drop);
   font-family: var(--ddlc-font-data);
@@ -285,8 +285,8 @@ banner[class] .buttons button {
 .mat-mdc-snack-bar-container .mat-mdc-snackbar-surface::after {
   position: absolute;
   top: 0;
-  height: var(--bar-h);
-  line-height: var(--bar-h);
+  height: var(--ddlc-bar-h);
+  line-height: var(--ddlc-bar-h);
   font-size: 0.85em;
   white-space: nowrap;
 }

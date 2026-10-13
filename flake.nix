@@ -226,6 +226,15 @@
           touch $out
         '';
 
+        # The Super Productivity theme hooks into the app's components, classes and variables,
+        # and a rule whose hook the app dropped stops applying in silence. The app's source at
+        # the version this lock builds is a small download, where the built app is the whole
+        # Electron closure, so the check reads the source
+        sp-hooks = pkgs.runCommand "sp-hooks" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+          python3 ${testsDir}/sp-hooks.py ${dist}/ddlc-super-productivity.css ${pkgs.super-productivity.src}
+          touch $out
+        '';
+
         # Enabling a switch has to be enough: the colours in kitty's config after its own
         # settings, both btop variants deployed and the theme named — and nothing while disabled
         module-wiring =

@@ -226,7 +226,7 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 
 ## Tests
 
-`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`, and every letter style holding no `var()`), that the polka-dot GIFs show the paper `ddlc-roles.json` describes and loop with no seam, that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
+`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`, and every letter style holding no `var()`), that the polka-dot GIFs show the paper `ddlc-roles.json` describes and loop with no seam, that every component, class and variable the Super Productivity theme hooks into still exists in that app's source at the locked version, that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
 
 `tests/distro.sh <distro>` (needs docker or podman) runs the full cycle inside a real `debian`, `ubuntu`, `arch` or `fedora` container: preflight, its printed guidance run verbatim, install, selective uninstall, uninstall. In CI that is the four distro badges — on push, weekly against `:latest`, never on pull requests
 
@@ -243,5 +243,6 @@ install.sh    for systems without Nix; VERSION is the one source of version
 completions/  tab completion for install.sh, sourced from the checkout
 check-sh.sh   vendored from bash-best-practices, holds install.sh's help
               and completions to its parser
-tests/        run.sh (fast, sandboxed), distro.sh (containers), polka-gifs.py
+tests/        run.sh (fast, sandboxed), distro.sh (containers), polka-gifs.py,
+              sp-hooks.py
 ```
