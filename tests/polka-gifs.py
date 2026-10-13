@@ -1,9 +1,9 @@
-"""Hold the polka-dot GIFs in dist/ to the paper that ddlc-roles.json describes.
+"""Hold the polka-dot pictures in dist/ to the paper that ddlc-roles.json describes.
 
     python3 tests/polka-gifs.py DIST
 
 The check reads the facts the pictures promise, not their bytes: dist-is-current already
-compares the bytes. Each GIF loops forever, has one frame per pixel step of one tile, lasts
+compares the bytes. Each picture loops forever, has one frame per pixel step of one tile, lasts
 one drift period, shows the ground and the dots of its variant, and every frame is the one
 before it moved one step toward the bottom right, the last one included.
 """
@@ -18,11 +18,13 @@ dist = Path(sys.argv[1])
 paper = json.loads((dist / "ddlc-roles.json").read_text())["polka"]
 tile, period = paper["tile"], paper["period"]
 
-# The file names are the API: a variant, then a scale for a tile or a size for a screen
+# The file names are the API: a variant, then a scale for a tile or a size for a screen, and
+# the format the extension names
 pictures = {
     "ddlc-polka-{v}.gif": (1, tile, tile),
     "ddlc-polka-{v}-2x.gif": (2, 2 * tile, 2 * tile),
     "ddlc-polka-{v}-1920x1080.gif": (1, 1920, 1080),
+    "ddlc-polka-{v}-1920x1080.webp": (1, 1920, 1080),
 }
 
 failures = []
@@ -46,8 +48,9 @@ for variant in ("dark", "light"):
             fail(name, "missing")
             continue
         with Image.open(path) as gif:
-            if gif.format != "GIF":
-                fail(name, f"is {gif.format}, not a GIF")
+            want = path.suffix[1:].upper()
+            if gif.format != want:
+                fail(name, f"is {gif.format}, not {want}")
                 continue
             if gif.size != (width, height):
                 fail(name, f"is {gif.size}, want {(width, height)}")
@@ -55,8 +58,9 @@ for variant in ("dark", "light"):
                 fail(name, "does not loop forever")
             frames, total = [], 0
             for frame in ImageSequence.Iterator(gif):
-                total += frame.info["duration"]
+                # A WebP frame states its duration only once it is decoded
                 frames.append(frame.convert("RGB"))
+                total += frame.info["duration"]
 
         if len(frames) != tile:
             fail(name, f"has {len(frames)} frames, want one per step of the tile, {tile}")

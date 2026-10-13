@@ -4,7 +4,7 @@
    theme in the settings' theme section; the app follows its own dark mode switch, which sets
    isDarkTheme on the body. It sets the app's theme contract and the accent, and leaves a project's own primary
    colour alone, so projects stay told apart. The background stays plain: a project's
-   background image can take the polka-dot paper as a picture.
+   background image can take the polka-dot paper as a picture, ddlc-polka-*-1920x1080.webp.
    Super Productivity loads nothing a theme names, so the faces are the installed ones */
 
 body {

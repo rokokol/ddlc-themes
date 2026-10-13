@@ -139,18 +139,21 @@
         };
         # Departure Mono with the Nerd Fonts icons, for code that shows them
         nerd = ./dist/DepartureMonoNerdFontMono-Regular.woff2;
-        # The polka-dot paper as a looping GIF per variant: a tile that repeats, at one and two
-        # device pixels per CSS pixel, and a whole screen for a surface that stretches its picture
+        # The polka-dot paper as a looping picture per variant: a tile that repeats, at one and
+        # two device pixels per CSS pixel, and a whole screen for a surface that stretches its
+        # picture, as a GIF and as a far smaller WebP of the same pixels
         polka = {
           dark = {
             tile = ./dist/ddlc-polka-dark.gif;
             tile-2x = ./dist/ddlc-polka-dark-2x.gif;
             screen = ./dist/ddlc-polka-dark-1920x1080.gif;
+            screen-webp = ./dist/ddlc-polka-dark-1920x1080.webp;
           };
           light = {
             tile = ./dist/ddlc-polka-light.gif;
             tile-2x = ./dist/ddlc-polka-light-2x.gif;
             screen = ./dist/ddlc-polka-light-1920x1080.gif;
+            screen-webp = ./dist/ddlc-polka-light-1920x1080.webp;
           };
         };
         claude-code = {

@@ -153,6 +153,8 @@ Package recipes can stage another config root without duplicating the layout: `D
 
 Super Productivity keeps a theme inside its own storage rather than in a file, so neither the module nor `install.sh` places it. Upload [`dist/ddlc-super-productivity.css`](dist/ddlc-super-productivity.css) with "Install theme" in the theme section of its settings and select it there; it follows the app's own dark mode switch. The app loads nothing a theme names, so the faces are the ones installed on the system: Nunito for the prose and Departure Mono for a notice, each with a system fallback
 
+For the polka-dot paper behind the tasks, pick the screen-sized WebP of the variant as a project's background image in that project's settings. The GIF of the same screen is larger than the app takes from a file
+
 ## Web pages, reports and letters
 
 These have no switch and no installer, because they belong next to a page and not in `~/.config`. Copy them out of `dist/`, take them from `lib` in the flake, or vendor them at a pinned commit:
@@ -169,7 +171,7 @@ These have no switch and no installer, because they belong next to a page and no
 | `ddlc-tokens.css` | a theme that brings its own palette and selectors: the roles alone | `lib.tokens` |
 | `ddlc-syntax.json` | an editor theme: the syntax colours per variant | `lib.syntax` |
 | `ddlc-roles.json` | a theme without CSS: every role as a hex per variant, and the grid and the drift of the game menu's polka-dot paper, which CSS reads as `--ddlc-polka-*` | `lib.roles` |
-| `ddlc-polka-{dark,light}{,-2x,-1920x1080}.gif` | a surface that takes a picture rather than CSS: the polka-dot paper drifting in a loop, as a tile that repeats and as a whole screen for a surface that stretches its picture to cover | `lib.polka.{dark,light}.{tile,tile-2x,screen}` |
+| `ddlc-polka-{dark,light}{,-2x,-1920x1080}.gif`, `ddlc-polka-{dark,light}-1920x1080.webp` | a surface that takes a picture rather than CSS: the polka-dot paper drifting in a loop, as a tile that repeats and as a whole screen for a surface that stretches its picture to cover. The screen's WebP holds the same pixels as its GIF at a fraction of the size, for an app that caps a picture's size | `lib.polka.{dark,light}.{tile,tile-2x,screen,screen-webp}` |
 
 Each stylesheet is one `<link>` and carries both variants: it follows the system until `data-theme="light|dark"` on `<html>` pins a side. A colour in a page's own rules comes from a `--ddlc-*` role, so it follows both sides too
 

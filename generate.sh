@@ -888,21 +888,23 @@ printf '%s\n' "${role_rows[@]}" | jq -Rn --arg banner "$named_banner" \
       light: ($rows | map({ key: .[0], value: .[2] }) | from_entries) }' >"$out/ddlc-roles.json"
 
 # --- polka-dot paper ----------------------------------------------------------------------------
-# The paper as a looping GIF, for a surface that takes a picture rather than CSS: a tile at one
-# and two device pixels per CSS pixel, which repeats, and a whole 1920x1080 screen for a surface
-# that stretches its picture to cover. The colours are the ground and dots roles
-python3 -c 'import PIL' 2>/dev/null || {
-  echo "generate.sh: Pillow is missing; nix develop puts it in the environment" >&2
+# The paper as a looping picture, for a surface that takes a picture rather than CSS: a tile at
+# one and two device pixels per CSS pixel, which repeats, and a whole 1920x1080 screen for a
+# surface that stretches its picture to cover. The screen comes as a WebP as well, because the
+# GIF is several megabytes and an app may cap a picture's size; the WebP is a few hundred KB.
+# The colours are the ground and dots roles
+python3 -c 'import PIL.WebPImagePlugin' 2>/dev/null || {
+  echo "generate.sh: Pillow with WebP is missing; nix develop puts it in the environment" >&2
   exit 1
 }
 for V in dark light; do
   p_ground=$(hex_of "$V" ground dark) || exit 1
   p_dots=$(hex_of "$V" dots dark) || exit 1
-  for p_shape in "1 $polka_tile $polka_tile" "2 $((2 * polka_tile)) $((2 * polka_tile)) -2x" \
-    "1 1920 1080 -1920x1080"; do
-    read -r p_scale p_width p_height p_suffix <<<"$p_shape"
+  for p_shape in "1 $polka_tile $polka_tile .gif" "2 $((2 * polka_tile)) $((2 * polka_tile)) -2x.gif" \
+    "1 1920 1080 -1920x1080.gif" "1 1920 1080 -1920x1080.webp"; do
+    read -r p_scale p_width p_height p_name <<<"$p_shape"
     python3 "$src/polka.py" "$polka_tile" "$polka_dot" "$polka_period" "$p_ground" "$p_dots" \
-      "$p_scale" "$p_width" "$p_height" "$out/ddlc-polka-$V${p_suffix:-}.gif"
+      "$p_scale" "$p_width" "$p_height" "$out/ddlc-polka-$V$p_name"
   done
 done
 
@@ -1245,4 +1247,4 @@ done
 echo "wrote, per variant, $out/{ddlc-kitty-VARIANT.conf,ddlc-btop-VARIANT.theme,ddlc-claude-code-VARIANT.json}"
 echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-opencode.json,ddlc-super-productivity.css}"
 echo "and $out/{ddlc-tokens.css,ddlc-ui.css,ddlc-report.css,ddlc-mail.json,ddlc-syntax.json,ddlc-roles.json,ddlc-theme.js,ddlc-cloud.js}"
-echo "and $out/ddlc-polka-VARIANT{,-2x,-1920x1080}.gif"
+echo "and $out/ddlc-polka-VARIANT{,-2x,-1920x1080}.gif and $out/ddlc-polka-VARIANT-1920x1080.webp"

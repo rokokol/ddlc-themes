@@ -1,4 +1,4 @@
-"""Draw the game menu's polka-dot paper as a looping GIF.
+"""Draw the game menu's polka-dot paper as a looping GIF or WebP.
 
     python3 polka.py TILE DOT PERIOD GROUND DOTS SCALE WIDTH HEIGHT OUT
 
@@ -71,11 +71,19 @@ for step in range(tile):
 # Frame k ends at hundredth floor(period * 100 * (k + 1) / tile), so the error never adds up
 hundredths = [(period * 100 * (k + 1)) // tile - (period * 100 * k) // tile for k in range(tile)]
 
+# OUT's extension picks the format. A WebP is lossless, so it holds the same pixels as the GIF;
+# it refers back to what it already coded, so a whole screen of the repeating paper stays small
+if out.endswith(".webp"):
+    frames = [frame.convert("RGB") for frame in frames]
+    # Pillow encodes an animated WebP at method 0 unless told; method 4 is a third of the size
+    options = {"lossless": True, "method": 4}
+else:
+    options = {"optimize": False}
 frames[0].save(
     out,
     save_all=True,
     append_images=frames[1:],
     duration=[h * 10 for h in hundredths],
     loop=0,
-    optimize=False,
+    **options,
 )
