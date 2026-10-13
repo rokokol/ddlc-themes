@@ -140,13 +140,14 @@ banner[class] .buttons {
 }
 
 /* A button is lettered like the pop-up's OK: white Black-weight letters inside a thick plum
-   outline, which the stroke paints under the fill so it does not eat the letters */
+   outline, which the stroke paints under the fill so it does not eat the letters. It is no
+   larger than the pop-up's own text */
 banner[class] .buttons button {
   --mat-button-text-label-text-font: var(--ddlc-font-prose);
-  --mat-button-text-label-text-size: 1.2em;
+  --mat-button-text-label-text-size: 1em;
   --mat-button-text-label-text-weight: 900;
   color: var(--ddlc-on-accent);
-  -webkit-text-stroke: 0.18em var(--ddlc-popup-accent);
+  -webkit-text-stroke: 0.16em var(--ddlc-popup-accent);
   paint-order: stroke fill;
   font-variation-settings: "wght" 900;
   letter-spacing: 0.04em;
