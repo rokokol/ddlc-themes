@@ -4,6 +4,8 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+## [3.4.1] - 2026-10-13
+
 ### Fixed
 
 - Super Productivity over a background image: the side menu and the vertical action bar are opaque instead of translucent, paper on the light side; the task's side panel has a ground of its own, the page's colour faded as a done task is, with the task's title on an opaque strip; a repeating task the planner projects into a future day takes a done task's colour; the task open in that panel is an opaque colour; the buttons the pointer brings up on a done task take its colour instead of white; and the day's totals stand on a pill of the page's colour
