@@ -1189,6 +1189,7 @@ ddlc-popup-ground            popup-ground         popup-ground
 ddlc-popup-frame             popup-frame          popup-frame
 ddlc-popup-text              popup-text           popup-text
 ddlc-popup-accent            popup-accent         popup-accent
+ddlc-on-accent               on-accent            on-accent
 ddlc-kind-note               kind-note            kind-note
 "
 

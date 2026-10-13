@@ -50,6 +50,7 @@ body {
   --ddlc-popup-frame: #FFBDE1;
   --ddlc-popup-text: #222222;
   --ddlc-popup-accent: #BB5599;
+  --ddlc-on-accent: #FFFFFF;
   --ddlc-kind-note: #72D0FA;
 }
 
@@ -94,6 +95,7 @@ body.isDarkTheme {
   --ddlc-popup-frame: #FFBDE1;
   --ddlc-popup-text: #222222;
   --ddlc-popup-accent: #8D4675;
+  --ddlc-on-accent: #FFFFFF;
   --ddlc-kind-note: #72D0FA;
 }
 
@@ -137,8 +139,17 @@ banner[class] .buttons {
   margin-left: 0;
 }
 
+/* A button is lettered like the pop-up's OK: white Black-weight letters inside a thick plum
+   outline, which the stroke paints under the fill so it does not eat the letters */
 banner[class] .buttons button {
-  color: var(--ddlc-popup-accent);
+  --mat-button-text-label-text-font: var(--ddlc-font-prose);
+  --mat-button-text-label-text-size: 1.2em;
+  --mat-button-text-label-text-weight: 900;
+  color: var(--ddlc-on-accent);
+  -webkit-text-stroke: 0.18em var(--ddlc-popup-accent);
+  paint-order: stroke fill;
+  font-variation-settings: "wght" 900;
+  letter-spacing: 0.04em;
 }
 
 /* A snack is a small kitty window, as a code block is in the report: the terminal's ground and

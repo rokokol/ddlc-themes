@@ -10,7 +10,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 - the polka-dot paper's drift: `--ddlc-polka-period` and `polka.period` in `ddlc-roles.json`, the seconds the paper takes to move one tile toward the bottom right
 - the polka-dot paper as a looping GIF per variant, drawn in the `ground` and `dots` roles: a tile that repeats, at one and two device pixels per CSS pixel, and a whole 1920x1080 screen for a surface that stretches its picture to cover (`lib.polka`). The screen comes as a lossless WebP too, a fraction of the GIF's size, because Super Productivity takes no background image over five megabytes from a file
-- a Super Productivity theme, `ddlc-super-productivity.css`, both variants in one file to upload in the app (`lib.super-productivity`). A task is an opaque card over a project's background image, a done one has its own colour and a light fade that the pointer lifts, a banner is the "Just Monika." pop-up with its icon as a sticker, and a notice is a small kitty window
+- a Super Productivity theme, `ddlc-super-productivity.css`, both variants in one file to upload in the app (`lib.super-productivity`). A task is an opaque card over a project's background image, a done one has its own colour and a light fade that the pointer lifts, a banner is the "Just Monika." pop-up with its icon as a sticker and its buttons lettered like the pop-up's OK, and a notice is a small kitty window
 
 ## [3.3.0] - 2026-10-11
 
