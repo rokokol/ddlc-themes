@@ -78,7 +78,7 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 | ![Super Productivity, light variant](docs/super-productivity-light.png) | ![Super Productivity, dark variant](docs/super-productivity-dark.png) |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
 
-> Super Productivity over the polka-dot paper as a project's background image: a task is a card, a done one sinks back to its own colour until the pointer is on it, a banner is the "Just Monika." pop-up and a notice is a small kitty window
+> Super Productivity over the polka-dot paper as a project's background image: a task is a card, a done one sinks back to its own colour until the pointer is on it, a banner is the "Just Monika." pop-up and a notice is a small kitty window. [`docs/super-productivity-demo.py`](docs/super-productivity-demo.py) takes both from the app's web build in a fresh profile: `nix run .#sp-demo` on Linux, after `dist/` is rendered
 
 ## In use
 

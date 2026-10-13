@@ -192,6 +192,45 @@
             '';
       });
 
+      # The README's Super Productivity pictures, retaken from the checkout in the current
+      # directory: nix run .#sp-demo. The app's web build comes out of the locked package and
+      # Playwright with its browsers from the same nixpkgs, so the frames are reproducible.
+      # Only Linux, where the package and Chromium are; the package pulls the whole Electron
+      # closure, so nothing else in the flake depends on it
+      apps =
+        nixpkgs.lib.genAttrs
+          [
+            "x86_64-linux"
+            "aarch64-linux"
+          ]
+          (
+            system:
+            let
+              pkgs = nixpkgs.legacyPackages.${system};
+              spWeb = pkgs.runCommand "super-productivity-web" { nativeBuildInputs = [ pkgs.asar ]; } ''
+                asar extract ${pkgs.super-productivity}/share/superproductivity/app.asar app
+                cp -r app/.tmp/angular-dist/browser $out
+              '';
+              demo = pkgs.writeShellApplication {
+                name = "sp-demo";
+                runtimeInputs = [ (pkgs.python3.withPackages (p: [ p.playwright ])) ];
+                text = ''
+                  export SP_WEB=${spWeb}
+                  export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright-driver.browsers}
+                  export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
+                  exec python3 ${./docs/super-productivity-demo.py} "$@"
+                '';
+              };
+            in
+            {
+              sp-demo = {
+                type = "app";
+                program = "${demo}/bin/sp-demo";
+                meta.description = "Retake the README's Super Productivity pictures from the checkout";
+              };
+            }
+          );
+
       # dist/ is committed so a consumer without Nix just copies files; this proves it is what
       # the generator would write today against the palette this flake is locked to
       # For a consumer who reaches for pkgs rather than this flake's packages directly
