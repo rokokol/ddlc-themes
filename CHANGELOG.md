@@ -6,8 +6,8 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ### Fixed
 
-- Super Productivity over a background image: the side menu and the vertical action bar are opaque instead of translucent, paper on the light side; the task's side panel has a ground of its own, dot on the light side; the task open in that panel is an opaque colour; the buttons the pointer brings up on a done task take its colour instead of white; and the day's totals stand on a pill of the page's colour
-- Super Productivity over a background image: the page's header is a bar of the page's colour, and so are a task section's title row, the buttons on the task list, the empty list's note, and the settings page's search field, tab row and tab title, so the picture no longer runs through their words
+- Super Productivity over a background image: the side menu and the vertical action bar are opaque instead of translucent, paper on the light side; the task's side panel has a ground of its own, the page's colour faded as a done task is, with the task's title on an opaque strip; a repeating task the planner projects into a future day takes a done task's colour; the task open in that panel is an opaque colour; the buttons the pointer brings up on a done task take its colour instead of white; and the day's totals stand on a pill of the page's colour
+- Super Productivity over a background image: the page's header is a bar of the page's colour, while a banner below it stays a window over the picture, and so are a task section's title row, the buttons on the task list, the empty list's note, and the settings page's search field, tab row and tab title, so the picture no longer runs through their words
 - Super Productivity in the desktop app with its own title bar: the vertical action bar reaches the top of the window, where the background image showed in a gap above it
 
 ### Changed

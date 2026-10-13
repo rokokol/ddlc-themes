@@ -1,15 +1,17 @@
 /* The DDLC colours for Super Productivity, light and dark in one file. Upload it with Install
    theme in the settings' theme section; the app follows its own dark mode switch, which sets
-   isDarkTheme on the body. It sets the app's theme contract and the accent, and leaves a project's own primary
-   colour alone, so projects stay told apart. The background stays plain: a project's
+   isDarkTheme on the body. It sets the app's theme contract and the accent, and leaves a
+   project's own primary colour alone, so projects stay told apart. The background stays plain: a project's
    background image can take the polka-dot paper as a picture, ddlc-polka-*-1920x1080.webp.
    Super Productivity loads nothing a theme names, so the faces are the installed ones */
 
 body {
   --font-primary-stack: var(--ddlc-font-prose);
   /* The app fades a done task to a third, and over a background image the picture then shows
-     through its words. The task's own colour marks it done instead, so the fade can stay light */
-  --task-is-done-dim-opacity: 0.8;
+     through its words. The task's own colour marks it done instead, so the fade can stay light.
+     The task's side panel lets the picture through by the same amount */
+  --ddlc-fade: 0.8;
+  --task-is-done-dim-opacity: var(--ddlc-fade);
   --mat-snack-bar-supporting-text-font: var(--ddlc-font-data);
 }
 
@@ -19,6 +21,13 @@ body {
 task.isDone > swipe-block > .inner-wrapper > .inner-wrapper > .box {
   background: var(--task-c-bg-done);
   opacity: var(--task-is-done-dim-opacity);
+}
+
+/* A repeating task the planner only projects into a future day has an outline and no ground of
+   its own, so a background image ran through it. It takes a done task's colour: readable, and
+   still apart from the real tasks, which are cards */
+planner-repeat-projection > div {
+  background: var(--task-c-bg-done);
 }
 
 /* Every faded part reads the one property, so the pointer lifts the fade from all of them */
@@ -41,8 +50,13 @@ body.hasBgImage .nav-sidenav {
 }
 
 /* The task's side panel declares --right-panel-bg and then overrides it with transparent, so a
-   background image runs through its title and cards; the theme puts the property back */
+   background image runs through its title and cards. The theme puts the property back, faded
+   as a done task is, and gives the task's title a ground of its own so it reads on the fade */
 right-panel .side[class] {
+  background: color-mix(in srgb, var(--right-panel-bg) calc(var(--ddlc-fade) * 100%), transparent);
+}
+
+right-panel header.task-title-wrapper {
   background: var(--right-panel-bg);
 }
 
@@ -60,8 +74,9 @@ work-view .status-bar[class] {
    colour back in the same way. Each backing has the shape of a thing the page already has: the
    header is a bar across the page, a section's title is a row as wide as its tasks, and a
    button is filled. Without an image the page is that colour already, and the app tints the
-   page with the project's colour, so the rules hold only while an image is on */
-body.hasBgImage .header-wrapper {
+   page with the project's colour, so the rules hold only while an image is on. The bar is the
+   header alone: the banner below it in the same wrapper stays a window over the picture */
+body.hasBgImage .header-wrapper > main-header {
   background: var(--bg);
 }
 

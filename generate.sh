@@ -1168,7 +1168,7 @@ scrim                        ink@60:transparent   ink@60:transparent
 bg-overlay                   ground               board
 sidenav-bg                   ground               ground
 sidenav-item-active-bg       board                dots
-right-panel-bg               ground               dot
+right-panel-bg               ground               board
 task-c-bg                    board-shade          ground
 sub-task-c-bg                board-shade          ground
 task-c-bg-done               ground               board
