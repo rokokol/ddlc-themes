@@ -39,10 +39,15 @@ body.hasBgImage .nav-sidenav {
   backdrop-filter: none !important;
 }
 
-/* The words that sit straight on the page, the day's totals and a section's title, stand on a
-   pill of the page's colour, so a background image does not run through them */
-work-view .status-bar[class],
-work-view collapsible.task-section > .collapsible-header {
+/* The task's side panel declares --right-panel-bg and then overrides it with transparent, so a
+   background image runs through its title and cards; the theme puts the property back */
+right-panel .side[class] {
+  background: var(--right-panel-bg);
+}
+
+/* The day's totals sit straight on the page, so they stand on a pill of the page's colour and a
+   background image does not run through them */
+work-view .status-bar[class] {
   width: fit-content;
   margin-inline: auto;
   padding: 2px 14px;

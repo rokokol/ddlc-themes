@@ -1162,7 +1162,8 @@ ink-on-channel               text                 text
 separator                    grid                 line
 divider                      grid                 line
 scrim                        ink@60:transparent   ink@60:transparent
-sidenav-bg                   ground               board
+sidenav-bg                   ground               ground
+right-panel-bg               ground               dot
 task-c-bg                    board-shade          ground
 sub-task-c-bg                board-shade          ground
 task-c-bg-done               ground               board-shade
