@@ -1143,10 +1143,13 @@ jq -n --argjson defs "$oc_defs" --argjson theme "$oc_theme" '{
 # is the colour's three channels, which the app takes apart in rgba().
 # The pages climb from the ground: on ink each surface is a step lighter, on paper the cards are
 # paper on a pink board, as a poem sheet lies on the desk. A task is a card of its own, where the
-# app leaves it transparent over a project's background image, a done task sinks back to a
-# different colour, and the task open in the side panel is an opaque mix rather than the app's
-# translucent state colour. The project's own primary colour is left alone, because the app tells
-# projects apart by it. A ddlc-* row is no token of the app's but a role the rules in
+# app leaves it transparent over a project's background image, a done task sinks back to the
+# page's colour, and the task open in the side panel takes the panel's colour rather than the
+# app's translucent state colour. The veil the app lays over a background image is the page's
+# colour too, so a busy picture is washed toward the theme and not toward plain white or black.
+# The project's own primary colour is left alone, because the app tells projects apart by it,
+# but the active menu item is the theme's, so the menu does not take a third hue. A ddlc-* row is
+# no token of the app's but a role the rules in
 # src/super-productivity.css read: the banner is the "Just Monika." pop-up of the Obsidian
 # callout, with its icon as the note's sticker, and a snack is the report's kitty window
 sp_slots="
@@ -1162,13 +1165,15 @@ ink-on-channel               text                 text
 separator                    grid                 line
 divider                      grid                 line
 scrim                        ink@60:transparent   ink@60:transparent
+bg-overlay                   ground               board
 sidenav-bg                   ground               ground
+sidenav-item-active-bg       board                dots
 right-panel-bg               ground               dot
 task-c-bg                    board-shade          ground
 sub-task-c-bg                board-shade          ground
-task-c-bg-done               ground               board-shade
-task-c-selected-bg           yuri@40:ink          blush@35:paper
-sub-task-c-bg-done           ground               board-shade
+task-c-bg-done               ground               board
+task-c-selected-bg           yuri@40:ink          dots
+sub-task-c-bg-done           ground               board
 link-color                   link                 link
 c-accent                     accent               accent
 palette-accent-300           accent-live          accent-live

@@ -14,7 +14,8 @@ body {
 }
 
 /* The app gives a done task its own colour on the dark side only. The box is the empty layer
-   under the task's line, so its fade lets the background through and leaves the words alone */
+   under the task's line, so its light fade lets a little of the background through and leaves
+   the words alone */
 task.isDone > swipe-block > .inner-wrapper > .inner-wrapper > .box {
   background: var(--task-c-bg-done);
   opacity: var(--task-is-done-dim-opacity);
@@ -52,7 +53,63 @@ work-view .status-bar[class] {
   margin-inline: auto;
   padding: 2px 14px;
   border-radius: 999px;
-  background: var(--sidenav-bg);
+  background: var(--bg);
+}
+
+/* Over a background image, the other words that sit straight on the page take the page's
+   colour back in the same way. Each backing has the shape of a thing the page already has: the
+   header is a bar across the page, a section's title is a row as wide as its tasks, and a
+   button is filled. Without an image the page is that colour already, and the app tints the
+   page with the project's colour, so the rules hold only while an image is on */
+body.hasBgImage .header-wrapper {
+  background: var(--bg);
+}
+
+body.hasBgImage work-view collapsible > .collapsible-header {
+  padding-inline: var(--s);
+  background: var(--bg);
+}
+
+body.hasBgImage work-view .mdc-button--outlined[class] {
+  background: var(--bg);
+}
+
+/* The empty list's note is centred, as the day's totals are, so it takes their pill */
+body.hasBgImage work-view .no-tasks-label[class] {
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+/* The settings page has its own head under the header: a search field, a row of tabs and the
+   tab's title. The field is filled, the row is a strip, and the title is a row as wide as the
+   cards under it. The app fades the idle field, which would let the image through the fill */
+body.hasBgImage .page-settings .settings-search[class] {
+  opacity: 1;
+}
+
+body.hasBgImage .page-settings .settings-search .mdc-text-field {
+  border-radius: var(--input-border-radius);
+  background: var(--bg);
+}
+
+body.hasBgImage .page-settings .settings-tabs .mat-mdc-tab-header {
+  border-radius: var(--card-border-radius) var(--card-border-radius) 0 0;
+  background: var(--bg);
+}
+
+body.hasBgImage .page-settings .tab-content .section-title {
+  padding: var(--s) var(--s2);
+  border-radius: var(--card-border-radius);
+  background: var(--bg);
+}
+
+/* In the desktop app with its own title bar, the app moves the vertical action bar down under
+   the window controls, and the background image then shows in the gap above the bar. The bar
+   reaches the top again and its padding keeps the buttons where the app put them */
+body.isElectron.isNoMac.isObsidianStyleHeader > nav.action-nav-right.action-nav-right--teleported {
+  top: 0;
+  padding-top: calc(var(--wco-height) + var(--s) + var(--s-half));
 }
 
 /* A banner is the "Just Monika." pop-up, as a callout is in the Obsidian theme: a pale ground
