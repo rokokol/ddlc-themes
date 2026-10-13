@@ -2,7 +2,7 @@
 
 ## What this repo is
 
-The DDLC colours as themes for kitty, btop, matplotlib, Claude Code and opencode, plus a web kit, a report stylesheet, letter styles and a syntax table, light and dark, rendered by `generate.sh` out of `ddlc-palette`. kitty and btop come from the base16 schemes, the rest from the flat `palette.env`, because they have more roles than sixteen slots. Nothing here is a taste call except which slot goes where. `dist/` holds the rendered files, committed for consumers without Nix
+The DDLC colours as themes for kitty, btop, matplotlib, Claude Code, opencode and Super Productivity, plus a web kit, a report stylesheet, letter styles and a syntax table, light and dark, rendered by `generate.sh` out of `ddlc-palette`. kitty and btop come from the base16 schemes, the rest from the flat `palette.env`, because they have more roles than sixteen slots. Nothing here is a taste call except which slot goes where. `dist/` holds the rendered files, committed for consumers without Nix
 
 Everything that is not a terminal reads two tables in `generate.sh`: `ui_roles` and `syntax_slots`. Other repositories depend on their names, so renaming or removing a role is a breaking release:
 
@@ -12,7 +12,7 @@ Everything that is not a terminal reads two tables in `generate.sh`: `ui_roles` 
 - `mail-node` and `skibidi-vpn` read `lib.mail` through their flake lock
 - `ddlc-rofi-theme` reads `lib.roles` through its flake lock
 
-Seams in `rokokol/huix`, and no module on any: `programs/term/kitty.nix` does `readFile lib.kitty.dark`, `programs/cli/btop.nix` sets `source = lib.btop.dark`, `programs/cli/matplotlib.nix` sets `source =` on the three `lib.matplotlib` paths. That is deliberate: the themes are files, and a module would only wrap `readFile`s. The Claude Code and opencode themes are NOT deployed declaratively there on purpose: the owner wants them as plain editable files, placed once by `install.sh`
+Seams in `rokokol/huix`, and no module on any: `programs/term/kitty.nix` does `readFile lib.kitty.dark`, `programs/cli/btop.nix` sets `source = lib.btop.dark`, `programs/cli/matplotlib.nix` sets `source =` on the three `lib.matplotlib` paths. That is deliberate: the themes are files, and a module would only wrap `readFile`s. The Claude Code and opencode themes are NOT deployed declaratively there on purpose: the owner wants them as plain editable files, placed once by `install.sh`. The Super Productivity theme has no installer at all: the app keeps an uploaded theme in its own IndexedDB, and its validator refuses any `url()` or `@import`, so the theme cannot carry a font
 
 ## Build / check
 

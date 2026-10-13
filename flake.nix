@@ -1,5 +1,5 @@
 {
-  description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code and opencode, light and dark";
+  description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code, opencode and Super Productivity, light and dark";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -159,6 +159,8 @@
         };
         # One file, both variants: opencode reads {dark, light} out of each value itself
         opencode = ./dist/ddlc-opencode.json;
+        # One stylesheet, both variants, uploaded in the app's own settings
+        super-productivity = ./dist/ddlc-super-productivity.css;
       };
 
       # A page laid out the way the DDLC web pages are: the bar, three columns of tools, stage
@@ -173,7 +175,7 @@
           pkgs.runCommand "ddlc-themes-${version}"
             {
               meta = {
-                description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code and opencode";
+                description = "The Doki Doki Literature Club themes for kitty, btop, matplotlib, Claude Code, opencode and Super Productivity";
                 homepage = "https://github.com/rokokol/ddlc-themes";
                 # MIT covers the generator; the colours themselves are Team Salvato's
                 license = pkgs.lib.licenses.mit;
@@ -397,6 +399,28 @@
                         or test("^#[0-9A-F]{6}$")) | not)] == [])' \
                 ${dist}/ddlc-opencode.json >/dev/null \
                 || { echo "ddlc-opencode.json: a value does not resolve against defs"; exit 1; }
+              # Super Productivity warns about a theme that leaves a token of its contract unset,
+              # in either variant, and refuses one that loads anything
+              sp=${dist}/ddlc-super-productivity.css
+              for block in 'body {' 'body.isDarkTheme {'; do
+                for token in surface-0 surface-1 surface-2 surface-3 surface-4 ink-strong ink \
+                  ink-muted ink-on-channel separator divider scrim; do
+                  awk -v b="$block" -v t="  --$token: " '
+                    $0 == b { on = 1; next }
+                    on && /^}/ { on = 0 }
+                    on && index($0, t) == 1 { found = 1 }
+                    END { exit !found }' "$sp" || { echo "$sp: $block sets no --$token"; exit 1; }
+                done
+              done
+              # A channel token is three numbers that rgba() takes apart, not a colour
+              if grep -E '^  --(ink-on-channel|[a-z0-9-]+-no-rgb): ' "$sp" | grep -Ev ': [0-9]{1,3}, [0-9]{1,3}, [0-9]{1,3};$'; then
+                echo "$sp: the channel token above is not three numbers" >&2
+                exit 1
+              fi
+              if grep -nE '@import|url\(|image\(|image-set\(' "$sp"; then
+                echo "$sp: Super Productivity refuses a theme that loads anything" >&2
+                exit 1
+              fi
               touch $out
             '';
       });

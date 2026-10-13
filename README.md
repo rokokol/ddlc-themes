@@ -2,13 +2,14 @@
 
 # ddlc-themes
 
-**The Doki Doki Literature Club colours for kitty, btop, matplotlib, Claude Code, opencode, your web pages, reports and letters, light and dark** （´ω｀♡%）
+**The Doki Doki Literature Club colours for kitty, btop, matplotlib, Claude Code, opencode, Super Productivity, your web pages, reports and letters, light and dark** （´ω｀♡%）
 
 ![kitty](https://img.shields.io/badge/kitty-theme-72D0FA?style=flat)
 ![btop](https://img.shields.io/badge/btop-theme-76C332?style=flat)
 ![matplotlib](https://img.shields.io/badge/matplotlib-theme-BB5599?style=flat)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-theme-F1A796?style=flat)
 ![opencode](https://img.shields.io/badge/opencode-theme-DD77BB?style=flat)
+![Super Productivity](https://img.shields.io/badge/Super_Productivity-theme-FFBDE1?style=flat)
 ![Nix](https://img.shields.io/badge/Nix-flake-7EBAE4?style=flat&logo=nixos&logoColor=white)
 [![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/rokokol/ddlc-themes/badge)](https://flakehub.com/flake/rokokol/ddlc-themes)
 [![palette](https://img.shields.io/badge/colours-ddlc--palette-FF80C0?style=flat)](https://github.com/rokokol/ddlc-palette)
@@ -22,7 +23,7 @@
 
 </div>
 
-Themes for five applications, a web kit, a report stylesheet and the styles for HTML letters, rendered out of [ddlc-palette](https://github.com/rokokol/ddlc-palette). The palette measures every colour off [ddlc.moe](https://ddlc.moe) rather than eyeballing it. kitty and btop read the base16 schemes. The rest have more roles than sixteen slots, so their tables name palette colours directly. Nothing here is a taste call except which slot goes where
+Themes for the applications above, a web kit, a report stylesheet and the styles for HTML letters, rendered out of [ddlc-palette](https://github.com/rokokol/ddlc-palette). The palette measures every colour off [ddlc.moe](https://ddlc.moe) rather than eyeballing it. kitty and btop read the base16 schemes. The rest have more roles than sixteen slots, so their tables name palette colours directly. Nothing here is a taste call except which slot goes where
 
 Everything that is not a terminal reads one table of roles and one table of syntax colours. So a muted caption, a link or a keyword is the same colour in a web page, a report, a letter, opencode, [ddlc.nvim](https://github.com/rokokol/ddlc.nvim) and the [Obsidian theme](https://github.com/rokokol/ddlc-obsidian-theme)
 
@@ -40,6 +41,7 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 - [Install](#install)
   - [Home Manager](#home-manager)
   - [Any other distribution](#any-other-distribution)
+  - [Super Productivity](#super-productivity)
 - [Web pages, reports and letters](#web-pages-reports-and-letters)
 - [Where the slots go](#where-the-slots-go)
 - [Re-rendering](#re-rendering)
@@ -72,6 +74,11 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 > The wallpaper comes through because kitty runs at `background_opacity 0.9` — neither theme sets an opacity of its own, and btop simply inherits the terminal's
 
 ![opencode](docs/opencode.png)
+
+| ![Super Productivity, light variant](docs/super-productivity-light.png) | ![Super Productivity, dark variant](docs/super-productivity-dark.png) |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
+
+> Super Productivity over the polka-dot paper as a project's background image: a task is a card, a done one sinks back to its own colour until the pointer is on it, a banner is the "Just Monika." pop-up and a notice is a small kitty window
 
 ## In use
 
@@ -141,6 +148,10 @@ source completions/install.sh.zsh   # zsh
 ```
 
 Package recipes can stage another config root without duplicating the layout: `DESTDIR="$pkgdir" ./install.sh --config-home /usr/share/ddlc-themes`. Add `--component kitty` or `--component btop` for split packages
+
+### Super Productivity
+
+Super Productivity keeps a theme inside its own storage rather than in a file, so neither the module nor `install.sh` places it. Upload [`dist/ddlc-super-productivity.css`](dist/ddlc-super-productivity.css) with "Install theme" in the theme section of its settings and select it there; it follows the app's own dark mode switch. The app loads nothing a theme names, so the faces are the ones installed on the system: Nunito for the prose and Departure Mono for a notice, each with a system fallback
 
 ## Web pages, reports and letters
 

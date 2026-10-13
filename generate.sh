@@ -8,8 +8,9 @@ vendor="$here/vendor"
 
 usage() {
   cat <<EOF
-generate.sh — render the kitty, btop, matplotlib, Claude Code and opencode themes, the
-web kit, the report stylesheet, the letter styles and the syntax table out of ddlc-palette
+generate.sh — render the kitty, btop, matplotlib, Claude Code, opencode and Super Productivity
+themes, the web kit, the report stylesheet, the letter styles, the syntax table and the
+polka-dot GIFs out of ddlc-palette
 
 It writes dist/, committed for consumers without Nix: run it after the palette moves, or
 after an edit to src/, and commit the result with the rendered files. It reads src/ and
@@ -1132,7 +1133,116 @@ jq -n --argjson defs "$oc_defs" --argjson theme "$oc_theme" '{
   theme: $theme
 }' >"$out/ddlc-opencode.json"
 
+# --- Super Productivity -----------------------------------------------------------------------
+# Super Productivity takes a theme as one uploaded stylesheet, which may load nothing: no
+# @import, no url(). It derives its own variables from a small contract of tokens, so the table
+# sets that contract and the accent and leaves everything else to the app. A value reads as a
+# role does: a palette colour, a role, or a@NN:b. A token SP names *-no-rgb, or ink-on-channel,
+# is the colour's three channels, which the app takes apart in rgba().
+# The pages climb from the ground: on ink each surface is a step lighter, on paper the cards are
+# paper on a pink board, as a poem sheet lies on the desk. A task is a card of its own, where the
+# app leaves it transparent over a project's background image, and a done task sinks back to a
+# different colour. The project's own primary colour is left alone, because the app tells
+# projects apart by it. A ddlc-* row is no token of the app's but a role the rules in
+# src/super-productivity.css read: the banner is the "Just Monika." pop-up of the Obsidian
+# callout, with its icon as the note's sticker, and a snack is the report's kitty window
+sp_slots="
+surface-0                    dots                 board-shade
+surface-1                    ground               board
+surface-2                    board-shade          ground
+surface-3                    board                ground
+surface-4                    yuri@40:ink          ground
+ink-strong                   text                 text
+ink                          text@88:ground       text@88:ground
+ink-muted                    muted                muted
+ink-on-channel               text                 text
+separator                    grid                 line
+divider                      grid                 line
+scrim                        ink@60:transparent   ink@60:transparent
+task-c-bg                    board-shade          ground
+sub-task-c-bg                board-shade          ground
+task-c-bg-done               ground               board-shade
+sub-task-c-bg-done           ground               board-shade
+link-color                   link                 link
+c-accent                     accent               accent
+palette-accent-300           accent-live          accent-live
+palette-accent-500           accent               accent
+palette-accent-600           accent@85:ink        accent@85:ink
+palette-accent-500-no-rgb    accent               accent
+palette-accent-contrast-500  on-accent            on-accent
+c-warn                       danger               danger
+palette-warn-500             danger               danger
+palette-warn-500-no-rgb      danger               danger
+palette-warn-contrast-500    on-accent            on-accent
+banner-bg                    popup-ground         popup-ground
+mat-snack-bar-container-color         window-ground  window-ground
+mat-snack-bar-supporting-text-color   window-text    window-text
+mat-snack-bar-button-color            window-prompt  window-prompt
+ddlc-window-bar              window-bar           window-bar
+ddlc-window-border           window-border        window-border
+ddlc-window-prompt           window-prompt        window-prompt
+ddlc-window-title            window-title         window-title
+ddlc-board-drop              board-drop           board-drop
+ddlc-popup-ground            popup-ground         popup-ground
+ddlc-popup-frame             popup-frame          popup-frame
+ddlc-popup-text              popup-text           popup-text
+ddlc-popup-accent            popup-accent         popup-accent
+ddlc-kind-note               kind-note            kind-note
+"
+
+sp_value() { # <variant> <token> <value>
+  local hex
+  hex=$(role_hex "$1" "$3") || return 1
+  if [[ $2 == ink-on-channel || $2 == *-no-rgb ]]; then
+    [[ ${#hex} == 6 ]] || {
+      echo "generate.sh: Super Productivity token $2 is channels, and $3 is translucent" >&2
+      return 1
+    }
+    printf '%d, %d, %d' "$((16#${hex:0:2}))" "$((16#${hex:2:2}))" "$((16#${hex:4:2}))"
+  else
+    printf '#%s' "$hex"
+  fi
+}
+
+while read -r sp_token sp_dark sp_light; do
+  role_value "Super Productivity token $sp_token" "$sp_dark"
+  role_value "Super Productivity token $sp_token" "$sp_light"
+done < <(awk 'NF == 3' <<<"$sp_slots")
+
+# Filled before the file is written: an exit inside a substitution there would not stop the run
+sp_blocks=()
+for V in light dark; do
+  col=3
+  [[ $V == dark ]] && col=2
+  block=""
+  while read -r sp_token sp_v; do
+    sp_hex=$(sp_value "$V" "$sp_token" "$sp_v") || exit 1
+    block+="  --$sp_token: $sp_hex;"$'\n'
+  done < <(awk -v c="$col" 'NF == 3 { print $1, $c }' <<<"$sp_slots")
+  sp_blocks+=("$block")
+done
+
+{
+  echo "/* $named_banner */"
+  echo
+  sed -n '1,/\*\//p' "$src/super-productivity.css"
+  echo
+  # The app's own stylesheet sets the light side on body and the dark on body.isDarkTheme, so
+  # the theme answers with the same selectors and wins by coming later
+  echo "body {"
+  printf '  --ddlc-font-prose: %s;\n' "${font[prose]}"
+  printf '  --ddlc-font-data: %s;\n' "${font[data]}"
+  printf '%s' "${sp_blocks[0]}"
+  echo "}"
+  echo
+  echo "body.isDarkTheme {"
+  printf '%s' "${sp_blocks[1]}"
+  echo "}"
+  echo
+  sed '1,/\*\//d' "$src/super-productivity.css" | sed '1{/^$/d}'
+} >"$out/ddlc-super-productivity.css"
+
 echo "wrote, per variant, $out/{ddlc-kitty-VARIANT.conf,ddlc-btop-VARIANT.theme,ddlc-claude-code-VARIANT.json}"
-echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-opencode.json}"
+echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-opencode.json,ddlc-super-productivity.css}"
 echo "and $out/{ddlc-tokens.css,ddlc-ui.css,ddlc-report.css,ddlc-mail.json,ddlc-syntax.json,ddlc-roles.json,ddlc-theme.js,ddlc-cloud.js}"
 echo "and $out/ddlc-polka-VARIANT{,-2x,-1920x1080}.gif"
