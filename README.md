@@ -157,7 +157,8 @@ These have no switch and no installer, because they belong next to a page and no
 | `ddlc-mail.json` | an HTML letter: the light colours, the faces and ready values for `style` attributes | `lib.mail` |
 | `ddlc-tokens.css` | a theme that brings its own palette and selectors: the roles alone | `lib.tokens` |
 | `ddlc-syntax.json` | an editor theme: the syntax colours per variant | `lib.syntax` |
-| `ddlc-roles.json` | a theme without CSS: every role as a hex per variant, and the grid of the game menu's polka-dot paper, which CSS reads as `--ddlc-polka-*` | `lib.roles` |
+| `ddlc-roles.json` | a theme without CSS: every role as a hex per variant, and the grid and the drift of the game menu's polka-dot paper, which CSS reads as `--ddlc-polka-*` | `lib.roles` |
+| `ddlc-polka-{dark,light}{,-2x,-1920x1080}.gif` | a surface that takes a picture rather than CSS: the polka-dot paper drifting in a loop, as a tile that repeats and as a whole screen for a surface that stretches its picture to cover | `lib.polka.{dark,light}.{tile,tile-2x,screen}` |
 
 Each stylesheet is one `<link>` and carries both variants: it follows the system until `data-theme="light|dark"` on `<html>` pins a side. A colour in a page's own rules comes from a `--ddlc-*` role, so it follows both sides too
 
@@ -208,11 +209,11 @@ nix develop -c ./generate.sh
   --palette palette.env   # without Nix
 ```
 
-The colours come from ddlc-palette and nothing else does — the palette is measured, this repository is only a mapping. A weekly workflow re-renders against the palette's HEAD rather than the lock and opens a pull request when they part ways, so a colour cannot move upstream and quietly leave this dark
+The colours come from ddlc-palette and nothing else does — the palette is measured, this repository is only a mapping. A weekly workflow takes the palette's HEAD with every other input, renders `dist/` again in the same commit and lands it on green, so a colour cannot move upstream and quietly leave this dark
 
 ## Tests
 
-`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`, and every letter style holding no `var()`), that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
+`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`, and every letter style holding no `var()`), that the polka-dot GIFs show the paper `ddlc-roles.json` describes and loop with no seam, that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
 
 `tests/distro.sh <distro>` (needs docker or podman) runs the full cycle inside a real `debian`, `ubuntu`, `arch` or `fedora` container: preflight, its printed guidance run verbatim, install, selective uninstall, uninstall. In CI that is the four distro badges — on push, weekly against `:latest`, never on pull requests
 
@@ -220,7 +221,7 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 
 ```
 generate.sh   the mapping: base16 slots and palette colours in, the themes out
-src/          the web kit, the report stylesheet and the scripts, by hand
+src/          the web kit, the report stylesheet, the scripts and the GIF drawer, by hand
 vendor/       Departure Mono and Nunito, kept byte-equal to their sources by vendor-sync.sh
 templates/    the page `nix flake init -t` starts from
 nix/          module.nix, module-test.nix
@@ -229,5 +230,5 @@ install.sh    for systems without Nix; VERSION is the one source of version
 completions/  tab completion for install.sh, sourced from the checkout
 check-sh.sh   vendored from bash-best-practices, holds install.sh's help
               and completions to its parser
-tests/        run.sh (fast, sandboxed), distro.sh (containers)
+tests/        run.sh (fast, sandboxed), distro.sh (containers), polka-gifs.py
 ```

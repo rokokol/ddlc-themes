@@ -7,6 +7,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 ### Added
 
 - the polka-dot paper's drift: `--ddlc-polka-period` and `polka.period` in `ddlc-roles.json`, the seconds the paper takes to move one tile toward the bottom right
+- the polka-dot paper as a looping GIF per variant, drawn in the `ground` and `dots` roles: a tile that repeats, at one and two device pixels per CSS pixel, and a whole 1920x1080 screen for a surface that stretches its picture to cover (`lib.polka`)
 
 ## [3.3.0] - 2026-10-11
 

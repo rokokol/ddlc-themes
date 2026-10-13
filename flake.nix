@@ -24,12 +24,14 @@
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
 
       # generate.sh packs the vendored Nunito into WOFF2 with fonttools, which needs brotli for
-      # it; the shell and the dist check take the same environment
-      fontTools =
+      # it, and draws the polka-dot GIFs with Pillow; the shell and the checks take the same
+      # environment
+      generatorPython =
         pkgs:
         pkgs.python3.withPackages (p: [
           p.fonttools
           p.brotli
+          p.pillow
         ]);
 
       # The Nerd Fonts release archive of Departure Mono, with the font's and the icons' licences.
@@ -137,6 +139,20 @@
         };
         # Departure Mono with the Nerd Fonts icons, for code that shows them
         nerd = ./dist/DepartureMonoNerdFontMono-Regular.woff2;
+        # The polka-dot paper as a looping GIF per variant: a tile that repeats, at one and two
+        # device pixels per CSS pixel, and a whole screen for a surface that stretches its picture
+        polka = {
+          dark = {
+            tile = ./dist/ddlc-polka-dark.gif;
+            tile-2x = ./dist/ddlc-polka-dark-2x.gif;
+            screen = ./dist/ddlc-polka-dark-1920x1080.gif;
+          };
+          light = {
+            tile = ./dist/ddlc-polka-light.gif;
+            tile-2x = ./dist/ddlc-polka-light-2x.gif;
+            screen = ./dist/ddlc-polka-light-1920x1080.gif;
+          };
+        };
         claude-code = {
           light = ./dist/ddlc-claude-code-light.json;
           dark = ./dist/ddlc-claude-code-dark.json;
@@ -184,7 +200,7 @@
             {
               nativeBuildInputs = [
                 pkgs.jq
-                (fontTools pkgs)
+                (generatorPython pkgs)
               ];
             }
             ''
@@ -197,6 +213,13 @@
               diff -r ${dist} dist
               touch $out
             '';
+
+        # The GIFs show the paper ddlc-roles.json describes: its grid, its period, its colours,
+        # and a loop with no seam
+        polka-gifs = pkgs.runCommand "polka-gifs" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
+          python3 ${testsDir}/polka-gifs.py ${dist}
+          touch $out
+        '';
 
         # Enabling a switch has to be enough: the colours in kitty's config after its own
         # settings, both btop variants deployed and the theme named — and nothing while disabled
@@ -384,7 +407,7 @@
             pkgs.shellcheck
             pkgs.shfmt
             pkgs.jq
-            (fontTools pkgs)
+            (generatorPython pkgs)
           ];
           # So generate.sh runs with no arguments inside the shell
           DDLC_BASE16_LIGHT = schemes.light;
