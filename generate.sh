@@ -1173,6 +1173,7 @@ task-c-bg                    board-shade          ground
 sub-task-c-bg                board-shade          ground
 task-c-bg-done               ground               board
 task-c-selected-bg           yuri@40:ink          dots
+sub-task-border-color        line                 line
 sub-task-c-bg-done           ground               board
 link-color                   link                 link
 c-accent                     accent               accent
@@ -1200,6 +1201,7 @@ ddlc-popup-text              popup-text           popup-text
 ddlc-popup-accent            popup-accent         popup-accent
 ddlc-on-accent               on-accent            on-accent
 ddlc-kind-note               kind-note            kind-note
+ddlc-line                    line                 line
 "
 
 sp_value() { # <variant> <token> <value>

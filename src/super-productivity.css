@@ -36,9 +36,18 @@ task.isDone:hover {
 }
 
 /* Inside a done task its colour is the task's colour, so the buttons the pointer brings up sit
-   on the same ground as the line rather than on an open task's */
+   on the same ground as the line rather than on an open task's. The line between subtasks is
+   the theme's line, which the app's near-white border hid on a card, and fainter once done */
 task.isDone {
   --task-c-bg: var(--task-c-bg-done);
+  --sub-task-border-color: color-mix(in srgb, var(--ddlc-line) 45%, transparent);
+}
+
+/* The app draws a subtask's separator on the task itself, under the box it lays one pixel over
+   it, so the box hides the line; the line goes on the box instead, under every subtask but the
+   last */
+task task:not(:last-of-type) > swipe-block > .inner-wrapper > .inner-wrapper > .box {
+  border-bottom: 1px solid var(--sub-task-border-color);
 }
 
 /* Over a background image the app makes the side menu translucent and blurred; it stays the
@@ -116,6 +125,34 @@ body.hasBgImage .page-settings .settings-tabs .mat-mdc-tab-header {
 body.hasBgImage .page-settings .tab-content .section-title {
   padding: var(--s) var(--s2);
   border-radius: var(--card-border-radius);
+  background: var(--bg);
+}
+
+/* The planner's and the schedule's own heads lie on the page as well: a day's title and load,
+   its empty note and its add button in the planner; the row of view and date controls and the
+   hour labels in the schedule */
+body.hasBgImage planner-day header {
+  padding-inline: var(--s);
+  border-radius: var(--card-border-radius);
+  background: var(--bg);
+}
+
+body.hasBgImage planner-day .empty,
+body.hasBgImage planner-day add-task-inline button {
+  width: fit-content;
+  margin-inline: auto;
+  padding-inline: 14px;
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+body.hasBgImage schedule .schedule-nav-controls {
+  background: var(--bg);
+}
+
+body.hasBgImage schedule-week .time {
+  padding-inline: 4px;
+  border-radius: 6px;
   background: var(--bg);
 }
 
