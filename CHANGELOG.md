@@ -7,10 +7,13 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 ### Added
 
 - every release carries the files of its `dist/`, so a theme, a font or the polka-dot pictures are one download from the release page
-- `NotoSans-Symbols.woff2` and `NotoSansMath-Symbols.woff2` in `dist/`, with their licences (`lib.nunito.symbols.{sans,math}`): the Greek, arrows, operators, blackboard letters, super and subscripts and similar symbols that Nunito lacks, cut from Noto Sans (weight axis kept) and Noto Sans Math. `ddlc-report.css` declares them under the name Nunito, scaled to Nunito's x-height, so `font-family: Nunito` draws mathematics with no second font name. The report expects both files beside it, and without them those characters come from the system as before
+- Mya Nunito in `dist/`, under the OFL in `MyaNunito-LICENSE.txt` with the notices of Nunito, Noto Sans and Noto Sans Math (`lib.mya-nunito`): Nunito with the Greek, arrows, operators, blackboard letters, super and subscripts and similar symbols it lacks, from Noto Sans and Noto Sans Math, scaled to Nunito's x-height. It is one variable font per style on Nunito's whole weight axis, and every added glyph follows the weight, Noto Sans Math included, as far as the openings between its strokes allow, keeping its sidebearings at every weight, as Nunito's own mathematical signs do. It comes as `MyaNunito.woff2` and `MyaNunito-Italic.woff2` for a page and as variable TTF for a system; static Regular, Medium, Bold and Black TTF in both styles, for matplotlib, are a family of their own, Mya Nunito Static
 
 ### Changed
 
+- **the report's prose face is Mya Nunito**: `ddlc-report.css` expects `MyaNunito.woff2` and `MyaNunito-Italic.woff2` beside it instead of `Nunito.woff2` and `Nunito-Italic.woff2`. A page that carries only the old files draws in an installed Nunito or the system face. `Nunito.woff2` and `Nunito-Italic.woff2` stay in `dist/` and in `lib.nunito`
+- the prose and heading stacks of the stylesheets, the letters and Super Productivity name Mya Nunito first and Nunito after it
+- matplotlib draws in Mya Nunito Static, Regular with a Bold, where it is installed, instead of Nunito's thin default weight, and sets a formula in the same face, with STIX Sans for what the face lacks
 - the report sets `font-synthesis-weight: none`, so the browser never emboldens a face that has one weight, as the DDLC Obsidian theme already does
 
 ## [3.4.2] - 2026-10-13

@@ -4,68 +4,26 @@
    block is a small kitty window, .ddlc-inform is the game's "Just Monika." pop-up and a
    quote is a note taped on, as in the DDLC Obsidian theme. Light or dark follows the
    system until data-theme="light|dark" on <html> pins a side.
-   Nunito.woff2, Nunito-Italic.woff2, NotoSans-Symbols.woff2 and NotoSansMath-Symbols.woff2
-   are expected beside this file */
+   MyaNunito.woff2 and MyaNunito-Italic.woff2 are expected beside this file */
 
+/* Mya Nunito is Nunito with the Greek, arrows and operators it lacks, drawn from Noto at
+   Nunito's x-height and weight, in one variable font per style */
 @font-face {
-  font-family: Nunito;
-  src: url("Nunito.woff2") format("woff2");
+  font-family: "Mya Nunito";
+  src: url("MyaNunito.woff2") format("woff2");
   font-weight: 200 1000;
 }
 
 @font-face {
-  font-family: Nunito;
-  src: url("Nunito-Italic.woff2") format("woff2");
-  font-weight: 200 1000;
-  font-style: italic;
-}
-
-/* Nunito has next to no Greek, no arrows and few operators, so Noto draws them under the
-   same family name: Noto Sans where it has the character, Noto Sans Math where only that
-   does. Each face lists exactly the codepoints its file holds, none of them Nunito's, so
-   Nunito keeps every character it has. size-adjust brings Noto's taller x to Nunito's. Noto
-   Sans keeps its weight axis; Math has one weight, which is drawn for every weight asked.
-   Each file is declared for the italic style too, as upright glyphs: with only the normal
-   style declared, a browser skips these faces in italic text and takes the symbols from
-   the system, as Chromium does.
-   generate.sh fills the @...@ values from the files */
-@font-face {
-  font-family: Nunito;
-  src: url("NotoSans-Symbols.woff2") format("woff2");
-  font-weight: 200 1000;
-  size-adjust: @sans-size-adjust@;
-  unicode-range: @sans-range@;
-}
-
-@font-face {
-  font-family: Nunito;
-  src: url("NotoSans-Symbols.woff2") format("woff2");
+  font-family: "Mya Nunito";
+  src: url("MyaNunito-Italic.woff2") format("woff2");
   font-weight: 200 1000;
   font-style: italic;
-  size-adjust: @sans-size-adjust@;
-  unicode-range: @sans-range@;
 }
 
-@font-face {
-  font-family: Nunito;
-  src: url("NotoSansMath-Symbols.woff2") format("woff2");
-  font-weight: 200 1000;
-  size-adjust: @math-size-adjust@;
-  unicode-range: @math-range@;
-}
-
-@font-face {
-  font-family: Nunito;
-  src: url("NotoSansMath-Symbols.woff2") format("woff2");
-  font-weight: 200 1000;
-  font-style: italic;
-  size-adjust: @math-size-adjust@;
-  unicode-range: @math-range@;
-}
-
-/* Prose is Nunito Medium, and bold steps up to Black so it stands out from the text. No face
-   is ever emboldened by the browser: Doki, Departure Mono and Noto Sans Math have one weight
-   each, and a synthetic bold smears them */
+/* Prose is Mya Nunito Medium, and bold steps up to Black so it stands out from the text.
+   No face is ever emboldened by the browser: Doki and Departure Mono have one weight each,
+   and a synthetic bold smears them */
 body {
   max-width: 46rem;
   margin: 0 auto;
@@ -79,9 +37,9 @@ strong {
   font-weight: 900;
 }
 
-/* A heading is Doki where it is installed, and Nunito Black otherwise. Doki has one weight,
-   and a synthetic bold smears it, so the weight stays normal and Black comes through the
-   weight axis, which only the variable Nunito has */
+/* A heading is Doki where it is installed, and Mya Nunito Black otherwise. Doki has one
+   weight, and a synthetic bold smears it, so the weight stays normal and Black comes through
+   the weight axis, which only the variable font has */
 h1,
 h2,
 h3,

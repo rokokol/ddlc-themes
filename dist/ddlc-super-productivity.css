@@ -8,7 +8,7 @@
    Super Productivity loads nothing a theme names, so the faces are the installed ones */
 
 body {
-  --ddlc-font-prose: Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ddlc-font-prose: 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ddlc-font-data: 'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace;
   --surface-0: #F0DDE7;
   --surface-1: #FFEDF8;

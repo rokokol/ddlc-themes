@@ -274,17 +274,32 @@ EOF
 # No axes.grid in here: it would mean "on every axes", and a heatmap or an image draws above
 # the grid whatever axisbelow says, so the lines end up cutting across the data. A chart that
 # wants one calls ax.grid(axis="y") for the direction its values actually run.
-# The face is Nunito, the prose face. matplotlib reads no variation axis, so a variable
-# Nunito draws in its default instance, ExtraLight, and has no bold: the title stays
-# normal, or every chart would log that it found no bold weight
+# The face is Mya Nunito, the prose face, in its static family: matplotlib reads no variation
+# axis, and of the variable Mya Nunito it would draw the default instance alone, ExtraLight,
+# with no bold. A static Nunito follows; a variable one draws ExtraLight as well. The text is
+# Regular, the weight matplotlib asks for: the fallback faces of a formula have no Medium, and
+# matplotlib warns whenever it settles for another weight. The title stays normal, as in the
+# report, where a heading is not bold either.
+# A formula is set in the same face, the Greek and the operators included. What the face lacks,
+# the large radical and the extensible brackets, comes from STIX in its sans-serif cut, which
+# sits closer to a sans face than Computer Modern; at chart sizes the two draw those alike.
+# The calligraphic letters take the italic, since the default names a cursive family most
+# systems lack, and matplotlib warns about it with every formula
 mpl_common() {
   cat <<'EOF'
 figure.dpi:          140
 savefig.dpi:         140
 savefig.bbox:        tight
 font.family:         sans-serif
-font.sans-serif:     Nunito, DejaVu Sans
+font.sans-serif:     Mya Nunito Static, Nunito, DejaVu Sans
 font.size:           9
+mathtext.fontset:    custom
+mathtext.rm:         Mya Nunito Static
+mathtext.it:         Mya Nunito Static:italic
+mathtext.bf:         Mya Nunito Static:bold
+mathtext.sf:         Mya Nunito Static
+mathtext.cal:        Mya Nunito Static:italic
+mathtext.fallback:   stixsans
 axes.titlesize:      11
 axes.titleweight:    normal
 axes.titlelocation:  left
@@ -476,13 +491,14 @@ polka_period=8
 
 # The faces, for the stylesheets and the letters alike. A letter cannot load a web font, so
 # every stack names the faces a reader may have installed and ends in an honest fallback.
-# Prose is Nunito, which the stylesheets carry; after it come the faces each system draws
-# its own interface in. A heading is Doki where it is installed, since Doki may not be
-# shared, and Nunito Black otherwise; a stylesheet reaches Black through the variable
-# Nunito it carries, while a letter can only name a face, so the letter's stack differs
+# Prose is Mya Nunito, which the report stylesheet carries and a system may have installed,
+# then Nunito, which draws everything but the mathematics the same; after them come the faces
+# each system draws its own interface in. A heading is Doki where it is installed, since Doki
+# may not be shared, and Nunito Black otherwise; a stylesheet reaches Black through the
+# variable font it carries, while a letter can only name a face, so the letter's stack differs
 font_stacks="
-prose           Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
-heading         Doki, Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
+prose           'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
+heading         Doki, 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
 heading-letter  Doki, 'Nunito Black', 'Segoe UI Black', 'Arial Black', sans-serif
 data            'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace
 sans            system-ui, -apple-system, 'Segoe UI', sans-serif
@@ -712,30 +728,16 @@ done
   echo "}"
 } >"$out/ddlc-tokens.css"
 
-# Nunito lacks Greek, arrows and most mathematical operators. src/symbol-fonts.py cuts what it
-# lacks out of the vendored Noto Sans and Noto Sans Math into two WOFF2 files and prints the
-# unicode-range and size-adjust of each, which the report stylesheet declares for them. The
-# stylesheet states the faces and this fills in the values, so the codepoints are named once,
-# in the files themselves. The cut is byte-stable for the same input and fonttools
-python3 -c 'import fontTools.subset, brotli' 2>/dev/null || {
+# Nunito lacks Greek, arrows and most mathematical operators. src/mya-nunito.py merges what it
+# lacks from the vendored Noto Sans and Noto Sans Math into Nunito's own variable font, as Mya
+# Nunito: TTF for a system, WOFF2 for a page, and the static faces matplotlib reads. It prints
+# how far each master emboldens the added glyphs. The merge is byte-stable for the same input
+# and fonttools. The licences of its three sources go beside it in dist/
+python3 -c 'import fontTools.varLib, brotli' 2>/dev/null || {
   echo "generate.sh: fonttools or brotli is missing for python3; nix develop puts them in the environment" >&2
   exit 1
 }
-symbols=$(python3 "$src/symbol-fonts.py" "$vendor" "$out")
-sans_range=$(jq -r .sans.range <<<"$symbols")
-sans_adjust=$(jq -r '.sans["size-adjust"]' <<<"$symbols")
-math_range=$(jq -r .math.range <<<"$symbols")
-math_adjust=$(jq -r '.math["size-adjust"]' <<<"$symbols")
-fill_symbols() { # a stylesheet on stdin, its @...@ values filled from the cut
-  # The ranges run over several lines, which awk -v refuses, so they go in the environment
-  SANS_RANGE=$sans_range SANS_ADJUST=$sans_adjust MATH_RANGE=$math_range MATH_ADJUST=$math_adjust awk '{
-    gsub(/@sans-range@/, ENVIRON["SANS_RANGE"])
-    gsub(/@sans-size-adjust@/, ENVIRON["SANS_ADJUST"])
-    gsub(/@math-range@/, ENVIRON["MATH_RANGE"])
-    gsub(/@math-size-adjust@/, ENVIRON["MATH_ADJUST"])
-    print
-  }'
-}
+python3 "$src/mya-nunito.py" "$vendor" "$out"
 cat "$vendor/noto-sans/NotoSans-LICENSE.txt" >"$out/NotoSans-LICENSE.txt"
 cat "$vendor/noto-sans-math/NotoSansMath-LICENSE.txt" >"$out/NotoSansMath-LICENSE.txt"
 
@@ -752,12 +754,8 @@ for sheet in ui report; do
     echo
     sed '1,/\*\//d' "$src/base.css"
     echo
-    sed '1,/\*\//d' "$src/$sheet.css" | fill_symbols
+    sed '1,/\*\//d' "$src/$sheet.css"
   } >"$out/ddlc-$sheet.css"
-  if grep -q '@[a-z-]*@' "$out/ddlc-$sheet.css"; then
-    echo "generate.sh: ddlc-$sheet.css keeps an unfilled @...@ value" >&2
-    exit 1
-  fi
 done
 
 # The scripts are not generated from anything, only copied, so a consumer vendors the whole

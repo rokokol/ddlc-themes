@@ -15,6 +15,7 @@
 [![palette](https://img.shields.io/badge/colours-ddlc--palette-FF80C0?style=flat)](https://github.com/rokokol/ddlc-palette)
 [![assets](https://img.shields.io/badge/assets-Team_Salvato-FF80C0?style=flat)](ASSETS.md)
 [![license](https://img.shields.io/badge/code-MIT-3DA639?style=flat)](LICENSE)
+[![fonts](https://img.shields.io/badge/fonts-OFL_1.1-3DA639?style=flat)](ASSETS.md#fonts)
 [![build](https://github.com/rokokol/ddlc-themes/actions/workflows/build.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/build.yml)
 [![debian](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-debian.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-debian.yml)
 [![ubuntu](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-ubuntu.yml/badge.svg)](https://github.com/rokokol/ddlc-themes/actions/workflows/distro-ubuntu.yml)
@@ -151,7 +152,7 @@ Package recipes can stage another config root without duplicating the layout: `D
 
 ### Super Productivity
 
-Super Productivity keeps a theme inside its own storage rather than in a file, so neither the module nor `install.sh` places it. Upload [`dist/ddlc-super-productivity.css`](dist/ddlc-super-productivity.css), which every [release](https://github.com/rokokol/ddlc-themes/releases/latest) also carries, with "Install theme" in the theme section of its settings and select it there; it follows the app's own dark mode switch. The app loads nothing a theme names, so the faces are the ones installed on the system: Nunito for the prose and Departure Mono for a notice, each with a system fallback
+Super Productivity keeps a theme inside its own storage rather than in a file, so neither the module nor `install.sh` places it. Upload [`dist/ddlc-super-productivity.css`](dist/ddlc-super-productivity.css), which every [release](https://github.com/rokokol/ddlc-themes/releases/latest) also carries, with "Install theme" in the theme section of its settings and select it there; it follows the app's own dark mode switch. The app loads nothing a theme names, so the faces are the ones installed on the system: Mya Nunito or Nunito for the prose and Departure Mono for a notice, each with a system fallback
 
 For the polka-dot paper behind the tasks, pick the screen-sized WebP of the variant as a project's background image in that project's settings. The GIF of the same screen is larger than the app takes from a file
 
@@ -165,8 +166,10 @@ These have no switch and no installer, because they belong next to a page and no
 | `ddlc-theme.js`, `ddlc-cloud.js` | the theme button that cycles system, light and dark; the pointer's dithered cloud and the colour reader for a canvas | `lib.js.{theme,cloud}` |
 | `DepartureMono-Regular.woff2` | the face the kit is drawn in, expected beside `ddlc-ui.css` | `lib.font` |
 | `ddlc-report.css` | an HTML report: prose, tables, code as a kitty window, the "Just Monika." pop-up, quotes taped on | `lib.report` |
-| `Nunito.woff2`, `Nunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`; a heading takes Doki where it is installed and Nunito Black otherwise | `lib.nunito.{regular,italic}` |
-| `NotoSans-Symbols.woff2`, `NotoSansMath-Symbols.woff2` | Greek, arrows, operators, blackboard letters and indices, which Nunito lacks, cut from Noto Sans and Noto Sans Math; expected beside `ddlc-report.css`, which declares them under the name Nunito, so a page needs no second font name | `lib.nunito.symbols.{sans,math}` |
+| `MyaNunito.woff2`, `MyaNunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`: Mya Nunito, which is Nunito with the Greek, arrows, operators, blackboard letters and indices it lacks, drawn from Noto Sans and Noto Sans Math at its size and along its weight axis, without closing the openings between their strokes and spaced alike at every weight, as Nunito's own signs are. A heading takes Doki where it is installed and Mya Nunito Black otherwise. Its licence, the OFL with the notices of all three fonts, is `MyaNunito-LICENSE.txt` beside it | `lib.mya-nunito.{regular,italic}` |
+| `MyaNunito.ttf`, `MyaNunito-Italic.ttf` | Mya Nunito for the system, variable as on a page | `lib.mya-nunito.ttf.{regular,italic}` |
+| `MyaNunitoStatic-{Regular,Medium,Bold,Black}.ttf` and their `Italic`, `MediumItalic`, `BoldItalic`, `BlackItalic` | Mya Nunito at fixed weights, as a family of its own, Mya Nunito Static, so a system holding both sees each once: for matplotlib, which reads no variation axis and draws a variable font at its lightest. The matplotlib styles name it for text and formulas alike | `lib.mya-nunito.static.{regular,medium,bold,black,italic,medium-italic,bold-italic,black-italic}` |
+| `Nunito.woff2`, `Nunito-Italic.woff2` | Nunito as it comes, for a page that wants it without the additions | `lib.nunito.{regular,italic}` |
 | `DepartureMonoNerdFontMono-Regular.woff2` | Departure Mono with the [Nerd Fonts](https://www.nerdfonts.com) icons, for code that shows them; its licences are the two `DepartureMonoNerdFont-*` files beside it | `lib.nerd` |
 | `ddlc-mail.json` | an HTML letter: the light colours, the faces and ready values for `style` attributes | `lib.mail` |
 | `ddlc-tokens.css` | a theme that brings its own palette and selectors: the roles alone | `lib.tokens` |
@@ -215,7 +218,7 @@ Claude Code and opencode sit on the palette's named colours with the contrast ch
 
 ## Re-rendering
 
-`generate.sh` reads the two base16 yamls and the flat `palette.env`, and writes `dist/`. It also assembles the stylesheets and scripts out of `src/` and copies the vendored font. The devShell puts all three inputs in the environment:
+`generate.sh` reads the two base16 yamls and the flat `palette.env`, and writes `dist/`. It also assembles the stylesheets and scripts out of `src/`, copies the vendored fonts and merges Mya Nunito out of them. The devShell puts all three inputs in the environment:
 
 ```sh
 nix develop -c ./generate.sh
@@ -227,7 +230,7 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 
 ## Tests
 
-`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`, and every letter style holding no `var()`), that the polka-dot GIFs show the paper `ddlc-roles.json` describes and loop with no seam, that every component, class and variable the Super Productivity theme hooks into still exists in that app's source at the locked version, that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
+`nix flake check` proves that `dist/` is what `generate.sh` writes today, that every value in it is a hex colour the palette actually holds (down to every opencode reference resolving against its `defs`, and every letter style holding no `var()`), that the polka-dot GIFs show the paper `ddlc-roles.json` describes and loop with no seam, that Mya Nunito keeps every glyph and the weight axis of Nunito while its added glyphs cover the mathematical blocks, stand at Nunito's x-height and grow heavier with the weight, that every component, class and variable the Super Productivity theme hooks into still exists in that app's source at the locked version, that the module wires every application up (and touches none while disabled), that every shell file passes shellcheck and shfmt with the completions in step with `install.sh`, and it runs `tests/run.sh` — the installer's whole contract: manifest, per-component sweep, selective uninstall, staging, the refusal path
 
 `tests/distro.sh <distro>` (needs docker or podman) runs the full cycle inside a real `debian`, `ubuntu`, `arch` or `fedora` container: preflight, its printed guidance run verbatim, install, selective uninstall, uninstall. In CI that is the four distro badges — on push, weekly against `:latest`, never on pull requests
 
@@ -235,7 +238,7 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 
 ```
 generate.sh   the mapping: base16 slots and palette colours in, the themes out
-src/          the web kit, the report stylesheet, the scripts, the GIF drawer and the symbol font cutter, by hand
+src/          the web kit, the report stylesheet, the scripts, the GIF drawer and the Mya Nunito merger, by hand
 vendor/       Departure Mono, Nunito, Noto Sans and Noto Sans Math, kept byte-equal to their sources by vendor-sync.sh
 templates/    the page `nix flake init -t` starts from
 nix/          module.nix, module-test.nix

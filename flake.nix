@@ -23,15 +23,18 @@
       ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
 
-      # generate.sh packs the vendored Nunito into WOFF2 with fonttools, which needs brotli for
-      # it, and draws the polka-dot GIFs with Pillow; the shell and the checks take the same
+      # generate.sh merges and packs the vendored fonts with fonttools, which needs brotli for
+      # WOFF2, and measures the openings of the merged glyphs on a raster with numpy and scipy;
+      # it draws the polka-dot GIFs with Pillow. The shell and the checks take the same
       # environment
       generatorPython =
         pkgs:
         pkgs.python3.withPackages (p: [
           p.fonttools
           p.brotli
+          p.numpy
           p.pillow
+          p.scipy
         ]);
 
       # The Nerd Fonts release archive of Departure Mono, with the font's and the icons' licences.
@@ -132,15 +135,30 @@
           cloud = ./dist/ddlc-cloud.js;
         };
         font = ./dist/DepartureMono-Regular.woff2;
-        # Nunito, every script and weight: the prose and the fallback headings
+        # Nunito, every script and weight, as it comes
         nunito = {
           regular = ./dist/Nunito.woff2;
           italic = ./dist/Nunito-Italic.woff2;
-          # What Nunito lacks, cut from Noto: the report stylesheet declares both under the
-          # name Nunito. Math is for the characters Noto Sans does not have
-          symbols = {
-            sans = ./dist/NotoSans-Symbols.woff2;
-            math = ./dist/NotoSansMath-Symbols.woff2;
+        };
+        # Nunito with the Greek and mathematics it lacks, from Noto: the prose and the fallback
+        # headings of the report. Variable TTF for a system; the static weights, a family of
+        # their own named Mya Nunito Static, for matplotlib, which reads no variation axis
+        mya-nunito = {
+          regular = ./dist/MyaNunito.woff2;
+          italic = ./dist/MyaNunito-Italic.woff2;
+          ttf = {
+            regular = ./dist/MyaNunito.ttf;
+            italic = ./dist/MyaNunito-Italic.ttf;
+          };
+          static = {
+            regular = ./dist/MyaNunitoStatic-Regular.ttf;
+            medium = ./dist/MyaNunitoStatic-Medium.ttf;
+            bold = ./dist/MyaNunitoStatic-Bold.ttf;
+            black = ./dist/MyaNunitoStatic-Black.ttf;
+            italic = ./dist/MyaNunitoStatic-Italic.ttf;
+            medium-italic = ./dist/MyaNunitoStatic-MediumItalic.ttf;
+            bold-italic = ./dist/MyaNunitoStatic-BoldItalic.ttf;
+            black-italic = ./dist/MyaNunitoStatic-BlackItalic.ttf;
           };
         };
         # Departure Mono with the Nerd Fonts icons, for code that shows them
@@ -271,11 +289,13 @@
           touch $out
         '';
 
-        # The report draws Greek, arrows and operators in Noto under the name Nunito. The
-        # subsets must hold what unicode-range says, leave Nunito's own characters alone, cover
-        # the blocks they are meant for and match Nunito's x-height
-        symbol-fonts = pkgs.runCommand "symbol-fonts" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
-          python3 ${testsDir}/symbol-fonts.py ${dist} ${vendorDir}
+        # Mya Nunito is Nunito with Greek, arrows and operators from Noto. It must stay variable
+        # over Nunito's weights, leave Nunito's own glyphs alone, cover the blocks it is meant
+        # for, match Nunito's x-height, grow heavier with the weight without closing the
+        # openings between strokes, and space as Nunito's letters do. The openings are measured
+        # by src/glyph_openings.py, the generator's own measure
+        mya-nunito = pkgs.runCommand "mya-nunito" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
+          python3 ${testsDir}/mya-nunito.py ${dist} ${vendorDir} ${srcDir}
           touch $out
         '';
 

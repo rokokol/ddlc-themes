@@ -26,8 +26,15 @@ figure.dpi:          140
 savefig.dpi:         140
 savefig.bbox:        tight
 font.family:         sans-serif
-font.sans-serif:     Nunito, DejaVu Sans
+font.sans-serif:     Mya Nunito Static, Nunito, DejaVu Sans
 font.size:           9
+mathtext.fontset:    custom
+mathtext.rm:         Mya Nunito Static
+mathtext.it:         Mya Nunito Static:italic
+mathtext.bf:         Mya Nunito Static:bold
+mathtext.sf:         Mya Nunito Static
+mathtext.cal:        Mya Nunito Static:italic
+mathtext.fallback:   stixsans
 axes.titlesize:      11
 axes.titleweight:    normal
 axes.titlelocation:  left
