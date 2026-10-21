@@ -166,6 +166,7 @@ These have no switch and no installer, because they belong next to a page and no
 | `DepartureMono-Regular.woff2` | the face the kit is drawn in, expected beside `ddlc-ui.css` | `lib.font` |
 | `ddlc-report.css` | an HTML report: prose, tables, code as a kitty window, the "Just Monika." pop-up, quotes taped on | `lib.report` |
 | `Nunito.woff2`, `Nunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`; a heading takes Doki where it is installed and Nunito Black otherwise | `lib.nunito.{regular,italic}` |
+| `NotoSans-Symbols.woff2`, `NotoSansMath-Symbols.woff2` | Greek, arrows, operators, blackboard letters and indices, which Nunito lacks, cut from Noto Sans and Noto Sans Math; expected beside `ddlc-report.css`, which declares them under the name Nunito, so a page needs no second font name | `lib.nunito.symbols.{sans,math}` |
 | `DepartureMonoNerdFontMono-Regular.woff2` | Departure Mono with the [Nerd Fonts](https://www.nerdfonts.com) icons, for code that shows them; its licences are the two `DepartureMonoNerdFont-*` files beside it | `lib.nerd` |
 | `ddlc-mail.json` | an HTML letter: the light colours, the faces and ready values for `style` attributes | `lib.mail` |
 | `ddlc-tokens.css` | a theme that brings its own palette and selectors: the roles alone | `lib.tokens` |
@@ -234,8 +235,8 @@ The colours come from ddlc-palette and nothing else does — the palette is meas
 
 ```
 generate.sh   the mapping: base16 slots and palette colours in, the themes out
-src/          the web kit, the report stylesheet, the scripts and the GIF drawer, by hand
-vendor/       Departure Mono and Nunito, kept byte-equal to their sources by vendor-sync.sh
+src/          the web kit, the report stylesheet, the scripts, the GIF drawer and the symbol font cutter, by hand
+vendor/       Departure Mono, Nunito, Noto Sans and Noto Sans Math, kept byte-equal to their sources by vendor-sync.sh
 templates/    the page `nix flake init -t` starts from
 nix/          module.nix, module-test.nix
 dist/         the rendered themes, committed for consumers without Nix

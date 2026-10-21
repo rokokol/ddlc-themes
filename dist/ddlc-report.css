@@ -6,7 +6,8 @@
    block is a small kitty window, .ddlc-inform is the game's "Just Monika." pop-up and a
    quote is a note taped on, as in the DDLC Obsidian theme. Light or dark follows the
    system until data-theme="light|dark" on <html> pins a side.
-   Nunito.woff2 and Nunito-Italic.woff2 are expected beside this file */
+   Nunito.woff2, Nunito-Italic.woff2, NotoSans-Symbols.woff2 and NotoSansMath-Symbols.woff2
+   are expected beside this file */
 
 :root {
   --ddlc-paper: #FFFFFF;
@@ -183,12 +184,216 @@ mark {
   font-style: italic;
 }
 
-/* Prose is Nunito Medium, and bold steps up to Black so it stands out from the text */
+/* Nunito has next to no Greek, no arrows and few operators, so Noto draws them under the
+   same family name: Noto Sans where it has the character, Noto Sans Math where only that
+   does. Each face lists exactly the codepoints its file holds, none of them Nunito's, so
+   Nunito keeps every character it has. size-adjust brings Noto's taller x to Nunito's. Noto
+   Sans keeps its weight axis; Math has one weight, which is drawn for every weight asked.
+   Each file is declared for the italic style too, as upright glyphs: with only the normal
+   style declared, a browser skips these faces in italic text and takes the symbols from
+   the system, as Chromium does.
+   generate.sh fills the @...@ values from the files */
+@font-face {
+  font-family: Nunito;
+  src: url("NotoSans-Symbols.woff2") format("woff2");
+  font-weight: 200 1000;
+  size-adjust: 91.7%;
+  unicode-range: U+0370-0377,
+    U+037A-037F,
+    U+0384-038A,
+    U+038C,
+    U+038E-0393,
+    U+0395-03A1,
+    U+03A4-03A8,
+    U+03AA-03BB,
+    U+03BD-03BF,
+    U+03C1-03E1,
+    U+03F0-03FF,
+    U+1D2C-1D6A,
+    U+2016,
+    U+2034,
+    U+2071,
+    U+207A-207F,
+    U+208A-208E,
+    U+2090-209C,
+    U+2100-2112,
+    U+2114-2115,
+    U+2117-2121,
+    U+2123-2125,
+    U+2127-212D,
+    U+212F-214F,
+    U+25CC,
+    U+2C7C-2C7D;
+}
+
+@font-face {
+  font-family: Nunito;
+  src: url("NotoSans-Symbols.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: italic;
+  size-adjust: 91.7%;
+  unicode-range: U+0370-0377,
+    U+037A-037F,
+    U+0384-038A,
+    U+038C,
+    U+038E-0393,
+    U+0395-03A1,
+    U+03A4-03A8,
+    U+03AA-03BB,
+    U+03BD-03BF,
+    U+03C1-03E1,
+    U+03F0-03FF,
+    U+1D2C-1D6A,
+    U+2016,
+    U+2034,
+    U+2071,
+    U+207A-207F,
+    U+208A-208E,
+    U+2090-209C,
+    U+2100-2112,
+    U+2114-2115,
+    U+2117-2121,
+    U+2123-2125,
+    U+2127-212D,
+    U+212F-214F,
+    U+25CC,
+    U+2C7C-2C7D;
+}
+
+@font-face {
+  font-family: Nunito;
+  src: url("NotoSansMath-Symbols.woff2") format("woff2");
+  font-weight: 200 1000;
+  size-adjust: 92.2%;
+  unicode-range: U+2190-2201,
+    U+2203-2204,
+    U+2207-220E,
+    U+2210,
+    U+2213-2214,
+    U+2216-2218,
+    U+221B-221D,
+    U+221F-222A,
+    U+222C-2247,
+    U+2249-225F,
+    U+2261-2263,
+    U+2266-2300,
+    U+2302,
+    U+2305-2306,
+    U+2308-230B,
+    U+2310-2313,
+    U+2317,
+    U+2319,
+    U+231C-2323,
+    U+232C,
+    U+2332,
+    U+2336-237A,
+    U+237C,
+    U+2394-2395,
+    U+239B-23B9,
+    U+23CE,
+    U+23D0,
+    U+23DC-23E7,
+    U+25A0-25C9,
+    U+25CB,
+    U+25CD-25FF,
+    U+27C0-27E7,
+    U+27EA-27FF,
+    U+2980-2AFF,
+    U+1D400-1D454,
+    U+1D456-1D49C,
+    U+1D49E-1D49F,
+    U+1D4A2,
+    U+1D4A5-1D4A6,
+    U+1D4A9-1D4AC,
+    U+1D4AE-1D4B9,
+    U+1D4BB,
+    U+1D4BD-1D4C3,
+    U+1D4C5-1D505,
+    U+1D507-1D50A,
+    U+1D50D-1D514,
+    U+1D516-1D51C,
+    U+1D51E-1D539,
+    U+1D53B-1D53E,
+    U+1D540-1D544,
+    U+1D546,
+    U+1D54A-1D550,
+    U+1D552-1D6A5,
+    U+1D6A8-1D7CB,
+    U+1D7CE-1D7FF;
+}
+
+@font-face {
+  font-family: Nunito;
+  src: url("NotoSansMath-Symbols.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: italic;
+  size-adjust: 92.2%;
+  unicode-range: U+2190-2201,
+    U+2203-2204,
+    U+2207-220E,
+    U+2210,
+    U+2213-2214,
+    U+2216-2218,
+    U+221B-221D,
+    U+221F-222A,
+    U+222C-2247,
+    U+2249-225F,
+    U+2261-2263,
+    U+2266-2300,
+    U+2302,
+    U+2305-2306,
+    U+2308-230B,
+    U+2310-2313,
+    U+2317,
+    U+2319,
+    U+231C-2323,
+    U+232C,
+    U+2332,
+    U+2336-237A,
+    U+237C,
+    U+2394-2395,
+    U+239B-23B9,
+    U+23CE,
+    U+23D0,
+    U+23DC-23E7,
+    U+25A0-25C9,
+    U+25CB,
+    U+25CD-25FF,
+    U+27C0-27E7,
+    U+27EA-27FF,
+    U+2980-2AFF,
+    U+1D400-1D454,
+    U+1D456-1D49C,
+    U+1D49E-1D49F,
+    U+1D4A2,
+    U+1D4A5-1D4A6,
+    U+1D4A9-1D4AC,
+    U+1D4AE-1D4B9,
+    U+1D4BB,
+    U+1D4BD-1D4C3,
+    U+1D4C5-1D505,
+    U+1D507-1D50A,
+    U+1D50D-1D514,
+    U+1D516-1D51C,
+    U+1D51E-1D539,
+    U+1D53B-1D53E,
+    U+1D540-1D544,
+    U+1D546,
+    U+1D54A-1D550,
+    U+1D552-1D6A5,
+    U+1D6A8-1D7CB,
+    U+1D7CE-1D7FF;
+}
+
+/* Prose is Nunito Medium, and bold steps up to Black so it stands out from the text. No face
+   is ever emboldened by the browser: Doki, Departure Mono and Noto Sans Math have one weight
+   each, and a synthetic bold smears them */
 body {
   max-width: 46rem;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
   font: 500 1rem / 1.55 var(--ddlc-font-prose);
+  font-synthesis-weight: none;
 }
 
 b,

@@ -712,6 +712,33 @@ done
   echo "}"
 } >"$out/ddlc-tokens.css"
 
+# Nunito lacks Greek, arrows and most mathematical operators. src/symbol-fonts.py cuts what it
+# lacks out of the vendored Noto Sans and Noto Sans Math into two WOFF2 files and prints the
+# unicode-range and size-adjust of each, which the report stylesheet declares for them. The
+# stylesheet states the faces and this fills in the values, so the codepoints are named once,
+# in the files themselves. The cut is byte-stable for the same input and fonttools
+python3 -c 'import fontTools.subset, brotli' 2>/dev/null || {
+  echo "generate.sh: fonttools or brotli is missing for python3; nix develop puts them in the environment" >&2
+  exit 1
+}
+symbols=$(python3 "$src/symbol-fonts.py" "$vendor" "$out")
+sans_range=$(jq -r .sans.range <<<"$symbols")
+sans_adjust=$(jq -r '.sans["size-adjust"]' <<<"$symbols")
+math_range=$(jq -r .math.range <<<"$symbols")
+math_adjust=$(jq -r '.math["size-adjust"]' <<<"$symbols")
+fill_symbols() { # a stylesheet on stdin, its @...@ values filled from the cut
+  # The ranges run over several lines, which awk -v refuses, so they go in the environment
+  SANS_RANGE=$sans_range SANS_ADJUST=$sans_adjust MATH_RANGE=$math_range MATH_ADJUST=$math_adjust awk '{
+    gsub(/@sans-range@/, ENVIRON["SANS_RANGE"])
+    gsub(/@sans-size-adjust@/, ENVIRON["SANS_ADJUST"])
+    gsub(/@math-range@/, ENVIRON["MATH_RANGE"])
+    gsub(/@math-size-adjust@/, ENVIRON["MATH_ADJUST"])
+    print
+  }'
+}
+cat "$vendor/noto-sans/NotoSans-LICENSE.txt" >"$out/NotoSans-LICENSE.txt"
+cat "$vendor/noto-sans-math/NotoSansMath-LICENSE.txt" >"$out/NotoSansMath-LICENSE.txt"
+
 # The web kit and the report stylesheet: each one file a page links, carrying everything it
 # reads. They share the head and src/base.css, and add their own elements
 for sheet in ui report; do
@@ -725,8 +752,12 @@ for sheet in ui report; do
     echo
     sed '1,/\*\//d' "$src/base.css"
     echo
-    sed '1,/\*\//d' "$src/$sheet.css"
+    sed '1,/\*\//d' "$src/$sheet.css" | fill_symbols
   } >"$out/ddlc-$sheet.css"
+  if grep -q '@[a-z-]*@' "$out/ddlc-$sheet.css"; then
+    echo "generate.sh: ddlc-$sheet.css keeps an unfilled @...@ value" >&2
+    exit 1
+  fi
 done
 
 # The scripts are not generated from anything, only copied, so a consumer vendors the whole

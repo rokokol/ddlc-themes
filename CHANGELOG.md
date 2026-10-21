@@ -7,6 +7,11 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 ### Added
 
 - every release carries the files of its `dist/`, so a theme, a font or the polka-dot pictures are one download from the release page
+- `NotoSans-Symbols.woff2` and `NotoSansMath-Symbols.woff2` in `dist/`, with their licences (`lib.nunito.symbols.{sans,math}`): the Greek, arrows, operators, blackboard letters, super and subscripts and similar symbols that Nunito lacks, cut from Noto Sans (weight axis kept) and Noto Sans Math. `ddlc-report.css` declares them under the name Nunito, scaled to Nunito's x-height, so `font-family: Nunito` draws mathematics with no second font name. The report expects both files beside it, and without them those characters come from the system as before
+
+### Changed
+
+- the report sets `font-synthesis-weight: none`, so the browser never emboldens a face that has one weight, as the DDLC Obsidian theme already does
 
 ## [3.4.2] - 2026-10-13
 

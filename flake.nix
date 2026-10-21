@@ -136,6 +136,12 @@
         nunito = {
           regular = ./dist/Nunito.woff2;
           italic = ./dist/Nunito-Italic.woff2;
+          # What Nunito lacks, cut from Noto: the report stylesheet declares both under the
+          # name Nunito. Math is for the characters Noto Sans does not have
+          symbols = {
+            sans = ./dist/NotoSans-Symbols.woff2;
+            math = ./dist/NotoSansMath-Symbols.woff2;
+          };
         };
         # Departure Mono with the Nerd Fonts icons, for code that shows them
         nerd = ./dist/DepartureMonoNerdFontMono-Regular.woff2;
@@ -262,6 +268,14 @@
         # and a loop with no seam
         polka-gifs = pkgs.runCommand "polka-gifs" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
           python3 ${testsDir}/polka-gifs.py ${dist}
+          touch $out
+        '';
+
+        # The report draws Greek, arrows and operators in Noto under the name Nunito. The
+        # subsets must hold what unicode-range says, leave Nunito's own characters alone, cover
+        # the blocks they are meant for and match Nunito's x-height
+        symbol-fonts = pkgs.runCommand "symbol-fonts" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
+          python3 ${testsDir}/symbol-fonts.py ${dist} ${vendorDir}
           touch $out
         '';
 
