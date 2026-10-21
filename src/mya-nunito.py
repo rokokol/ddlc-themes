@@ -18,8 +18,8 @@ Math where Noto Sans lacks them, as glyphs of Nunito's own variable font:
 - the openings between strokes come first: a glyph takes only as much of its emboldening as
   keeps them open by the measure of Nunito's equals sign, and thins only as far as its
   strokes hold, both measured on a raster by glyph_openings.py beside this file
-- an added glyph keeps its sidebearings at every weight, as Nunito's own mathematical signs
-  do; SPACING below narrows them instead
+- an added glyph keeps the sidebearings of the lightest master at every weight, as Nunito's
+  own mathematical signs do
 
 Writes MyaNunito.ttf and MyaNunito-Italic.ttf, the same as WOFF2, the static family Mya Nunito
 Static for matplotlib, which reads no variation axis, and the licence, MyaNunito-LICENSE.txt,
@@ -32,7 +32,6 @@ import logging
 import math
 import re
 import sys
-import unicodedata
 from copy import deepcopy
 from pathlib import Path
 
@@ -97,17 +96,6 @@ SANS = vendor / "noto-sans/NotoSans-wdth-wght.ttf"
 MATH = vendor / "noto-sans-math/NotoSansMath-Regular.ttf"
 SANS_WIDTH = {"wdth": 100}
 DEFAULT_SANS_WEIGHT = 400
-
-# Whose sidebearings narrow with the weight as those of Nunito's letters do: "none", which
-# keeps every sidebearing as drawn, as Nunito's own mathematical signs keep theirs; "added",
-# the glyphs from Noto alone; or "math", those and Nunito's own mathematical signs, whose
-# outlines stay Nunito's and only move within a narrower advance. The letters are the round
-# and the straight lowercase and capital, which set a text's rhythm
-SPACING = "none"
-SPACING_LETTERS = "noHx"
-# The signs Nunito has outside the blocks above that "math" spaces with them: plus, less-than,
-# equals, greater-than, not, plus-minus, multiplication and division
-LATIN_OPERATORS = [0x2B, 0x3C, 0x3D, 0x3E, 0xAC, 0xB1, 0xD7, 0xF7]
 
 # Measured openings, by source, codepoint, weight and scale
 OPENINGS = {}
@@ -326,38 +314,6 @@ def ttglyph(contours):
     return pen.glyph()
 
 
-def nunito_math_codepoints(cmap):
-    """Nunito's own mathematical signs: what it has of the blocks above and the Latin signs,
-    leaving out letters, as its few Greek ones, which its own design spaces already"""
-    wanted = {cp for lo, hi in BLOCKS for cp in range(lo, hi + 1)} | set(LOOSE) | set(LATIN_OPERATORS)
-    return sorted(cp for cp in cmap if cp in wanted and not unicodedata.category(chr(cp)).startswith("L"))
-
-
-def respace(master, names, spacing, state):
-    """Narrow the sidebearings of Nunito's own glyphs by the factor, keeping their outlines
-
-    The outline moves along with the left sidebearing and the advance follows, so its shape
-    stays Nunito's while it sits as the added glyphs do. The lightest master records them
-    """
-    glyf, hmtx = master["glyf"], master["hmtx"]
-    for name in names:
-        glyph = glyf[name]
-        glyph.recalcBounds(glyf)
-        advance, lsb = hmtx[name]
-        rsb = advance - glyph.xMax
-        if name not in state:
-            state[name] = {"lsb": glyph.xMin, "rsb": rsb}
-            continue
-        shift = round(state[name]["lsb"] * spacing) - glyph.xMin
-        if glyph.isComposite():
-            for component in glyph.components:
-                component.x += shift
-        else:
-            glyph.coordinates.translate((shift, 0))
-        glyph.recalcBounds(glyf)
-        hmtx[name] = (glyph.xMax + round(state[name]["rsb"] * spacing), glyph.xMin)
-
-
 def wanted_codepoints():
     wanted = {cp for lo, hi in BLOCKS for cp in range(lo, hi + 1)} | set(LOOSE)
     have_nunito = set()
@@ -419,13 +375,12 @@ def allowed_share(found, required, xres, yres):
     return share
 
 
-def add_glyphs(master, sources, openness, thinness, spacing, state, openings_of, decided):
+def add_glyphs(master, sources, openness, thinness, state, openings_of, decided):
     """Add the scaled, emboldened glyphs to one master, with their advances and codepoints
 
     openness is (width, ratio): no opening of a glyph need be wider than the width, nor narrow
     past the ratio of its own narrowest opening at the lightest master. thinness is (width,
-    ratio) for strokes as they thin: down to the width, or to the ratio of their own. spacing is how far
-    Nunito's sidebearings have narrowed against its lightest master. state
+    ratio) for strokes as they thin: down to the width, or to the ratio of their own. state
     carries each glyph from the lighter master before, which is never heavier, and decided the
     share and weight each glyph took at this master in a style built before. Returns the
     glyphs that took less than the whole strength
@@ -560,14 +515,12 @@ def add_glyphs(master, sources, openness, thinness, spacing, state, openings_of,
             if before is None:
                 state[name] = {"lsb": lsb, "rsb": rsb, "open": narrowest(openings(rounded(contours)))}
             else:
-                # The sidebearings are those of the lightest master, narrowed as Nunito's
-                # letters narrow where SPACING asks for it. Noto Sans spaces its heavier
-                # weights tighter, which would otherwise come along with them. The outline
-                # moves by whole units, so it rounds as it was measured
-                lsb_new, rsb_new = state[name]["lsb"] * spacing, state[name]["rsb"] * spacing
-                shift = round(lsb_new - lsb)
+                # The sidebearings are those of the lightest master: Noto Sans spaces its
+                # heavier weights tighter, which would otherwise come along with them. The
+                # outline moves by whole units, so it rounds as it was measured
+                shift = round(state[name]["lsb"] - lsb)
                 contours = [[[x + shift, y, s] for x, y, s in c] for c in contours]
-                advance += shift + (rsb_new - rsb)
+                advance += shift + (state[name]["rsb"] - rsb)
                 glyph = ttglyph(contours)
                 glyph.recalcBounds(glyf)
             state[name].update({"x": xs, "y": ys, "weight": weight})
@@ -680,20 +633,8 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
     proportion = equals_gap(math_glyphs, mcmap, math_scale) / reference_gap
     reference_bar = stems(nunito.getGlyphSet(location={"wght": reference_weight}), ncmap)[1]
 
-    def sidebearing(weight):
-        """The mean sidebearing of Nunito's plainest letters, round and straight, at a weight"""
-        glyphset = nunito.getGlyphSet(location={"wght": weight})
-        total = 0
-        for char in SPACING_LETTERS:
-            box = BoundsPen(glyphset)
-            glyphset[ncmap[ord(char)]].draw(box)
-            total += box.bounds[0] + glyphset[ncmap[ord(char)]].width - box.bounds[2]
-        return total / (2 * len(SPACING_LETTERS))
-
     weights = nunito_masters(nunito)
     lightest_gap = equals_gap(nunito.getGlyphSet(location={"wght": weights[0]}), ncmap)
-    lightest_sidebearing = sidebearing(weights[0])
-    own_math = nunito_math_codepoints(ncmap) if SPACING == "math" else []
     state, sources = {}, []
     for weight in weights:
         glyphs = nunito.getGlyphSet(location={"wght": weight})
@@ -702,7 +643,6 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
         sans_stems = [sans_scale * s for s in stems(sans_at(sans_weight), scmap)]
         gap = equals_gap(glyphs, ncmap)
         openness = (proportion * gap, gap / lightest_gap)
-        spacing = 1.0 if SPACING == "none" else sidebearing(weight) / lightest_sidebearing
         master = instancer.instantiateVariableFont(nunito, {"wght": weight}, inplace=False)
         capped = add_glyphs(
             master,
@@ -737,21 +677,18 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
             ],
             openness,
             (min(stem, bar), bar / reference_bar),
-            spacing,
             state,
             openings_of,
             DECIDED.setdefault(weight, {}),
         )
-        respace(master, [ncmap[cp] for cp in own_math], spacing, state)
         print(
             f"mya-nunito.py: {FAMILY}{style.replace('-', ' ')} at {weight}: stem {stem:.0f}, bar {bar:.0f}; "
             f"Noto Sans {sans_weight} emboldened by {stem - sans_stems[0]:+.0f}, {bar - sans_stems[1]:+.0f}; "
             f"its {len(fixed)} glyphs of one weight and Noto Sans Math by "
             f"{stem - sans_default_stems[0]:+.0f}, {bar - sans_default_stems[1]:+.0f} and "
             f"{stem - math_stems[0]:+.0f}, {bar - math_stems[1]:+.0f}; "
-            f"openings down to {openness[0]:.0f} or {openness[1]:.2f} of their own at weight {weights[0]}, "
-            f"sidebearings at {spacing:.2f} of "
-            f"weight {weights[0]}'s; {len(capped)} glyphs take less, to keep their openings and strokes"
+            f"openings down to {openness[0]:.0f} or {openness[1]:.2f} of their own at weight {weights[0]}; "
+            f"{len(capped)} glyphs take less, to keep their openings and strokes"
         )
         sources.append((weight, master))
 
@@ -802,10 +739,7 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
     # rebuilt: a delta re-derived from the masters may land half a unit off between them
     for tag in ("GSUB", "GPOS", "GDEF", "STAT", "avar"):
         vf[tag] = deepcopy(nunito[tag])
-    respaced = {ncmap[cp] for cp in own_math}
     for glyph in nunito.getGlyphOrder():
-        if glyph in respaced:
-            continue
         vf["glyf"][glyph] = deepcopy(nunito["glyf"][glyph])
         vf["gvar"].variations[glyph] = deepcopy(nunito["gvar"].variations.get(glyph, []))
     vf["fvar"] = deepcopy(nunito["fvar"])
