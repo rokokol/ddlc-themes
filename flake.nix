@@ -106,12 +106,16 @@
       myaNunitoFiles = nixpkgs.lib.fileset.fileFilter (
         f: nixpkgs.lib.hasPrefix "MyaNunito" f.name
       ) ./dist;
-      # The files of dist/ that tests/mya-nunito.py reads: the merged fonts, the report that
-      # declares them, and the matplotlib styles that name the static family
-      distFontFacts = nixpkgs.lib.fileset.toSource {
+      # The files of dist/ that each mode of tests/mya-nunito.py reads: the merged fonts for the
+      # slow one; the report that declares them and the matplotlib styles that name the static
+      # family for the fast one, so a stylesheet edit does not measure the fonts again
+      distMyaNunito = nixpkgs.lib.fileset.toSource {
+        root = ./dist;
+        fileset = myaNunitoFiles;
+      };
+      distFontStacks = nixpkgs.lib.fileset.toSource {
         root = ./dist;
         fileset = nixpkgs.lib.fileset.unions [
-          myaNunitoFiles
           ./dist/ddlc-report.css
           ./dist/ddlc.mplstyle
           ./dist/ddlc-dark.mplstyle
@@ -338,9 +342,18 @@
         # openings between strokes, and space as Nunito's letters do. The openings are measured
         # by src/glyph_openings.py, the generator's own measure
         mya-nunito = pkgs.runCommand "mya-nunito" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
-          python3 ${testMyaNunito} ${distFontFacts} ${fontSrc}/vendor ${fontSrc}/src
+          python3 ${testMyaNunito} fonts ${distMyaNunito} ${fontSrc}/vendor ${fontSrc}/src
           touch $out
         '';
+
+        # The report declares Mya Nunito and starts its prose with it, and the matplotlib styles
+        # name the static family
+        mya-nunito-stacks =
+          pkgs.runCommand "mya-nunito-stacks" { nativeBuildInputs = [ (generatorPython pkgs) ]; }
+            ''
+              python3 ${testMyaNunito} stacks ${distFontStacks}
+              touch $out
+            '';
 
         # The Super Productivity theme hooks into the app's components, classes and variables,
         # and a rule whose hook the app dropped stops applying in silence. The app's source at

@@ -1,7 +1,11 @@
 """Hold Mya Nunito in dist/ to what it promises: Nunito, untouched, plus the Greek and
 mathematics it lacks, drawn from Noto at Nunito's size and weight.
 
-    python3 tests/mya-nunito.py DIST VENDOR SRC
+    python3 tests/mya-nunito.py fonts DIST VENDOR SRC
+    python3 tests/mya-nunito.py stacks DIST
+
+The fonts mode reads the merged fonts and takes minutes. The stacks mode reads only the
+stylesheet and the matplotlib styles that name the fonts, so an edit to them checks in seconds.
 
 src/mya-nunito.py merges the vendored Nunito with Noto Sans and Noto Sans Math into one
 variable font. The check reads the facts the merge promises, not the bytes, which
@@ -26,7 +30,8 @@ dist-is-current already compares:
   tail of ς alike
 - the names say Mya Nunito and carry the copyright of both projects and the OFL
 - the static faces for matplotlib are the variable font at fixed weights
-- the report declares one face per style under the new name, and the prose starts with it
+- the report declares one face per style under the new name, and the prose starts with it,
+  and the matplotlib styles name the static family (the stacks mode)
 """
 
 import re
@@ -38,21 +43,10 @@ from fontTools.pens.boundsPen import BoundsPen, ControlBoundsPen
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.ttLib import TTFont
 
-dist, vendor, src = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
-sys.path.insert(0, str(src))
-from glyph_openings import (  # noqa: E402
-    NOTCH_DEPTH,
-    Flattener,
-    keeps,
-    kept_share,
-    measured,
-    narrowest,
-    notch_shares,
-    notches,
-    openings,
-    ridge_width,
-)
-from glyph_openings import outline as contours_of  # noqa: E402
+MODES = {"fonts": 3, "stacks": 1}
+if len(sys.argv) < 2 or sys.argv[1] not in MODES or len(sys.argv) != 2 + MODES[sys.argv[1]]:
+    sys.exit(__doc__.split("\n\n")[1])
+mode = sys.argv[1]
 
 # The blocks the report promises, written out here on purpose and not read from the generator:
 # the check is the second statement of the promise
@@ -148,6 +142,67 @@ failures = []
 
 def fail(why):
     failures.append(why)
+
+
+def finish(summary):
+    if failures:
+        print("\n".join(f"mya-nunito: {why}" for why in failures), file=sys.stderr)
+        sys.exit(1)
+    print(f"mya-nunito: {summary}")
+    sys.exit(0)
+
+
+def stacks(dist):
+    # The report declares one face per style under the new name, and the prose begins with it
+    css = (dist / "ddlc-report.css").read_text()
+    faces = []
+    for block in re.findall(r"@font-face\s*\{(.*?)\}", css, re.S):
+        faces.append(dict((k.strip(), v.strip()) for k, v in (line.split(":", 1) for line in block.split(";") if ":" in line)))
+    for style in FACES:
+        css_style = "italic" if style else "normal"
+        mine = [f for f in faces if f.get("font-style", "normal") == css_style]
+        if len(mine) != 1 or mine[0].get("font-family") != f'"{FAMILY}"':
+            fail(f"ddlc-report.css: expected one {css_style} face named {FAMILY}, found {[f.get('font-family') for f in mine]}")
+        elif f"MyaNunito{style}.woff2" not in mine[0].get("src", "") or mine[0].get("font-weight") != "200 1000":
+            fail(f"ddlc-report.css: the {css_style} face does not load MyaNunito{style}.woff2 over 200 1000")
+    prose = re.search(r"--ddlc-font-prose:\s*([^;]+);", css)
+    if not prose or not prose.group(1).startswith(f"'{FAMILY}', Nunito,"):
+        fail(f"ddlc-report.css: the prose stack does not begin with {FAMILY} and then Nunito")
+
+    # matplotlib draws the static family: of a variable font it reads the default instance
+    # alone, which is ExtraLight, so the variable family has no place in its stacks
+    for style_file in ("ddlc.mplstyle", "ddlc-dark.mplstyle"):
+        params = dict(
+            (k.strip(), v.strip())
+            for k, v in (line.split(":", 1) for line in (dist / style_file).read_text().splitlines() if ":" in line and not line.startswith("#"))
+        )
+        stack = [f.strip() for f in params.get("font.sans-serif", "").split(",")]
+        if not stack or stack[0] != STATIC_FAMILY or FAMILY in stack:
+            fail(f"{style_file}: font.sans-serif is {stack}, expected {STATIC_FAMILY} first and not {FAMILY}")
+        for key in ("mathtext.rm", "mathtext.it", "mathtext.bf", "mathtext.sf"):
+            if params.get(key, "").split(":")[0] != STATIC_FAMILY:
+                fail(f"{style_file}: {key} is {params.get(key)!r}, not {STATIC_FAMILY}")
+
+
+if mode == "stacks":
+    stacks(Path(sys.argv[2]))
+    finish("the report and the matplotlib styles name Mya Nunito as promised")
+
+dist, vendor, src = Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4])
+sys.path.insert(0, str(src))
+from glyph_openings import (  # noqa: E402
+    NOTCH_DEPTH,
+    Flattener,
+    keeps,
+    kept_share,
+    measured,
+    narrowest,
+    notch_shares,
+    notches,
+    openings,
+    ridge_width,
+)
+from glyph_openings import outline as contours_of  # noqa: E402
 
 
 def outline(glyphset, name):
@@ -520,37 +575,4 @@ for file, (style, weight) in STATICS.items():
             if abs(area(here, g) - area(source, g)) > 0.01 * area(source, g):
                 fail(f"{file}: {char!r} is not the variable font's at weight {weight}")
 
-# The report declares one face per style under the new name, and the prose begins with it
-css = (dist / "ddlc-report.css").read_text()
-faces = []
-for block in re.findall(r"@font-face\s*\{(.*?)\}", css, re.S):
-    faces.append(dict((k.strip(), v.strip()) for k, v in (line.split(":", 1) for line in block.split(";") if ":" in line)))
-for style in FACES:
-    css_style = "italic" if style else "normal"
-    mine = [f for f in faces if f.get("font-style", "normal") == css_style]
-    if len(mine) != 1 or mine[0].get("font-family") != f'"{FAMILY}"':
-        fail(f"ddlc-report.css: expected one {css_style} face named {FAMILY}, found {[f.get('font-family') for f in mine]}")
-    elif f"MyaNunito{style}.woff2" not in mine[0].get("src", "") or mine[0].get("font-weight") != "200 1000":
-        fail(f"ddlc-report.css: the {css_style} face does not load MyaNunito{style}.woff2 over 200 1000")
-prose = re.search(r"--ddlc-font-prose:\s*([^;]+);", css)
-if not prose or not prose.group(1).startswith(f"'{FAMILY}', Nunito,"):
-    fail(f"ddlc-report.css: the prose stack does not begin with {FAMILY} and then Nunito")
-
-# matplotlib draws the static family: of a variable font it reads the default instance alone,
-# which is ExtraLight, so the variable family has no place in its stacks
-for style_file in ("ddlc.mplstyle", "ddlc-dark.mplstyle"):
-    params = dict(
-        (k.strip(), v.strip())
-        for k, v in (line.split(":", 1) for line in (dist / style_file).read_text().splitlines() if ":" in line and not line.startswith("#"))
-    )
-    stack = [f.strip() for f in params.get("font.sans-serif", "").split(",")]
-    if not stack or stack[0] != STATIC_FAMILY or FAMILY in stack:
-        fail(f"{style_file}: font.sans-serif is {stack}, expected {STATIC_FAMILY} first and not {FAMILY}")
-    for key in ("mathtext.rm", "mathtext.it", "mathtext.bf", "mathtext.sf"):
-        if params.get(key, "").split(":")[0] != STATIC_FAMILY:
-            fail(f"{style_file}: {key} is {params.get(key)!r}, not {STATIC_FAMILY}")
-
-if failures:
-    print("\n".join(f"mya-nunito: {why}" for why in failures), file=sys.stderr)
-    sys.exit(1)
-print(f"mya-nunito: {len(promised)} codepoints added to Nunito in both styles, its own glyphs untouched")
+finish(f"{len(promised)} codepoints added to Nunito in both styles, its own glyphs untouched")
