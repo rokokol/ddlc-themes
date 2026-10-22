@@ -20,6 +20,8 @@ Math where Noto Sans lacks them, as glyphs of Nunito's own variable font:
   strokes hold, both measured on a raster by glyph_openings.py beside this file
 - an added glyph keeps the sidebearings of the lightest master at every weight, as Nunito's
   own mathematical signs do
+- an added letter rounds its outward corners by half the stem, so a stroke ends in a half
+  circle as Nunito's do; a sign keeps its points
 
 Writes MyaNunito.ttf and MyaNunito-Italic.ttf, the same as WOFF2, the static family Mya Nunito
 Static for matplotlib, which reads no variation axis, and the licence, MyaNunito-LICENSE.txt,
@@ -32,12 +34,15 @@ import logging
 import math
 import re
 import sys
+import unicodedata
 from copy import deepcopy
 from pathlib import Path
 
 from fontTools import varLib
 from fontTools.designspaceLib import AxisDescriptor, DesignSpaceDocument, SourceDescriptor
+from fontTools.pens.areaPen import AreaPen
 from fontTools.pens.boundsPen import BoundsPen
+from fontTools.pens.pointPen import PointToSegmentPen
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.pens.ttGlyphPen import TTGlyphPointPen
 from fontTools.ttLib import TTFont, newTable
@@ -53,6 +58,7 @@ vendor, outdir = Path(sys.argv[1]), Path(sys.argv[2])
 # Where the report's mathematics lives. A block is listed when a note might write a character
 # from it; the codepoints a Noto font lacks, and those Nunito has, drop out on their own
 BLOCKS = [
+    (0x02B0, 0x02FF),  # Spacing Modifier Letters: the raised h, j, r, w, x and y of an index
     (0x0370, 0x03FF),  # Greek and Coptic
     (0x1D2C, 0x1D6A),  # Phonetic Extensions: the modifier letters of a transpose or an index
     (0x2070, 0x209F),  # Superscripts and Subscripts
@@ -99,6 +105,15 @@ DEFAULT_SANS_WEIGHT = 400
 
 # Measured openings, by source, codepoint, weight and scale
 OPENINGS = {}
+# How sharply an outline must turn, in degrees, for its point to be a corner that rounds: a
+# square end turns by 90, while a curve drawn in short straight pieces turns by a few
+CORNER = 35
+# How far into a corner's angle its ink is sought, in font units: well inside the thinnest
+# stroke, so a tip a few units wide still holds it
+WEDGE = 2
+# How far, in degrees, an outline may turn at a point and still run smooth through it: a curve
+# whose points are rounded to whole units bends by a degree or two at each
+SMOOTH = 10
 # The share of its strength and the source weight each added glyph took, by master: the
 # first style decides, and the italic, which adds the same upright glyphs, follows
 DECIDED = {}
@@ -204,6 +219,18 @@ def signed_area(contour):
     return sum(x0 * y1 - x1 * y0 for (x0, y0, _), (x1, y1, _) in zip(contour, contour[1:] + contour[:1])) / 2
 
 
+def ink(contours):
+    """The area the curves enclose, counters taken away"""
+    pen = AreaPen()
+    points = PointToSegmentPen(pen)
+    for contour in contours:
+        points.beginPath()
+        for x, y, segment in contour:
+            points.addPoint((x, y), segment)
+        points.endPath()
+    return abs(pen.value)
+
+
 def embolden(contours, xstrength, ystrength):
     """FreeType's FT_Outline_EmboldenXY on control points, in floating point
 
@@ -213,13 +240,14 @@ def embolden(contours, xstrength, ystrength):
     thins. FreeType then leaves the outline's left and bottom edges in place; here the bottom
     is kept centred instead, so an operator stays on the mathematical axis, while the left
     edge is kept, and the caller widens the advance by the strength to keep the right
-    sidebearing. Returns the contours moved, and whether one turned inside out
+    sidebearing. Returns the contours moved, kept smooth where they ran smooth
     """
     xs, ys = xstrength / 2, ystrength / 2
     truetype = sum(signed_area(c) for c in contours) < 0
     out_contours = []
     for points in contours:
         moved = [list(p) for p in points]
+        reversals = set()
         first, last = 0, len(points) - 1
         vin, lin = (0.0, 0.0), 0.0
         anchor, lanchor = (0.0, 0.0), 0.0
@@ -253,16 +281,59 @@ def embolden(contours, xstrength, ystrength):
                     sy = sy * ys / d if ys * q <= shortest * d else sy * shortest / q
                 else:
                     sx = sy = 0.0
+                sharp = d <= -0.9375
                 while i != j:
                     moved[i][0] += xs + sx
                     moved[i][1] += sy
+                    if sharp:
+                        reversals.add(i)
                     i = i + 1 if i < last else first
             else:
                 i = j
             vin, lin = vout, lout
             j = j + 1 if j < last else first
+        # FreeType leaves a point where the outline doubles back in place while the edges on
+        # either side move out, which draws a spur where a hairline meets a bowl in a script
+        # letter. Such a point moves as its moving neighbours do, on average
+        n = len(points)
+        for i in sorted(reversals):
+            shifts = []
+            for step in (-1, 1):
+                k = (i + step) % n
+                while k in reversals and k != i:
+                    k = (k + step) % n
+                if k not in reversals:
+                    shifts.append((moved[k][0] - points[k][0], moved[k][1] - points[k][1]))
+            if shifts:
+                moved[i][0] = points[i][0] + sum(s[0] for s in shifts) / len(shifts)
+                moved[i][1] = points[i][1] + sum(s[1] for s in shifts) / len(shifts)
         out_contours.append(moved)
-    return out_contours
+    return [smoothed(before, after) for before, after in zip(contours, out_contours)]
+
+
+def smoothed(before, after):
+    """Keep smooth what was smooth: a point on the curve between two control points, where
+    the outline ran straight through it, goes back onto the line between them, at the share of
+    the way it stood before
+
+    Each point moves along its own bisector by its own amount, so where a tight curve bends
+    hard the three no longer line up and the curve breaks in a kink, as in the loops of a
+    script letter or the tail of ξ at Black
+    """
+    n = len(before)
+    out = [list(p) for p in after]
+    for i, (x, y, segment) in enumerate(before):
+        (ax, ay, a_seg), (bx, by, b_seg) = before[i - 1], before[(i + 1) % n]
+        if segment is None or a_seg is not None or b_seg is not None:
+            continue
+        ux, uy, vx, vy = x - ax, y - ay, bx - x, by - y
+        lu, lv = math.hypot(ux, uy), math.hypot(vx, vy)
+        if not lu or not lv or abs(math.degrees(math.atan2(ux * vy - uy * vx, ux * vx + uy * vy))) > SMOOTH:
+            continue
+        share = lu / (lu + lv)
+        (px, py, _), (qx, qy, _) = after[i - 1], after[(i + 1) % n]
+        out[i][0], out[i][1] = px + (qx - px) * share, py + (qy - py) * share
+    return out
 
 
 def collapsed(before, after):
@@ -302,6 +373,165 @@ def emboldened(contours, xstrength, ystrength):
 
 def rounded(contours):
     return [[[round(x), round(y), s] for x, y, s in contour] for contour in contours]
+
+
+def winding(contour, x, y):
+    """How many times a contour's points wind about a point, counterclockwise counted up"""
+    total = 0.0
+    for (x0, y0, _), (x1, y1, _) in zip(contour, contour[1:] + contour[:1]):
+        turn = math.atan2(y1 - y, x1 - x) - math.atan2(y0 - y, x0 - x)
+        total += (turn + math.pi) % (2 * math.pi) - math.pi
+    return round(total / (2 * math.pi))
+
+
+def visible(contours, ci, x, y):
+    """Whether a point of one contour lies on the edge of the ink: ink on one side of the
+    contour there and none on the other, as for an outer edge or a counter's, and not inside
+    the ink of a contour that overlaps it"""
+    others = sum(winding(other, x, y) for oi, other in enumerate(contours) if oi != ci)
+    own = 1 if signed_area(contours[ci]) > 0 else -1
+    return (others == 0) != (others + own == 0)
+
+
+def inked_wedge(contours, x, y, a, b):
+    """Whether the ink fills the angle between a corner's two sides: an outward corner, and a
+    needle tip that doubles back on itself, where the sign of the turn is no guide"""
+    la, lb = math.dist((x, y), a), math.dist((x, y), b)
+    wx, wy = (a[0] - x) / la + (b[0] - x) / lb, (a[1] - y) / la + (b[1] - y) / lb
+    lw = math.hypot(wx, wy)
+    if lw < 1e-6:
+        return False
+    px, py = x + WEDGE * wx / lw, y + WEDGE * wy / lw
+    return sum(winding(contour, px, py) for contour in contours) != 0
+
+
+def convex_corners(contours):
+    """The corners to round, as (contour, point): every point on the curve where the outline
+    turns outward by more than CORNER degrees on the edge of the ink. A corner turning inward
+    is left sharp, as Nunito leaves where its strokes meet; so is one inside the ink of another
+    contour, where a variable font lets contours overlap and a rounded corner would notch the
+    join"""
+    picked = []
+    for ci, contour in enumerate(contours):
+        n = len(contour)
+        for pi, (x, y, segment) in enumerate(contour):
+            if segment is None or n < 3:
+                continue
+            (ax, ay, _), (bx, by, _) = contour[pi - 1], contour[(pi + 1) % n]
+            ux, uy, vx, vy = x - ax, y - ay, bx - x, by - y
+            if not (ux or uy) or not (vx or vy):
+                continue
+            turn = math.degrees(math.atan2(ux * vy - uy * vx, ux * vx + uy * vy))
+            if abs(turn) < CORNER or not inked_wedge(contours, x, y, (ax, ay), (bx, by)):
+                continue
+            if not visible(contours, ci, x, y):
+                continue
+            picked.append((ci, pi))
+    return picked
+
+
+def _lerp(p, q, t):
+    return (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t)
+
+
+def _quadratic(p0, c, p2, t):
+    return _lerp(_lerp(p0, c, t), _lerp(c, p2, t), t)
+
+
+def _within(p0, c, p2, corner, cut, outgoing):
+    """The parameter where a quadratic curve comes within the cut of the corner it starts or
+    ends at: from 0 it leaves the corner, toward 1 it arrives there"""
+    lo, hi = 0.0, 1.0
+    for _ in range(24):
+        mid = (lo + hi) / 2
+        near = math.dist(_quadratic(p0, c, p2, mid), corner) < cut
+        # Leaving, the curve is near the corner below the parameter; arriving, above it
+        if near == outgoing:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2
+
+
+def filleted(contours, corners, radius):
+    """The contours with each corner cut back along both its sides and closed by a quadratic
+    arc tangent to both, so every master gains the same points
+
+    A straight side is cut along its length. A curved side is split where it comes within the
+    cut of the corner, so the end of a curved stroke rounds as a straight one does and the arc
+    leaves the curve without a kink. The arc's control point is where the two tangents meet,
+    or the corner where they meet nowhere near. The cut is the radius, or less where a side is
+    short: half a straight side, which the corner at its other end may cut as well, or the
+    whole of a curved one. So the square end of a stroke as wide as twice the radius becomes a
+    half round. A curve two corners would both split is cut as a line on both, so the points
+    a contour gains depend on its points alone and are the same on every master
+    """
+    out = [list(contour) for contour in contours]
+    for ci in sorted({ci for ci, _ in corners}):
+        contour = [tuple(p) for p in contours[ci]]
+        n = len(contour)
+        chosen = sorted(pi for c, pi in corners if c == ci)
+
+        def on(i):
+            return contour[i % n][2] is not None
+
+        def at(i):
+            return contour[i % n][:2]
+
+        claims = {}
+        for pi in chosen:
+            for step in (-1, 1):
+                if not on(pi + step):
+                    for k in (pi + step, pi + 2 * step):
+                        if not on(k):
+                            claims[k % n] = claims.get(k % n, 0) + 1
+        replace = {}
+        for pi in chosen:
+            corner, sides = at(pi), {}
+            for step in (-1, 1):
+                near = at(pi + step)
+                split = not on(pi + step) and all(claims[k % n] == 1 for k in (pi + step, pi + 2 * step) if not on(k))
+                if split:
+                    far_on = on(pi + 2 * step)
+                    far = at(pi + 2 * step) if far_on else _lerp(near, at(pi + 2 * step), 0.5)
+                    sides[step] = (near, far, far_on)
+                else:
+                    sides[step] = (near, None, None)
+            cut = min([radius] + [math.dist(corner, far) if far else math.dist(corner, near) / 2 for near, far, _ in sides.values()])
+            ends = {}
+            for step, (near, far, far_on) in sides.items():
+                if far is None:
+                    length = math.dist(corner, near)
+                    end = _lerp(corner, near, cut / length) if length else corner
+                    # The tangent runs along the side, toward the corner
+                    ends[step] = (end, (corner[0] - end[0], corner[1] - end[1]))
+                    continue
+                outgoing = step == 1
+                p0, p2 = (corner, far) if outgoing else (far, corner)
+                t = _within(p0, near, p2, corner, cut, outgoing)
+                end = _quadratic(p0, near, p2, t)
+                if outgoing:
+                    # The arc's end starts what is left of the curve, through a new control
+                    leaving = _lerp(corner, near, t)
+                    ends[step] = (end, (leaving[0] - end[0], leaving[1] - end[1]))
+                    replace[(pi + 1) % n] = [[*_lerp(near, far, t), None]] + ([] if far_on else [[*far, "qcurve"]])
+                else:
+                    arriving = _lerp(near, corner, t)
+                    ends[step] = (end, (arriving[0] - end[0], arriving[1] - end[1]))
+                    replace[(pi - 1) % n] = ([] if far_on else [[*far, "qcurve"]]) + [[*_lerp(far, near, t), None]]
+            (s, d1), (e, d2) = ends[-1], ends[1]
+            # Where the tangent from the start, toward the corner, meets the one from the end
+            control = corner
+            det = d1[0] * d2[1] - d1[1] * d2[0]
+            if abs(det) > 1e-9:
+                u = ((e[0] - s[0]) * d2[1] - (e[1] - s[1]) * d2[0]) / det
+                v = ((e[0] - s[0]) * d1[1] - (e[1] - s[1]) * d1[0]) / det
+                meet = (s[0] + u * d1[0], s[1] + u * d1[1])
+                if u > 0 and v > 0 and math.dist(meet, corner) < 2 * cut:
+                    control = meet
+            replace[pi] = [[*s, contour[pi][2]], [*control, None], [*e, "qcurve"]]
+        out[ci] = [list(p) for i in range(n) for p in replace.get(i, [contour[i]])]
+    return out
 
 
 def ttglyph(contours):
@@ -375,12 +605,13 @@ def allowed_share(found, required, xres, yres):
     return share
 
 
-def add_glyphs(master, sources, openness, thinness, state, openings_of, decided):
+def add_glyphs(master, sources, openness, thinness, radius, state, openings_of, decided):
     """Add the scaled, emboldened glyphs to one master, with their advances and codepoints
 
     openness is (width, ratio): no opening of a glyph need be wider than the width, nor narrow
     past the ratio of its own narrowest opening at the lightest master. thinness is (width,
-    ratio) for strokes as they thin: down to the width, or to the ratio of their own. state
+    ratio) for strokes as they thin: down to the width, or to the ratio of their own. radius
+    rounds the corners of the letters. state
     carries each glyph from the lighter master before, which is never heavier, and decided the
     share and weight each glyph took at this master in a style built before. Returns the
     glyphs that took less than the whole strength
@@ -428,9 +659,12 @@ def add_glyphs(master, sources, openness, thinness, state, openings_of, decided)
                     floor = min(max(b / r for b, r in ((before["x"], xres), (before["y"], yres)) if r > 0), 1.0)
 
                 def fits(part, outline=scaled):
-                    # Measured as the font will hold it, in whole units: a slot whose length is
-                    # about the least a slot runs comes and goes with a unit of rounding
+                    # Measured as the font will hold it, corners rounded and in whole units: a
+                    # slot whose length is about the least a slot runs comes and goes with a
+                    # rounded corner or a unit of rounding
                     out, _ = emboldened(outline, xres * part, yres * part)
+                    if before and before["corners"]:
+                        out = filleted(out, before["corners"], radius)
                     return narrowest(openings(rounded(out))) >= required
 
                 if growing:
@@ -508,12 +742,34 @@ def add_glyphs(master, sources, openness, thinness, state, openings_of, decided)
             xs, ys = xs * kept, ys * kept
             if held or share * kept < 1:
                 capped.append(name)
+            # A letter's corners round as Nunito's stroke ends are, the same corners on every
+            # master; a sign keeps the points of its arrows and bars. They are chosen on the
+            # lightest master's source as drawn: thinning it can shrink the cut that ends a
+            # stroke to nothing, and the corners on it with it. A glyph held as at the master
+            # below keeps that master's radius too: a wider one would take ink away as the
+            # weight grows
+            corners, fillet = [], before["radius"] if held else radius
+            if unicodedata.category(chr(cp)).startswith("L"):
+                corners = before["corners"] if before else convex_corners(scaled)
+                emboldened_contours = contours
+                contours = filleted(emboldened_contours, corners, fillet)
+                # A small glyph of many corners, as a raised colon's triangles, loses more ink to
+                # the wider radius than it gains in weight: it keeps the radius below
+                if before and ink(contours) < before["ink"]:
+                    fillet = before["radius"]
+                    contours = filleted(emboldened_contours, corners, fillet)
+                # Still lighter, it is held as the master below drew it
+                if before and ink(contours) < before["ink"]:
+                    held, weight = True, before["weight"]
+                    scaled, width = source.contours(cp, weight)
+                    xs, ys = before["x"], before["y"]
+                    contours = filleted(emboldened(scaled, xs, ys)[0], corners, fillet)
             glyph = ttglyph(contours)
             glyph.recalcBounds(glyf)
             advance = width + xs
             lsb, rsb = getattr(glyph, "xMin", 0), advance - getattr(glyph, "xMax", 0)
             if before is None:
-                state[name] = {"lsb": lsb, "rsb": rsb, "open": narrowest(openings(rounded(contours)))}
+                state[name] = {"lsb": lsb, "rsb": rsb, "open": narrowest(openings(rounded(contours))), "corners": corners}
             else:
                 # The sidebearings are those of the lightest master: Noto Sans spaces its
                 # heavier weights tighter, which would otherwise come along with them. The
@@ -523,7 +779,7 @@ def add_glyphs(master, sources, openness, thinness, state, openings_of, decided)
                 advance += shift + (state[name]["rsb"] - rsb)
                 glyph = ttglyph(contours)
                 glyph.recalcBounds(glyf)
-            state[name].update({"x": xs, "y": ys, "weight": weight})
+            state[name].update({"x": xs, "y": ys, "weight": weight, "radius": fillet, "ink": ink(contours)})
             glyf.glyphs[name] = glyph
             order.append(name)
             hmtx[name] = (round(advance), getattr(glyph, "xMin", 0))
@@ -677,6 +933,9 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
             ],
             openness,
             (min(stem, bar), bar / reference_bar),
+            # Nunito ends a stroke in a half circle at every weight: a corner rounds by half
+            # its stem, which filleted() cuts to half the end where the end is narrower
+            stem / 2,
             state,
             openings_of,
             DECIDED.setdefault(weight, {}),

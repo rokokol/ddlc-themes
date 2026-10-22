@@ -17,6 +17,8 @@ dist-is-current already compares:
 - no contour of an added glyph turns inside out at any weight, and no opening between its
   strokes closes past what Nunito's own equals sign allows, measured by src/glyph_openings.py
 - the added glyphs keep their sidebearings at every weight, as Nunito's own signs do
+- the added letters end their strokes round, as Nunito's do: the stem of φ and the curved
+  tail of ς alike
 - the names say Mya Nunito and carry the copyright of both projects and the OFL
 - the static faces for matplotlib are the variable font at fixed weights
 - the report declares one face per style under the new name, and the prose starts with it
@@ -33,12 +35,13 @@ from fontTools.ttLib import TTFont
 
 dist, vendor, src = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
 sys.path.insert(0, str(src))
-from glyph_openings import narrowest, openings  # noqa: E402
+from glyph_openings import Flattener, narrowest, openings  # noqa: E402
 from glyph_openings import outline as contours_of  # noqa: E402
 
 # The blocks the report promises, written out here on purpose and not read from the generator:
 # the check is the second statement of the promise
 BLOCKS = {
+    "Spacing Modifier Letters": (0x02B0, 0x02FF),
     "Greek and Coptic": (0x0370, 0x03FF),
     "Phonetic Extensions": (0x1D2C, 0x1D6A),
     "Superscripts and Subscripts": (0x2070, 0x209F),
@@ -56,7 +59,7 @@ BLOCKS = {
 LOOSE = "‖′″‴⁄ⱼⱽ"
 
 # One line of a note the report has to draw whole
-SAMPLE = "Пусть λ₁ ≥ λ₂, ∀ x ∈ ℝⁿ: ‖Ax‖ ≤ σ₁‖x‖ ⇒ ∑ᵢ aᵢ² < ∞, Δ = det(A − λI), φ ↦ ∫K φ dt, Aᵀ, Mᴹ, xⱼ, ∅ ⊥ ⊕ ∘ √"
+SAMPLE = "Пусть λ₁ ≥ λ₂, ∀ x ∈ ℝⁿ: ‖Ax‖ ≤ σ₁‖x‖ ⇒ ∑ᵢ aᵢ² < ∞, Δ = det(A − λI), φ ↦ ∫K φ dt, Aᵀ, Mᴹ, xⱼ, aʲ, ∅ ⊥ ⊕ ∘ √"
 
 FAMILY = "Mya Nunito"
 FACES = {
@@ -99,6 +102,17 @@ HELD = 1.01
 # What share of the added glyphs must grow heavier from 200 to 1000: the rest are those whose
 # openings or hairlines allow no weight at all, double-struck and patterned glyphs above all
 MOSTLY = 0.9
+# How far the end of an added stroke may stand from Nunito's in depth, as a share of the
+# stroke: a square end is about 0 deep, a half circle 0.38
+CAP_TOLERANCE = 0.08
+# How far from the end of φ's and l's stems and ς's tail they still run straight, in font
+# units, at every weight: the bowl of φ begins about twice as far down
+CAP_STRAIGHT = 140
+# How far from its end the tail of ς runs straight, in font units, before its curl
+TAIL_STRAIGHT = 70
+# What share of the depth of Nunito's l the end of ς's tail must reach: the level cut across a
+# slanting stroke measures shallower than a stem's end, and a square cut a tenth or less
+TAIL_SHARE = 0.55
 # How far an added sidebearing may stray from its width at 200, in font units: the outline and
 # the advance each round to a whole unit
 SPACING_TOLERANCE = 2
@@ -114,6 +128,28 @@ def outline(glyphset, name):
     pen = DecomposingRecordingPen(glyphset)
     glyphset[name].draw(pen)
     return [(op, tuple((round(x, 3), round(y, 3)) for x, y in args)) for op, args in pen.value]
+
+
+def cap_depth(glyphset, name, bottom=False, straight=None):
+    """How far from the top of a glyph, or its bottom, the stroke that ends there reaches nearly
+    all its width, as a share of the width: a half circle reaches 97 per cent at 0.38 of its
+    width, a square end at once. The width is that of the first stroke from the left, across a
+    horizontal line: the stem of φ or l at the top, the tail of ς, cut level, at the bottom"""
+    pen = Flattener(glyphset, steps=32)
+    glyphset[name].draw(pen)
+    edges = [(a, b) for poly in pen.polygons for a, b in zip(poly, poly[1:] + poly[:1])]
+    ys = [y for poly in pen.polygons for _, y in poly]
+    end, inward = (min(ys), 1) if bottom else (max(ys), -1)
+
+    def width(y):
+        xs = sorted(ax + (y - ay) * (bx - ax) / (by - ay) for (ax, ay), (bx, by) in edges if (ay - y) * (by - y) < 0)
+        return xs[1] - xs[0] if len(xs) >= 2 else 0
+
+    # Away from the end the stroke runs straight, before φ's bowl or ς's curl widens it
+    straight = straight or CAP_STRAIGHT
+    full = width(end + inward * straight)
+    depth = next((d for d in range(1, straight) if width(end + inward * d) >= 0.97 * full), straight)
+    return depth / full
 
 
 def sides(glyphset, name):
@@ -301,6 +337,25 @@ for style, path in FACES.items():
         ]
         if moved:
             fail(f"{label}: {len(moved)} added glyphs change their sidebearings at weight {weight}, from {moved[:5]}")
+
+    # Rounded as Nunito is: the end of a straight stroke of an added letter is a half circle,
+    # as Nunito's l ends in one. The stem of φ rises bare above its bowl, and Nunito lacks φ
+    phi = cmap.get(0x03C6)
+    for weight in (400, 700, 1000) if phi else ():
+        mine = cap_depth(font.getGlyphSet(location={"wght": weight}), phi)
+        theirs = cap_depth(nunito.getGlyphSet(location={"wght": weight}), nunito_cmap[ord("l")])
+        if abs(mine - theirs) > CAP_TOLERANCE:
+            fail(f"{label}: the stem of φ ends {mine:.2f} of its stroke deep at {weight}, Nunito's l {theirs:.2f}")
+
+    # The end of a curved stroke rounds as well: the tail of ς, which Noto cuts level where it
+    # curls down. Its straight run is short, so its end is measured nearer, and it is held to a
+    # share of the depth of Nunito's l rather than to it
+    sigma = cmap.get(0x03C2)
+    for weight in (400, 700, 1000) if sigma else ():
+        mine = cap_depth(font.getGlyphSet(location={"wght": weight}), sigma, bottom=True, straight=TAIL_STRAIGHT)
+        theirs = cap_depth(nunito.getGlyphSet(location={"wght": weight}), nunito_cmap[ord("l")])
+        if mine < TAIL_SHARE * theirs:
+            fail(f"{label}: the tail of ς ends {mine:.2f} of its stroke deep at {weight}, Nunito's l {theirs:.2f}")
 
     # The names
     name = font["name"]
