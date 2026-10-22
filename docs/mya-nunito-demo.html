@@ -1,0 +1,77 @@
+<!doctype html>
+<!-- The page behind docs/mya-nunito-{light,dark}.png, which docs/mya-nunito-demo.py takes. It
+     sets one line of a note in Nunito as it comes, where a sign Nunito lacks falls back to
+     a system font, and then in Mya Nunito, at three weights each. Open it from the checkout —
+     it links the stylesheet and the fonts relatively — and pin a variant with ?theme=dark -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mya Nunito demo</title>
+<link rel="stylesheet" href="../dist/ddlc-report.css">
+<style>
+  /* Nunito as it comes, under a name of its own, so an installed Nunito does not stand in */
+  @font-face {
+    font-family: "Nunito as it comes";
+    src: url("../dist/Nunito.woff2") format("woff2");
+    font-weight: 200 1000;
+  }
+  body {
+    max-width: none;
+    padding: 1.5rem 2rem;
+  }
+  h2 {
+    margin: 1.25rem 0 0.25rem;
+    color: var(--ddlc-muted);
+    font: 0.8rem var(--ddlc-font-data);
+  }
+  h2:first-of-type {
+    margin-top: 0;
+  }
+  .row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 1.35rem;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+  .row span:first-child {
+    width: 2.5rem;
+    color: var(--ddlc-muted);
+    font: 0.8rem var(--ddlc-font-data);
+    text-align: right;
+  }
+  .nunito {
+    font-family: "Nunito as it comes", sans-serif;
+  }
+  .mya {
+    font-family: var(--ddlc-font-prose);
+  }
+</style>
+<script>
+  const theme = new URLSearchParams(location.search).get("theme");
+  if (theme) document.documentElement.dataset.theme = theme;
+</script>
+</head>
+<body>
+<script>
+  // One line of a note, set in each face at each weight
+  const line = "Пусть λ₁ ≥ λ₂, тогда ∀x ∈ ℝⁿ: ‖Ax‖ ≤ σ₁‖x‖ ⇒ ∑ᵢ aᵢ² < ∞, where Δ = det(A − λI), φ ↦ ∫K φ dt";
+  const faces = [
+    ["nunito", "Nunito, a system font for what it lacks"],
+    ["mya", "Mya Nunito"],
+  ];
+  for (const [face, title] of faces) {
+    const h2 = document.body.appendChild(document.createElement("h2"));
+    h2.textContent = title;
+    for (const weight of [400, 700, 1000]) {
+      const row = document.body.appendChild(document.createElement("div"));
+      row.className = `row ${face}`;
+      row.style.fontWeight = weight;
+      row.append(Object.assign(document.createElement("span"), { textContent: weight }));
+      row.append(Object.assign(document.createElement("span"), { textContent: line }));
+    }
+  }
+</script>
+</body>
+</html>

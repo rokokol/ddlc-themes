@@ -3,27 +3,44 @@
 python docs/matplotlib-demo.py light
 python docs/matplotlib-demo.py dark
 
-Needs the styles and ddlc_cmaps.py installed (install.sh --component matplotlib), or point
-MPLCONFIGDIR and PYTHONPATH at dist/. One figure, four panels — a line chart off the cycler,
-grouped bars, a sequential heatmap and a diverging one — so every piece of the theme is on
-the page: the cycle order, the grounds, the grid discipline and both colormap families.
+Run it from the checkout. It reads the styles, ddlc_cmaps.py and Mya Nunito Static out of
+dist/, not out of an install, and refuses to draw when matplotlib would take another face for
+the text. One figure, four panels — a line chart off the cycler, grouped bars, a sequential
+heatmap and a diverging one — so every piece of the theme is on the page: the cycle order,
+the grounds, the grid discipline and both colormap families.
 """
 
 import sys
+from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
 
-import ddlc_cmaps  # noqa: F401 — registers on import
-import matplotlib.pyplot as plt
-import numpy as np
+from matplotlib import font_manager  # noqa: E402
+
+dist = Path(__file__).resolve().parent.parent / "dist"
+sys.path.insert(0, str(dist))
+for face in sorted(dist.glob("MyaNunitoStatic-*.ttf")):
+    font_manager.fontManager.addfont(face)
+
+import ddlc_cmaps  # noqa: E402, F401 — registers on import
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
 
 variant = sys.argv[1] if len(sys.argv) > 1 else "dark"
 style = "ddlc" if variant == "light" else "ddlc-dark"
 seq, div = ("ddlc_seq", "ddlc_div") if variant == "light" else ("ddlc_seq_dark", "ddlc_div_dark")
 
-plt.style.use(style)
+plt.style.use(dist / f"{style}.mplstyle")
+# The text and the bold title are the static family from dist/, not a face found elsewhere
+family = plt.rcParams["font.sans-serif"][0]
+for weight in ("normal", "bold"):
+    props = font_manager.FontProperties(family=family, weight=weight)
+    found = Path(font_manager.findfont(props, fallback_to_default=False))
+    if found.parent != dist:
+        sys.exit(f"matplotlib-demo: {family} {weight} is {found}, not a face of dist/")
+    print(f"{family} {weight}: {found.relative_to(dist.parent)}")
 rng = np.random.default_rng(42)
 # The cycle length is the theme's own statement: five series on paper, three on ink
 cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]

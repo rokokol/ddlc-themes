@@ -44,6 +44,7 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
   - [Any other distribution](#any-other-distribution)
   - [Super Productivity](#super-productivity)
 - [Web pages, reports and letters](#web-pages-reports-and-letters)
+- [Mya Nunito](#mya-nunito)
 - [Where the slots go](#where-the-slots-go)
 - [Re-rendering](#re-rendering)
 - [Tests](#tests)
@@ -166,7 +167,7 @@ These have no switch and no installer, because they belong next to a page and no
 | `ddlc-theme.js`, `ddlc-cloud.js` | the theme button that cycles system, light and dark; the pointer's dithered cloud and the colour reader for a canvas | `lib.js.{theme,cloud}` |
 | `DepartureMono-Regular.woff2` | the face the kit is drawn in, expected beside `ddlc-ui.css` | `lib.font` |
 | `ddlc-report.css` | an HTML report: prose, tables, code as a kitty window, the "Just Monika." pop-up, quotes taped on | `lib.report` |
-| `MyaNunito.woff2`, `MyaNunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`: Mya Nunito, which is Nunito with the Greek, arrows, operators, blackboard letters and indices it lacks, matched to its size, weights and round stroke ends; [ASSETS.md](ASSETS.md) tells where they come from. A heading takes Doki where it is installed and Mya Nunito Black otherwise. Nunito is round like Doki, but it is free under the OFL and easier to read in long text. Its licence, the OFL with the notices of all three fonts, is `MyaNunito-LICENSE.txt` beside it | `lib.mya-nunito.{regular,italic}` |
+| `MyaNunito.woff2`, `MyaNunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`: [Mya Nunito](#mya-nunito), which is Nunito with the Greek, arrows, operators, blackboard letters and indices it lacks. Its licence, the OFL with the notices of all three fonts, is `MyaNunito-LICENSE.txt` beside it | `lib.mya-nunito.{regular,italic}` |
 | `MyaNunito.ttf`, `MyaNunito-Italic.ttf` | Mya Nunito for the system, variable as on a page | `lib.mya-nunito.ttf.{regular,italic}` |
 | `MyaNunitoStatic-{Regular,Medium,Bold,Black}.ttf` and their `Italic`, `MediumItalic`, `BoldItalic`, `BlackItalic` | Mya Nunito at fixed weights, as a family of its own, Mya Nunito Static, so a system holding both sees each once: for matplotlib, which reads no variation axis and draws a variable font at its lightest. The matplotlib styles name it for text and formulas alike | `lib.mya-nunito.static.{regular,medium,bold,black,italic,medium-italic,bold-italic,black-italic}` |
 | `Nunito.woff2`, `Nunito-Italic.woff2` | Nunito as it comes, for a page that wants it without the additions | `lib.nunito.{regular,italic}` |
@@ -192,6 +193,19 @@ A new page starts from the template, which lays out the bar, the three columns a
 ```sh
 nix flake init -t github:rokokol/ddlc-themes#app
 ```
+
+## Mya Nunito
+
+The prose face of the reports and the matplotlib styles. Nunito is round like Doki, but it is free under the OFL and easier to read in long text. It lacks most of the Greek letters, arrows and mathematical signs, so a formula fell back to another font in the middle of a line
+
+Mya Nunito is Nunito with those characters added from Noto Sans and Noto Sans Math. They take Nunito's size, its weights from ExtraLight to Black and its round stroke ends. A formula then reads as one face with the text around it. [ASSETS.md](ASSETS.md) tells where each part comes from
+
+| ![one line of formulas in Nunito and in Mya Nunito, light variant](docs/mya-nunito-light.png) | ![one line of formulas in Nunito and in Mya Nunito, dark variant](docs/mya-nunito-dark.png) |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+
+> [`docs/mya-nunito-demo.html`](docs/mya-nunito-demo.html) is the page behind these, and [`docs/mya-nunito-demo.py`](docs/mya-nunito-demo.py) takes both with a headless Chromium. In the upper rows a sign that Nunito lacks comes from a system font
+
+It comes as a variable font for a page and for the system, and as Mya Nunito Static, a separate family with fixed weights, for matplotlib. The table above lists the files
 
 ## Where the slots go
 
