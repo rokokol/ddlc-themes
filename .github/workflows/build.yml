@@ -35,7 +35,7 @@ jobs:
           }
 
       - run: nix build --no-write-lock-file
-      # dist-is-current, themes-are-filled, module-wiring, scripts-lint, install-sh-works
+      # Every check in flake.nix; nix flake show lists them
       - run: nix flake check --no-write-lock-file
 
       # Each guard of generate.sh is broken on purpose and the generator must refuse the

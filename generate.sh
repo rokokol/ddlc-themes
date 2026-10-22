@@ -20,6 +20,7 @@ vendor/ beside itself
   --dark FILE      base16-ddlc-dark.yaml    (or \$DDLC_BASE16_DARK)
   --palette FILE   palette.env              (or \$DDLC_PALETTE_ENV)
   --nerd FILE      DepartureMono.tar.xz     (or \$DDLC_NERD_DEPARTURE)
+  --mya-nunito DIR Mya Nunito, merged       (or \$DDLC_MYA_NUNITO)
 
 The schemes and the palette come from ddlc-palette, the archive from the Nerd Fonts release,
 and nix develop puts each of them in the environment already. Without Nix, take them there:
@@ -27,6 +28,10 @@ and nix develop puts each of them in the environment already. Without Nix, take 
   curl -sSLO https://raw.githubusercontent.com/rokokol/ddlc-palette/master/dist/base16-ddlc-dark.yaml
   curl -sSLO https://raw.githubusercontent.com/rokokol/ddlc-palette/master/dist/palette.env
   curl -sSLO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/DepartureMono.tar.xz
+
+Without --mya-nunito, the run merges Mya Nunito out of vendor/ with src/mya-nunito.py, which
+takes several minutes. With it, the run copies the MyaNunito* files from DIR, as the flake
+check does with the merge it builds once
 EOF
 }
 
@@ -36,6 +41,7 @@ declare -A scheme=(
 )
 palette_env="${DDLC_PALETTE_ENV:-}"
 nerd_archive="${DDLC_NERD_DEPARTURE:-}"
+mya_nunito="${DDLC_MYA_NUNITO:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -53,6 +59,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --nerd)
       nerd_archive="${2:?file required}"
+      shift 2
+      ;;
+    --mya-nunito)
+      mya_nunito="${2:?directory required}"
       shift 2
       ;;
     -h | --help)
@@ -732,12 +742,25 @@ done
 # lacks from the vendored Noto Sans and Noto Sans Math into Nunito's own variable font, as Mya
 # Nunito: TTF for a system, WOFF2 for a page, and the static faces matplotlib reads. It prints
 # how far each master emboldens the added glyphs. The merge is byte-stable for the same input
-# and fonttools. The licences of its three sources go beside it in dist/
-python3 -c 'import fontTools.varLib, brotli' 2>/dev/null || {
-  echo "generate.sh: fonttools or brotli is missing for python3; nix develop puts them in the environment" >&2
-  exit 1
-}
-python3 "$src/mya-nunito.py" "$vendor" "$out"
+# and fonttools. The licences of its three sources go beside it in dist/.
+# The merge reads only its own script and three vendored fonts, so a merge built earlier from
+# the same input is the same bytes, and the run copies it from $mya_nunito instead
+if [ -n "$mya_nunito" ]; then
+  mya_files=("$mya_nunito"/MyaNunito*)
+  [ -e "${mya_files[0]}" ] || {
+    echo "generate.sh: $mya_nunito holds no MyaNunito* files" >&2
+    exit 1
+  }
+  for file in "${mya_files[@]}"; do
+    cat "$file" >"$out/$(basename "$file")"
+  done
+else
+  python3 -c 'import fontTools.varLib, brotli' 2>/dev/null || {
+    echo "generate.sh: fonttools or brotli is missing for python3; nix develop puts them in the environment" >&2
+    exit 1
+  }
+  python3 "$src/mya-nunito.py" "$vendor" "$out"
+fi
 cat "$vendor/noto-sans/NotoSans-LICENSE.txt" >"$out/NotoSans-LICENSE.txt"
 cat "$vendor/noto-sans-math/NotoSansMath-LICENSE.txt" >"$out/NotoSansMath-LICENSE.txt"
 

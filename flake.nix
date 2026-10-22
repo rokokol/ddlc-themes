@@ -41,6 +41,15 @@
       # nixpkgs fetches it by hash, so the lock pins it like the palette
       nerdDeparture = pkgs: pkgs.nerd-fonts.departure-mono.src;
 
+      # Mya Nunito, merged once per change to its own inputs. generate.sh copies it from here in
+      # dist-is-current instead of merging again, so that check holds dist/ to it byte for byte
+      myaNunito =
+        pkgs:
+        pkgs.runCommand "mya-nunito-merge" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
+          mkdir $out
+          python3 ${fontSrc}/src/mya-nunito.py ${fontSrc}/vendor $out
+        '';
+
       # Each piece isolated, so a README edit doesn't rebuild anything
       generator = builtins.path {
         name = "generate.sh";
@@ -79,6 +88,38 @@
       completionsDir = builtins.path {
         name = "ddlc-themes-completions";
         path = ./completions;
+      };
+      # What src/mya-nunito.py reads: itself, the raster measure beside it, and the three
+      # vendored fonts with their licences. An edit anywhere else in src/ or vendor/ keeps this
+      # hash, so the slow merge does not run again for a stylesheet or a picture
+      fontSrc = nixpkgs.lib.fileset.toSource {
+        root = ./.;
+        fileset = nixpkgs.lib.fileset.unions [
+          ./src/mya-nunito.py
+          ./src/glyph_openings.py
+          ./vendor/nunito
+          ./vendor/noto-sans
+          ./vendor/noto-sans-math
+        ];
+      };
+      # The files of dist/ that the merge writes
+      myaNunitoFiles = nixpkgs.lib.fileset.fileFilter (
+        f: nixpkgs.lib.hasPrefix "MyaNunito" f.name
+      ) ./dist;
+      # The files of dist/ that tests/mya-nunito.py reads: the merged fonts, the report that
+      # declares them, and the matplotlib styles that name the static family
+      distFontFacts = nixpkgs.lib.fileset.toSource {
+        root = ./dist;
+        fileset = nixpkgs.lib.fileset.unions [
+          myaNunitoFiles
+          ./dist/ddlc-report.css
+          ./dist/ddlc.mplstyle
+          ./dist/ddlc-dark.mplstyle
+        ];
+      };
+      testMyaNunito = builtins.path {
+        name = "mya-nunito.py";
+        path = ./tests/mya-nunito.py;
       };
       # The one source of version: VERSION at the repo root, read by the package, printed
       # by install.sh -v, asserted against CHANGELOG.md by CI
@@ -142,7 +183,9 @@
         };
         # Nunito with the Greek and mathematics it lacks, from Noto: the prose and the fallback
         # headings of the report. Variable TTF for a system; the static weights, a family of
-        # their own named Mya Nunito Static, for matplotlib, which reads no variation axis
+        # their own named Mya Nunito Static, for matplotlib, which reads no variation axis.
+        # They are the committed files, not the merge derivation: a consumer reads them with no
+        # build, and dist-is-current holds them to the merge byte for byte
         mya-nunito = {
           regular = ./dist/MyaNunito.woff2;
           italic = ./dist/MyaNunito-Italic.woff2;
@@ -277,7 +320,7 @@
               cp -r ${vendorDir} vendor
               DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
                 DDLC_PALETTE_ENV=${palette} DDLC_NERD_DEPARTURE=${nerdDeparture pkgs} \
-                bash generate.sh >/dev/null
+                DDLC_MYA_NUNITO=${myaNunito pkgs} bash generate.sh >/dev/null
               diff -r ${dist} dist
               touch $out
             '';
@@ -295,7 +338,7 @@
         # openings between strokes, and space as Nunito's letters do. The openings are measured
         # by src/glyph_openings.py, the generator's own measure
         mya-nunito = pkgs.runCommand "mya-nunito" { nativeBuildInputs = [ (generatorPython pkgs) ]; } ''
-          python3 ${testsDir}/mya-nunito.py ${dist} ${vendorDir} ${srcDir}
+          python3 ${testMyaNunito} ${distFontFacts} ${fontSrc}/vendor ${fontSrc}/src
           touch $out
         '';
 
