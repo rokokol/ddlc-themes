@@ -51,7 +51,22 @@ from fontTools.varLib import instancer
 
 # The measure of openings lives beside this file, shared with the test
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from glyph_openings import Flattener, narrowest, openings, outline, parts, raster, strokes  # noqa: E402
+from glyph_openings import (  # noqa: E402
+    NOTCH_DEPTH,
+    Flattener,
+    keeps,
+    kept_share,
+    measured,
+    narrowest,
+    notch_shares,
+    notches,
+    openings,
+    outline,
+    parts,
+    raster,
+    ridge_width,
+    strokes,
+)
 
 vendor, outdir = Path(sys.argv[1]), Path(sys.argv[2])
 
@@ -114,6 +129,12 @@ WEDGE = 2
 # How far, in degrees, an outline may turn at a point and still run smooth through it: a curve
 # whose points are rounded to whole units bends by a degree or two at each
 SMOOTH = 10
+# How much wider than its strength gives an added glyph's usual stroke may grow, in font units:
+# six pixels of the raster that measures it. The median of the ridge steps between the widths a
+# raster holds, by up to four pixels as a glyph grows, while a filled notch adds a stroke's width
+RIDGE_SLACK = 24
+# Measured notches, by source, codepoint, weight and scale
+NOTCHES = {}
 # The share of its strength and the source weight each added glyph took, by master: the
 # first style decides, and the italic, which adds the same upright glyphs, follows
 DECIDED = {}
@@ -589,6 +610,13 @@ class Source:
         return outline(glyphset, self.cmap[cp], self.scale), glyphset[self.cmap[cp]].width * self.scale
 
 
+def notches_of(source, cp, weight):
+    key = (source.prefix, cp, weight, source.scale)
+    if key not in NOTCHES:
+        NOTCHES[key] = notches(source.contours(cp, weight)[0])
+    return NOTCHES[key]
+
+
 def allowed_share(found, required, xres, yres):
     """The largest share of the strength that leaves every opening at least the required width
 
@@ -598,8 +626,8 @@ def allowed_share(found, required, xres, yres):
     outline is too tight already
     """
     share = 1.0
-    for width, axis in found:
-        across = {"x": xres, "y": yres, "xy": max(xres, yres)}[axis]
+    for width, axis, *_ in found:
+        across ={"x": xres, "y": yres, "xy": max(xres, yres)}[axis]
         if across > 0:
             share = min(share, (width - required) / across)
     return share
@@ -608,8 +636,10 @@ def allowed_share(found, required, xres, yres):
 def add_glyphs(master, sources, openness, thinness, radius, state, openings_of, decided):
     """Add the scaled, emboldened glyphs to one master, with their advances and codepoints
 
-    openness is (width, ratio): no opening of a glyph need be wider than the width, nor narrow
-    past the ratio of its own narrowest opening at the lightest master. thinness is (width,
+    openness is (width, ratio, drawn ratio, depth, notch share): no opening of a glyph need be
+    wider than the width, nor narrow past the ratio of its own narrowest opening at the lightest
+    master or the drawn ratio of its narrowest as the source draws it, and no notch deeper than
+    the depth in a source of one weight keeps less of it than the notch share. thinness is (width,
     ratio) for strokes as they thin: down to the width, or to the ratio of their own. radius
     rounds the corners of the letters. state
     carries each glyph from the lighter master before, which is never heavier, and decided the
@@ -649,14 +679,32 @@ def add_glyphs(master, sources, openness, thinness, radius, state, openings_of, 
             # with a weight axis narrows its gaps by its heavier weight too, emboldened or not
             elif xres > 0 or yres > 0 or (before and source.weight is not None):
                 growing = xres > 0 or yres > 0
-                width_cap, ratio = openness
-                own = before["open"] if before else narrowest(openings_of(source, cp, weight))
-                required = min(width_cap, ratio * own)
+                width_cap, ratio, ratio_drawn, deep, notch_share = openness
+                # Its own openings: as the lightest master has them, and, for a source of one
+                # weight, as the source draws them, since thinning that one weight to the
+                # lightest can widen a narrow slot of the design, as between the strokes of a
+                # sans-serif bold italic M, out of the measure's sight. A source with a weight
+                # axis has a light weight of its own and is not thinned
+                if before:
+                    required = min(width_cap, ratio * before["open"], ratio_drawn * before["drawn"])
+                else:
+                    required = min(width_cap, narrowest(openings_of(source, cp, weight)))
                 # Never lighter than at the master below: no share under the one that gives
                 # the strength the glyph took there, which is negative where it was thinned
                 floor = 0.0
                 if before and growing:
                     floor = min(max(b / r for b, r in ((before["x"], xres), (before["y"], yres)) if r > 0), 1.0)
+
+                # The openings it must keep: those of its source as drawn at the weight the
+                # master below took, the one weight for a source of one weight. The master below
+                # is no measure for that, since thinning can split what the source joins
+                drawn_openings = openings_of(source, cp, before["weight"] if before else weight)
+                # And the deep notches of a source of one weight, as it draws them at the
+                # reference weight. A source with a weight axis keeps the notches its designers
+                # drew at each weight
+                drawn_notches = []
+                if source.weight is None:
+                    drawn_notches = [n for n in notches_of(source, cp, None) if n[0] >= deep]
 
                 def fits(part, outline=scaled):
                     # Measured as the font will hold it, corners rounded and in whole units: a
@@ -665,7 +713,17 @@ def add_glyphs(master, sources, openness, thinness, radius, state, openings_of, 
                     out, _ = emboldened(outline, xres * part, yres * part)
                     if before and before["corners"]:
                         out = filleted(out, before["corners"], radius)
-                    return narrowest(openings(rounded(out))) >= required
+                    image = raster(rounded(out))
+                    found = measured(image)
+                    if narrowest(found) < required or not keeps(found, drawn_openings):
+                        return False
+                    if min(notch_shares(notches(image), drawn_notches), default=1.0) < notch_share:
+                        return False
+                    # Its strokes grow by the strength and no faster: faster, emboldening fills
+                    # a notch between strokes that is no opening the measure above sees, as
+                    # the inner V of a bold italic M, and the glyph turns to a blot
+                    grown = max(xres, yres, 0) * part
+                    return ridge_width(image) <= ridge_width(outline) + grown + RIDGE_SLACK
 
                 if growing:
                     if prior:
@@ -673,11 +731,15 @@ def add_glyphs(master, sources, openness, thinness, radius, state, openings_of, 
                     else:
                         foreseen = allowed_share(openings_of(source, cp, weight), required, xres, yres)
                     share = max(foreseen, floor)
-                    # The narrowing is foreseen from the openings the outline has, but a
-                    # heavier outline can grow new ones where strokes meet, so the result is
-                    # measured too
-                    if share > floor and not fits(share):
-                        lo, hi = floor, share
+                    # The narrowing is foreseen from the openings the outline has, so it is
+                    # measured too. A heavier outline can grow new openings where strokes meet,
+                    # and an opening between parallel steps does not narrow at all: the whole
+                    # strength is taken whenever the outline keeps its openings with it, and a
+                    # foresight down to the floor is sought above the floor too
+                    if share < 1 and fits(1.0):
+                        share = 1.0
+                    elif share == floor or not fits(share):
+                        lo, hi = floor, share if share > floor else 1.0
                         for _ in range(6):
                             mid = (lo + hi) / 2
                             lo, hi = (mid, hi) if fits(mid) else (lo, mid)
@@ -769,7 +831,13 @@ def add_glyphs(master, sources, openness, thinness, radius, state, openings_of, 
             advance = width + xs
             lsb, rsb = getattr(glyph, "xMin", 0), advance - getattr(glyph, "xMax", 0)
             if before is None:
-                state[name] = {"lsb": lsb, "rsb": rsb, "open": narrowest(openings(rounded(contours))), "corners": corners}
+                state[name] = {
+                    "lsb": lsb,
+                    "rsb": rsb,
+                    "open": narrowest(openings(rounded(contours))),
+                    "drawn": narrowest(openings_of(source, cp, None)) if source.weight is None else math.inf,
+                    "corners": corners,
+                }
             else:
                 # The sidebearings are those of the lightest master: Noto Sans spaces its
                 # heavier weights tighter, which would otherwise come along with them. The
@@ -860,7 +928,7 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
     def openings_of(source, cp, weight):
         key = (source.prefix, cp, weight, source.scale)
         if key not in OPENINGS:
-            OPENINGS[key] = openings(source.contours(cp, weight)[0])
+            OPENINGS[key] = measured(source.contours(cp, weight)[0])
         return OPENINGS[key]
 
     def equals_gap(glyphset, cmap, scale=1.0):
@@ -891,6 +959,35 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
 
     weights = nunito_masters(nunito)
     lightest_gap = equals_gap(nunito.getGlyphSet(location={"wght": weights[0]}), ncmap)
+
+    # The notches take Nunito's own Latin letters as their measure, as the openings take its
+    # equals sign: a deep notch of an added glyph, as between the arms of a kappa, keeps as
+    # large a share of its depth as Nunito's letters keep of theirs from the reference weight,
+    # all but the shallowest tenth.
+    # A notch is deep when it reaches further in than NOTCH_DEPTH usual strokes of Nunito's l
+    # at the reference weight. A shallow one, as where a stem meets a shoulder, fills in Noto's
+    # heavy weights and in the emboldened ones alike
+    deep = NOTCH_DEPTH * ridge_width(outline(nunito.getGlyphSet(location={"wght": reference_weight}), ncmap[ord("l")]))
+    latin = [ncmap[cp] for cp in [*range(ord("A"), ord("Z") + 1), *range(ord("a"), ord("z") + 1)]]
+    nunito_notches = {}
+
+    def notches_at(weight):
+        if weight not in nunito_notches:
+            glyphset = nunito.getGlyphSet(location={"wght": weight})
+            nunito_notches[weight] = {g: notches(outline(glyphset, g)) for g in latin}
+        return nunito_notches[weight]
+
+    def notch_share(lighter, heavier):
+        """The share of their depth the deep notches of Nunito's letters keep from one weight to
+        a heavier one"""
+        return kept_share(
+            [
+                share
+                for g in latin
+                for share in notch_shares(notches_at(heavier)[g], [n for n in notches_at(lighter)[g] if n[0] >= deep])
+            ]
+        )
+
     state, sources = {}, []
     for weight in weights:
         glyphs = nunito.getGlyphSet(location={"wght": weight})
@@ -898,7 +995,16 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
         sans_weight = matching_weight(sans, scmap, sans_scale, stem)
         sans_stems = [sans_scale * s for s in stems(sans_at(sans_weight), scmap)]
         gap = equals_gap(glyphs, ncmap)
-        openness = (proportion * gap, gap / lightest_gap)
+        openness = (
+            proportion * gap,
+            gap / lightest_gap,
+            gap / reference_gap,
+            deep,
+            # Only at the heaviest master: up to the middle one Nunito keeps its notches all but
+            # whole, deeper than an emboldened outline can, and a notch that loses a fifth of
+            # its depth there still reads, while at the heaviest an emboldened kappa loses half
+            notch_share(reference_weight, weight) if weight == weights[-1] else 0.0,
+        )
         master = instancer.instantiateVariableFont(nunito, {"wght": weight}, inplace=False)
         capped = add_glyphs(
             master,
@@ -947,6 +1053,7 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
             f"{stem - sans_default_stems[0]:+.0f}, {bar - sans_default_stems[1]:+.0f} and "
             f"{stem - math_stems[0]:+.0f}, {bar - math_stems[1]:+.0f}; "
             f"openings down to {openness[0]:.0f} or {openness[1]:.2f} of their own at weight {weights[0]}; "
+            f"notches deeper than {deep:.0f} down to {openness[4]:.2f} of their depth as drawn; "
             f"{len(capped)} glyphs take less, to keep their openings and strokes"
         )
         sources.append((weight, master))

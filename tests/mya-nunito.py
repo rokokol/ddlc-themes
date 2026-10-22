@@ -15,7 +15,12 @@ dist-is-current already compares:
 - the added glyphs stand at Nunito's x-height, and grow no lighter with the weight, Noto Sans
   Math included, though it has one weight of its own; most grow heavier
 - no contour of an added glyph turns inside out at any weight, and no opening between its
-  strokes closes past what Nunito's own equals sign allows, measured by src/glyph_openings.py
+  strokes closes past what Nunito's own equals sign allows, or closes at all, measured by
+  src/glyph_openings.py
+- the usual stroke of an added glyph grows no faster than Nunito's l, so no notch between
+  strokes fills to a blot, and letters once held or blotted keep pace with their neighbours
+- a deep notch of a glyph of Noto Sans Math, as between the arms of a kappa, keeps as large a
+  share of its depth at the heaviest weight as the deep notches of Nunito's letters keep
 - the added glyphs keep their sidebearings at every weight, as Nunito's own signs do
 - the added letters end their strokes round, as Nunito's do: the stem of φ and the curved
   tail of ς alike
@@ -35,7 +40,18 @@ from fontTools.ttLib import TTFont
 
 dist, vendor, src = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
 sys.path.insert(0, str(src))
-from glyph_openings import Flattener, narrowest, openings  # noqa: E402
+from glyph_openings import (  # noqa: E402
+    NOTCH_DEPTH,
+    Flattener,
+    keeps,
+    kept_share,
+    measured,
+    narrowest,
+    notch_shares,
+    notches,
+    openings,
+    ridge_width,
+)
 from glyph_openings import outline as contours_of  # noqa: E402
 
 # The blocks the report promises, written out here on purpose and not read from the generator:
@@ -102,6 +118,16 @@ HELD = 1.01
 # What share of the added glyphs must grow heavier from 200 to 1000: the rest are those whose
 # openings or hairlines allow no weight at all, double-struck and patterned glyphs above all
 MOSTLY = 0.9
+# Letters once held at Regular or blotted at Black, each with a neighbour of the same alphabet:
+# at each weight the usual stroke of the letter stands to the neighbour's as in Noto Sans Math,
+# to the share given. A neighbour that its strokes stop thinning at 200 stands heavier there
+KEEP_PACE = (("𝛼", "𝛽"), ("𝜅", "𝛽"), ("𝙈", "𝙉"))
+PACE_WEIGHTS = (200, 400, 500, 700, 1000)
+PACE = 0.2
+# How much faster than Nunito's l from Regular an added glyph's usual stroke may grow from its
+# source, in font units: the median of the ridge steps between the widths a raster holds by up
+# to six pixels, and Nunito's italic l grows a few units slower than the strength it sets
+BLOT_SLACK = 32
 # How far the end of an added stroke may stand from Nunito's in depth, as a share of the
 # stroke: a square end is about 0 deep, a half circle 0.38
 CAP_TOLERANCE = 0.08
@@ -297,7 +323,9 @@ for style, path in FACES.items():
     # The openings. Nunito's equals sign is the measure: at a heavy weight an added glyph's
     # narrowest opening is at least the share of Nunito's equals gap there that Noto Sans
     # Math's equals gap is of Nunito's at Regular, or, for a glyph drawn tighter than that,
-    # its own opening at 200 narrowed by as large a share as Nunito's equals gap has
+    # its own opening at 200, or as its source draws it at Regular, narrowed by as large a share
+    # as Nunito's equals gap has since: thinning a source of one weight to 200 can widen a
+    # narrow slot of the design out of the measure's sight
     def equals(glyphset, cmap, scale=1.0):
         return narrowest(openings(contours_of(glyphset, cmap[ord("=")], scale)))
 
@@ -309,21 +337,110 @@ for style, path in FACES.items():
     )[3]
     proportion = equals(math_set, math_cmap, scale) / equals(nunito.getGlyphSet(location={"wght": REGULAR}), nunito_cmap)
     lightest_gap = equals(nunito.getGlyphSet(location={"wght": 200}), nunito_cmap)
+    regular_gap = equals(nunito.getGlyphSet(location={"wght": REGULAR}), nunito_cmap)
     own = {g: narrowest(openings(contours_of(sets[200], g))) for g in added}
+    # As drawn: Noto Sans Math's glyph, and Noto Sans's at its Regular, at Nunito's x-height
+    sans_font = TTFont(vendor / "noto-sans/NotoSans-wdth-wght.ttf")
+    sans_set = sans_font.getGlyphSet(location={"wght": REGULAR, "wdth": 100})
+    sans_scale = bounds(nunito.getGlyphSet(location={"wght": 500}), nunito_cmap[ord("x")])[3] / bounds(
+        sans_font.getGlyphSet(location={"wght": 500, "wdth": 100}), sans_font.getBestCmap()[ord("x")]
+    )[3]
+    drawn, drawn_stroke, drawn_notches = {}, {}, {}
+    for g in added:
+        source, name = g.split(".", 1)
+        glyphset, factor = (math_set, scale) if source == "math" else (sans_set, sans_scale)
+        contours = contours_of(glyphset, name, factor)
+        drawn[g], drawn_stroke[g], drawn_notches[g] = measured(contours), ridge_width(contours), notches(contours)
     for weight in HEAVY:
         heavy_set = font.getGlyphSet(location={"wght": weight})
         gap = equals(nunito.getGlyphSet(location={"wght": weight}), nunito_cmap)
-        closed = []
+        closed, lost = [], []
         for g in added:
-            promise = min(proportion * gap, own[g] * gap / lightest_gap)
-            width = narrowest(openings(contours_of(heavy_set, g)))
+            promise = min(proportion * gap, own[g] * gap / lightest_gap, narrowest(drawn[g]) * gap / regular_gap)
+            found = measured(contours_of(heavy_set, g))
+            width = narrowest(found)
             # A glyph held as light as at 200 has done what it can: its own design is tighter
             # than the promise, or the measure finds a slot only at this weight
             held = area(heavy_set, g) <= HELD * area(sets[200], g)
             if width < OPENING_TOLERANCE * promise and not held:
                 closed.append(f"{g} {width:.0f} < {promise:.0f}")
+            # An opening that closes leaves the measure, and the narrowest left can be wide
+            if not keeps(found, drawn[g]) and not held:
+                lost.append(g)
+        if lost:
+            fail(f"{label}: {len(lost)} added glyphs close an opening of their source at weight {weight}, from {lost[:5]}")
         if closed:
             fail(f"{label}: {len(closed)} added glyphs close their openings at weight {weight}, from {closed[:5]}")
+
+    # The strokes. An added glyph's usual stroke grows from its source as drawn at Regular no
+    # faster than Nunito's l from Regular: where it grows faster, emboldening has filled a notch
+    # between strokes, as the inner V of a bold italic M, which is no opening the measure above
+    # sees
+    def nunito_l(weight):
+        return ridge_width(contours_of(nunito.getGlyphSet(location={"wght": weight}), nunito_cmap[ord("l")]))
+
+    for weight in HEAVY:
+        heavy_set = font.getGlyphSet(location={"wght": weight})
+        allowed = nunito_l(weight) - nunito_l(REGULAR)
+        blotted = []
+        for g in added:
+            grown = ridge_width(contours_of(heavy_set, g)) - drawn_stroke[g]
+            if grown > allowed + BLOT_SLACK:
+                blotted.append(f"{g} +{grown:.0f}")
+        if blotted:
+            fail(f"{label}: {len(blotted)} added glyphs blot at weight {weight}, from {blotted[:5]}, Nunito's l +{allowed:.0f}")
+
+    # The notches. A notch of a glyph of Noto Sans Math that reaches deeper than NOTCH_DEPTH of
+    # the usual strokes of Nunito's l at Regular, as between the arms of a kappa, keeps at the heaviest weight as
+    # large a share of its depth as the deep notches of Nunito's Latin letters keep of theirs
+    # from Regular, all but the shallowest tenth. The stroke above misses a notch that fills
+    # between short arms, which are a small part of the glyph's ridge. Lighter, Nunito keeps
+    # its notches all but whole, deeper than an emboldened outline can, and Noto Sans draws its
+    # own at each weight
+    deep = NOTCH_DEPTH * nunito_l(REGULAR)
+    latin = [nunito_cmap[cp] for cp in [*range(ord("A"), ord("Z") + 1), *range(ord("a"), ord("z") + 1)]]
+
+    def nunito_notches(weight):
+        glyphset = nunito.getGlyphSet(location={"wght": weight})
+        return {g: notches(contours_of(glyphset, g)) for g in latin}
+
+    regular_notches = nunito_notches(REGULAR)
+    for weight in HEAVY[-1:]:
+        heavy_notches = nunito_notches(weight)
+        need = kept_share(
+            [s for g in latin for s in notch_shares(heavy_notches[g], [n for n in regular_notches[g] if n[0] >= deep])]
+        )
+        heavy_set = font.getGlyphSet(location={"wght": weight})
+        middle_set = font.getGlyphSet(location={"wght": HEAVY[-2]})
+        filled = []
+        for g in added:
+            reference = [n for n in drawn_notches[g] if n[0] >= deep]
+            # A glyph held as at the weight below has done what it can: there, where no notch
+            # is held, its notches narrowed past the share already
+            if not g.startswith("math.") or not reference or area(heavy_set, g) <= HELD * area(middle_set, g):
+                continue
+            share = min(notch_shares(notches(contours_of(heavy_set, g)), reference))
+            if share < OPENING_TOLERANCE * need:
+                filled.append(f"{g} {share:.2f}")
+        if filled:
+            fail(
+                f"{label}: {len(filled)} added glyphs fill a deep notch at weight {weight}, from {filled[:5]}, "
+                f"Nunito's letters keep {need:.2f} of theirs"
+            )
+    # Letters once held at Regular or blotted at Black keep pace with their neighbours: the
+    # mathematical italic alpha and kappa beside beta, the sans-serif bold italic M beside N
+    for char, neighbour in KEEP_PACE:
+        if ord(char) not in cmap or ord(neighbour) not in cmap:
+            continue
+        mine, theirs = (ridge_width(contours_of(math_set, math_cmap[ord(c)])) for c in (char, neighbour))
+        for weight in PACE_WEIGHTS:
+            at = font.getGlyphSet(location={"wght": weight})
+            ratio = ridge_width(contours_of(at, cmap[ord(char)])) / ridge_width(contours_of(at, cmap[ord(neighbour)]))
+            if abs(ratio / (mine / theirs) - 1) > PACE:
+                fail(
+                    f"{label}: the stroke of {char} is {ratio:.2f} of {neighbour}'s at weight {weight}, "
+                    f"{mine / theirs:.2f} in Noto Sans Math"
+                )
 
     # The sidebearings of the added glyphs stay as at 200, as those of Nunito's own signs do,
     # each side to a unit or two of rounding
