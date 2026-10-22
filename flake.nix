@@ -107,8 +107,9 @@
         f: nixpkgs.lib.hasPrefix "MyaNunito" f.name
       ) ./dist;
       # The files of dist/ that each mode of tests/mya-nunito.py reads: the merged fonts for the
-      # slow one; the report that declares them and the matplotlib styles that name the static
-      # family for the fast one, so a stylesheet edit does not measure the fonts again
+      # slow one; the report that declares them, the kit and the report with their heading
+      # stacks, and the matplotlib styles that name the static family for the fast one, so a
+      # stylesheet edit does not measure the fonts again
       distMyaNunito = nixpkgs.lib.fileset.toSource {
         root = ./dist;
         fileset = myaNunitoFiles;
@@ -116,6 +117,7 @@
       distFontStacks = nixpkgs.lib.fileset.toSource {
         root = ./dist;
         fileset = nixpkgs.lib.fileset.unions [
+          ./dist/ddlc-ui.css
           ./dist/ddlc-report.css
           ./dist/ddlc.mplstyle
           ./dist/ddlc-dark.mplstyle
@@ -346,7 +348,8 @@
           touch $out
         '';
 
-        # The report declares Mya Nunito and starts its prose with it, and the matplotlib styles
+        # The report declares Mya Nunito and starts its prose with it, a heading leaves Doki out
+        # under data-ddlc-heading="plain" in the kit and the report, and the matplotlib styles
         # name the static family
         mya-nunito-stacks =
           pkgs.runCommand "mya-nunito-stacks" { nativeBuildInputs = [ (generatorPython pkgs) ]; }

@@ -5,7 +5,7 @@ mathematics it lacks, drawn from Noto at Nunito's size and weight.
     python3 tests/mya-nunito.py stacks DIST
 
 The fonts mode reads the merged fonts and takes minutes. The stacks mode reads only the
-stylesheet and the matplotlib styles that name the fonts, so an edit to them checks in seconds.
+stylesheets and the matplotlib styles that name the fonts, so an edit to them checks in seconds.
 
 src/mya-nunito.py merges the vendored Nunito with Noto Sans and Noto Sans Math into one
 variable font. The check reads the facts the merge promises, not the bytes, which
@@ -31,7 +31,9 @@ dist-is-current already compares:
 - the names say Mya Nunito and carry the copyright of both projects and the OFL
 - the static faces for matplotlib are the variable font at fixed weights
 - the report declares one face per style under the new name, and the prose starts with it,
-  and the matplotlib styles name the static family (the stacks mode)
+  a heading in the kit and the report is Doki and then the prose stack, or the prose stack
+  alone under data-ddlc-heading="plain", and the matplotlib styles name the static family
+  (the stacks mode)
 """
 
 import re
@@ -169,6 +171,23 @@ def stacks(dist):
     if not prose or not prose.group(1).startswith(f"'{FAMILY}', Nunito,"):
         fail(f"ddlc-report.css: the prose stack does not begin with {FAMILY} and then Nunito")
 
+    # A heading is Doki and then the prose face, until data-ddlc-heading="plain" on the root
+    # leaves Doki out: then it is the prose stack alone, in the kit and the report alike
+    for sheet in ("ddlc-ui.css", "ddlc-report.css"):
+        css = (dist / sheet).read_text()
+        prose = re.search(r"--ddlc-font-prose:\s*([^;]+);", css)
+        heading = re.search(r"--ddlc-font-heading:\s*([^;]+);", css)
+        plain = re.search(r':root\[data-ddlc-heading="plain"\]\s*\{\s*--ddlc-font-heading:\s*([^;]+);', css)
+        if not (prose and heading):
+            fail(f"{sheet}: no prose or heading stack")
+            continue
+        if not heading.group(1).startswith(f"Doki, {prose.group(1)}"):
+            fail(f"{sheet}: the heading stack is {heading.group(1)!r}, not Doki and then the prose stack")
+        if not plain:
+            fail(f'{sheet}: data-ddlc-heading="plain" sets no heading stack')
+        elif "Doki" in plain.group(1) or not plain.group(1).startswith(prose.group(1)):
+            fail(f'{sheet}: data-ddlc-heading="plain" sets {plain.group(1)!r}, not the prose stack without Doki')
+
     # matplotlib draws the static family: of a variable font it reads the default instance
     # alone, which is ExtraLight, so the variable family has no place in its stacks
     for style_file in ("ddlc.mplstyle", "ddlc-dark.mplstyle"):
@@ -186,7 +205,7 @@ def stacks(dist):
 
 if mode == "stacks":
     stacks(Path(sys.argv[2]))
-    finish("the report and the matplotlib styles name Mya Nunito as promised")
+    finish("the kit, the report and the matplotlib styles name Mya Nunito as promised")
 
 dist, vendor, src = Path(sys.argv[2]), Path(sys.argv[3]), Path(sys.argv[4])
 sys.path.insert(0, str(src))

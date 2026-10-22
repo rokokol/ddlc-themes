@@ -37,9 +37,10 @@ strong {
   font-weight: 900;
 }
 
-/* A heading is Doki where it is installed, and Mya Nunito Black otherwise. Doki has one
-   weight, and a synthetic bold smears it, so the weight stays normal and Black comes through
-   the weight axis, which only the variable font has */
+/* A heading is Doki where it is installed, and Mya Nunito Black otherwise, or always with
+   data-ddlc-heading="plain" on <html>. Doki has one weight, and a synthetic bold smears it,
+   so the weight stays normal and Black comes through the weight axis, which only the
+   variable font has */
 h1,
 h2,
 h3,
