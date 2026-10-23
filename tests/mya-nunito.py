@@ -26,6 +26,7 @@ dist-is-current already compares:
 - a deep notch of a glyph of Noto Sans Math, as between the arms of a kappa, keeps as large a
   share of its depth at the heaviest weight as the deep notches of Nunito's letters keep
 - the added glyphs keep their sidebearings at every weight, as Nunito's own signs do
+- a Greek letter Nunito lacks is upright in the roman and its mathematical italic in the italic
 - the added letters end their strokes round, as Nunito's do: the stem of φ and the curved
   tail of ς alike
 - the names say Mya Nunito and carry the copyright of both projects and the OFL
@@ -38,6 +39,7 @@ dist-is-current already compares:
 
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 from fontTools.pens.areaPen import AreaPen
@@ -224,6 +226,19 @@ from glyph_openings import (  # noqa: E402
 from glyph_openings import outline as contours_of  # noqa: E402
 
 
+def math_italic(cp):
+    """The mathematical italic codepoint of a Greek letter, by its Unicode name, or None"""
+    name = unicodedata.name(chr(cp))
+    for greek, math in (("GREEK SMALL LETTER ", "SMALL "), ("GREEK CAPITAL LETTER ", "CAPITAL "),
+                        ("GREEK LUNATE ", ""), ("GREEK ", "")):
+        if name.startswith(greek):
+            try:
+                return ord(unicodedata.lookup("MATHEMATICAL ITALIC " + math + name[len(greek):]))
+            except KeyError:
+                return None
+    return None
+
+
 def outline(glyphset, name):
     pen = DecomposingRecordingPen(glyphset)
     glyphset[name].draw(pen)
@@ -360,6 +375,18 @@ for style, path in FACES.items():
     for char in sorted(set(SAMPLE) - {" "}):
         if ord(char) not in cmap:
             fail(f"{label}: {char!r} U+{ord(char):04X} of the sample line is not mapped")
+
+    # A Greek letter Nunito lacks is upright in the roman and slanted in the italic, where it
+    # draws as its mathematical italic: matplotlib sets a formula's letters in the italic, and
+    # there phi keeps the loop that sets it apart from the phi symbol
+    for cp in sorted(cp for cp in promised if 0x0370 <= cp <= 0x03FF and unicodedata.category(chr(cp)).startswith("L")):
+        twin = math_italic(cp)
+        if twin is None or twin not in cmap:
+            continue
+        if style and cmap.get(cp) != cmap[twin]:
+            fail(f"{label}: {chr(cp)} U+{cp:04X} draws {cmap.get(cp)}, not its mathematical italic {cmap[twin]}")
+        if not style and cmap.get(cp) == cmap[twin]:
+            fail(f"{label}: {chr(cp)} U+{cp:04X} draws its mathematical italic in the roman")
 
     added = sorted({cmap[cp] for cp in set(cmap) - set(nunito_cmaps[style])})
     if not added:
@@ -530,18 +557,22 @@ for style, path in FACES.items():
             fail(f"{label}: {len(moved)} added glyphs change their sidebearings at weight {weight}, from {moved[:5]}")
 
     # Rounded as Nunito is: the end of a straight stroke of an added letter is a half circle,
-    # as Nunito's l ends in one. The stem of φ rises bare above its bowl, and Nunito lacks φ
-    phi = cmap.get(0x03C6)
+    # as Nunito's l ends in one. The stem of the stroked phi rises bare above its bowl, and
+    # Nunito lacks it: φ in the roman, ϕ in the italic, where φ is the looped mathematical italic
+    phi_cp = 0x03D5 if style else 0x03C6
+    phi = cmap.get(phi_cp)
     for weight in (400, 700, 1000) if phi else ():
         mine = cap_depth(font.getGlyphSet(location={"wght": weight}), phi)
         theirs = cap_depth(nunito.getGlyphSet(location={"wght": weight}), nunito_cmap[ord("l")])
         if abs(mine - theirs) > CAP_TOLERANCE:
-            fail(f"{label}: the stem of φ ends {mine:.2f} of its stroke deep at {weight}, Nunito's l {theirs:.2f}")
+            fail(f"{label}: the stem of {chr(phi_cp)} ends {mine:.2f} of its stroke deep at {weight}, Nunito's l {theirs:.2f}")
 
-    # The end of a curved stroke rounds as well: the tail of ς, which Noto cuts level where it
-    # curls down. Its straight run is short, so its end is measured nearer, and it is held to a
-    # share of the depth of Nunito's l rather than to it
-    sigma = cmap.get(0x03C2)
+    # The end of a curved stroke rounds as well: the tail of ς, which Noto Sans cuts level where
+    # it curls down. Its straight run is short, so its end is measured nearer, and it is held to
+    # a share of the depth of Nunito's l rather than to it. Only in the roman: the italic ς is
+    # the mathematical italic of Noto Sans Math, whose tail ends in a slanted cut that a level
+    # measure cannot read, and it rounds by the same fillet this checks
+    sigma = None if style else cmap.get(0x03C2)
     for weight in (400, 700, 1000) if sigma else ():
         mine = cap_depth(font.getGlyphSet(location={"wght": weight}), sigma, bottom=True, straight=TAIL_STRAIGHT)
         theirs = cap_depth(nunito.getGlyphSet(location={"wght": weight}), nunito_cmap[ord("l")])

@@ -25,9 +25,11 @@ Math where Noto Sans lacks them, as glyphs of Nunito's own variable font:
 
 Writes MyaNunito.ttf and MyaNunito-Italic.ttf, the same as WOFF2, the static family Mya Nunito
 Static for matplotlib, which reads no variation axis, and the licence, MyaNunito-LICENSE.txt,
-into OUTDIR. The italic adds the same upright glyphs to Nunito Italic: Noto Sans Math has no
-italic, and mathematics keeps its operators and Greek upright in slanted prose as well. The
-build is byte-stable for the same input, fonttools, numpy and scipy
+into OUTDIR. The italic adds the same glyphs to Nunito Italic, so its operators stay upright,
+as mathematics keeps them in slanted prose too, but a Greek letter Nunito lacks draws there as
+its mathematical italic from Noto Sans Math, as Latin does in Nunito Italic: matplotlib sets a
+formula's letters in the italic, and there phi keeps the loop that sets it apart from the phi
+symbol. The build is byte-stable for the same input, fonttools, numpy and scipy
 """
 
 import logging
@@ -575,6 +577,29 @@ def wanted_codepoints():
     return sorted((wanted & have_sans) - have_nunito), sorted(((wanted & have_math) - have_sans) - have_nunito)
 
 
+def math_italic(cp):
+    """The mathematical italic codepoint of a Greek letter, found by its Unicode name, or None"""
+    name = unicodedata.name(chr(cp))
+    for greek, math in (("GREEK SMALL LETTER ", "SMALL "), ("GREEK CAPITAL LETTER ", "CAPITAL "),
+                        ("GREEK LUNATE ", ""), ("GREEK ", "")):
+        if name.startswith(greek):
+            try:
+                return ord(unicodedata.lookup("MATHEMATICAL ITALIC " + math + name[len(greek):]))
+            except KeyError:
+                return None
+    return None
+
+
+def italic_greek(font, nunito_cmap):
+    """Map each Greek letter Nunito lacks to the glyph of its mathematical italic"""
+    best = font.getBestCmap()
+    for sub in font["cmap"].tables:
+        for cp in [cp for cp in sub.cmap if 0x0370 <= cp <= 0x03FF and cp not in nunito_cmap]:
+            twin = math_italic(cp) if unicodedata.category(chr(cp)).startswith("L") else None
+            if twin in best:
+                sub.cmap[cp] = best[twin]
+
+
 def matching_weight(sans, cmap, scale, target):
     """The weight of Noto Sans whose stem, scaled, is as wide as the target, within its axis"""
     axis = next(a for a in sans["fvar"].axes if a.axisTag == "wght")
@@ -1110,6 +1135,8 @@ def build(style, unicodes_sans, unicodes_math, sans, math_font):
         vf["gvar"].variations[glyph] = deepcopy(nunito["gvar"].variations.get(glyph, []))
     vf["fvar"] = deepcopy(nunito["fvar"])
     vf["name"] = renamed(nunito, sans, math_font)
+    if style:
+        italic_greek(vf, ncmap)
     vf["OS/2"].recalcUnicodeRanges(vf)
     vf["OS/2"].recalcCodePageRanges(vf)
     vf.recalcTimestamp = False
