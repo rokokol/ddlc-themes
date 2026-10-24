@@ -123,6 +123,11 @@
           ./dist/ddlc-dark.mplstyle
         ];
       };
+      # The Nix sources, for nix-lint: an edit to anything else keeps this hash
+      nixFiles = nixpkgs.lib.fileset.toSource {
+        root = ./.;
+        fileset = nixpkgs.lib.fileset.fileFilter (f: f.hasExt "nix") ./.;
+      };
       testMyaNunito = builtins.path {
         name = "mya-nunito.py";
         path = ./tests/mya-nunito.py;
@@ -450,6 +455,22 @@
               touch $out
             '';
 
+        # The Nix files themselves: statix's anti-patterns and deadnix's unused bindings, which
+        # nix fmt does not look at
+        nix-lint =
+          pkgs.runCommand "nix-lint"
+            {
+              nativeBuildInputs = [
+                pkgs.statix
+                pkgs.deadnix
+              ];
+            }
+            ''
+              statix check ${nixFiles}
+              deadnix --fail ${nixFiles}
+              touch $out
+            '';
+
         # The fast installer suite, in the sandbox: the manifest contract, the
         # per-component sweep, selective uninstall, staging, the refusal path
         install-sh-works =
@@ -575,6 +596,8 @@
             pkgs.shellcheck
             pkgs.shfmt
             pkgs.jq
+            pkgs.statix
+            pkgs.deadnix
             (generatorPython pkgs)
           ];
           # So generate.sh runs with no arguments inside the shell

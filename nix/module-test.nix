@@ -51,20 +51,24 @@ let
     }).config;
 
   on = eval {
-    ddlc.kitty.enable = true;
-    ddlc.btop.enable = true;
-    ddlc.matplotlib.enable = true;
-    ddlc.claude-code.enable = true;
-    ddlc.opencode.enable = true;
+    ddlc = {
+      kitty.enable = true;
+      btop.enable = true;
+      matplotlib.enable = true;
+      claude-code.enable = true;
+      opencode.enable = true;
+    };
   };
   light = eval {
-    ddlc.kitty = {
-      enable = true;
-      variant = "light";
-    };
-    ddlc.btop = {
-      enable = true;
-      variant = "light";
+    ddlc = {
+      kitty = {
+        enable = true;
+        variant = "light";
+      };
+      btop = {
+        enable = true;
+        variant = "light";
+      };
     };
   };
   off = eval { };
