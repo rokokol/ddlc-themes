@@ -39,9 +39,14 @@ jobs:
       - run: nix flake check --no-write-lock-file
 
       # Each guard of generate.sh is broken on purpose and the generator must refuse the
-      # run. Before install.sh below, because falsify needs the tree the checkout left
+      # run. Before install.sh below, because falsify needs the tree the checkout left.
+      # No defect touches the font merge, and flake check above held dist/ to it byte for
+      # byte, so each run copies the committed Mya Nunito instead of merging it again
       - name: Generator guards
-        run: nix develop --no-write-lock-file -c scripts/t.sh falsify -d tests/defects.sh -- bash generate.sh
+        run: |
+          mkdir "$RUNNER_TEMP/mya-nunito"
+          cp dist/MyaNunito* "$RUNNER_TEMP/mya-nunito/"
+          DDLC_MYA_NUNITO="$RUNNER_TEMP/mya-nunito" nix develop --no-write-lock-file -c scripts/t.sh falsify -d tests/defects.sh -- bash generate.sh
 
       # The full installer contract lives in tests/run.sh (run by flake check); this is
       # the smoke that the same script behaves on a real filesystem outside the sandbox
