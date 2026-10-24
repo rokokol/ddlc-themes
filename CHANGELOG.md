@@ -4,6 +4,8 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-10-25
+
 ### Added
 
 - every release carries the files of its `dist/`, so a theme, a font or the polka-dot pictures are one download from the release page
