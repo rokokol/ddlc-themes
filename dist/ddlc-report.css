@@ -206,11 +206,12 @@ strong {
 /* A heading is Doki where it is installed, and Mya Nunito Black otherwise, or always with
    data-ddlc-heading="plain" on <html>. Doki has one weight, and a synthetic bold smears it,
    so the weight stays normal and Black comes through the weight axis, which only the
-   variable font has */
+   variable font has. The pop-up's title is set the same way: it is a title, not prose */
 h1,
 h2,
 h3,
-h4 {
+h4,
+.ddlc-inform-title {
   font-family: var(--ddlc-font-heading);
   font-weight: normal;
   font-variation-settings: "wght" 900;
