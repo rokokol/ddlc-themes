@@ -255,6 +255,15 @@ blockquote > :last-child {
   text-align: start;
 }
 
+/* The pop-up is a pale island, so code in it stands on the pop-up's own pale ground rather
+   than the page's, which is dark on ink. The second selector takes code in a paragraph, the
+   first one code straight in the pop-up; neither reaches a code block, which paints its own
+   window */
+.ddlc-inform > code,
+.ddlc-inform :not(pre) > code {
+  background: var(--ddlc-popup-code);
+}
+
 .ddlc-inform-title {
   display: block;
   margin-bottom: 0.3em;

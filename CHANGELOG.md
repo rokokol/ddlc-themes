@@ -4,6 +4,11 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+### Fixed
+
+- the report's pop-up title is set in the heading face, as a heading is: Doki where it is installed and Mya Nunito Black otherwise, or Mya Nunito Black with `data-ddlc-heading="plain"`. It inherited the prose face, so it drew in Medium
+- inline code in the report's pop-up stands on a new role, `popup-code`: `dot` on paper and, on ink, `dot` mixed with a third of the ink, so it stays a pale ground in both variants. It took the page's code ground, which is dark on ink, so the ink text inside the pop-up was unreadable there
+
 ## [3.5.0] - 2026-10-25
 
 ### Added

@@ -436,6 +436,7 @@ popup-ground          dot                    dot@70:paper
 popup-frame           blush                  blush
 popup-text            ink                    ink
 popup-accent          plum@70:ink            plum
+popup-code            dot@70:ink             dot
 tape                  pink@60:transparent    blush@70:transparent
 board                 yuri@30:ink            dot@50:paper
 board-shade           board@60:ink           board@80:jacket

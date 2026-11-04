@@ -73,6 +73,7 @@
   --ddlc-popup-frame: var(--ddlc-blush);
   --ddlc-popup-text: var(--ddlc-ink);
   --ddlc-popup-accent: light-dark(var(--ddlc-plum), color-mix(in srgb, var(--ddlc-plum) 70%, var(--ddlc-ink)));
+  --ddlc-popup-code: light-dark(var(--ddlc-dot), color-mix(in srgb, var(--ddlc-dot) 70%, var(--ddlc-ink)));
   --ddlc-tape: light-dark(color-mix(in srgb, var(--ddlc-blush) 70%, transparent), color-mix(in srgb, var(--ddlc-pink) 60%, transparent));
   --ddlc-board: light-dark(color-mix(in srgb, var(--ddlc-dot) 50%, var(--ddlc-paper)), color-mix(in srgb, var(--ddlc-yuri) 30%, var(--ddlc-ink)));
   --ddlc-board-shade: light-dark(color-mix(in srgb, var(--ddlc-board) 80%, var(--ddlc-jacket)), color-mix(in srgb, var(--ddlc-board) 60%, var(--ddlc-ink)));
