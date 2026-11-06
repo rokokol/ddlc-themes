@@ -44,6 +44,7 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
   - [Any other distribution](#any-other-distribution)
   - [Super Productivity](#super-productivity)
 - [Web pages, reports and letters](#web-pages-reports-and-letters)
+- [Decks](#decks)
 - [Mya Nunito](#mya-nunito)
 - [Where the slots go](#where-the-slots-go)
 - [Re-rendering](#re-rendering)
@@ -67,6 +68,11 @@ nix build github:rokokol/ddlc-themes && cat result/share/ddlc-themes/ddlc-kitty-
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
 
 > [`docs/matplotlib-demo.py`](docs/matplotlib-demo.py) renders both: the cycler on lines and bars — five series on paper, three on ink, which is the theme's own statement — and the two colormap families on the heatmaps
+
+| ![a deck's cover](docs/slidev-cover.png) | ![code on a deck's slide](docs/slidev-code.png) |
+| ---------------------------------------- | ----------------------------------------------- |
+
+> [`docs/slidev-demo.md`](docs/slidev-demo.md) is the deck behind these, rendered by [Slidev](#decks)
 
 
 ![kitty running fastfetch and a directory listing](docs/screenshot-kitty.png)
@@ -178,6 +184,8 @@ These have no switch and no installer, because they belong next to a page and no
 | `ddlc-roles.json` | a theme without CSS: every role as a hex per variant, and the grid and the drift of the game menu's polka-dot paper, which CSS reads as `--ddlc-polka-*` | `lib.roles` |
 | `ddlc-polka-{dark,light}{,-2x,-1920x1080}.gif`, `ddlc-polka-{dark,light}-1920x1080.webp` | a surface that takes a picture rather than CSS: the polka-dot paper drifting in a loop, as a tile that repeats and as a whole screen for a surface that stretches its picture to cover. The screen's WebP holds the same pixels as its GIF at a fraction of the size, for an app that caps a picture's size | `lib.polka.{dark,light}.{tile,tile-2x,screen,screen-webp}` |
 
+A deck takes the theme as a directory: see [Decks](#decks)
+
 Each stylesheet is one `<link>` and carries both variants: it follows the system until `data-theme="light|dark"` on `<html>` pins a side. A colour in a page's own rules comes from a `--ddlc-*` role, so it follows both sides too. A heading is Doki where it is installed, and `data-ddlc-heading="plain"` on `<html>` sets it in Mya Nunito instead
 
 A letter gets literal styles because Gmail drops any declaration that carries `var()`:
@@ -192,6 +200,24 @@ A new page starts from the template, which lays out the bar, the three columns a
 
 ```sh
 nix flake init -t github:rokokol/ddlc-themes#app
+```
+
+## Decks
+
+A [Slidev](https://sli.dev) theme is a directory, not a file: slide layouts, the stylesheet, the syntax theme, the faces. Point a deck's `theme:` at it, and the deck itself stays markdown in git. The theme carries the paper, a heading at Black under an accent rule, a list marker as a sticker, a quote as the game's pop-up, a table in a rounded frame, a picture taped to the paper and a code block as the kitty window; the page number is a tilted sticker of the note colour, and the bar under it shows how far the deck is. The number stays off the opening slide, the closing one and a slide with one number
+
+The code window is dark on both sides, so one Shiki theme, taken from the syntax table's dark column, colours a snippet the way the editor does. Mya Nunito and Departure Mono travel inside the theme, so an export looks the same on a machine holding neither
+
+```sh
+nix build github:rokokol/ddlc-themes#slidev --out-link ddlc-slidev
+```
+
+Then a deck names the directory it landed in:
+
+```md
+---
+theme: ./ddlc-slidev
+---
 ```
 
 ## Mya Nunito

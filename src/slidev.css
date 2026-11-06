@@ -1,0 +1,494 @@
+/* A deck: paper with dots, prose in Mya Nunito, a heading at Black, code in the kitty window.
+   The palette, the base16 slots, the faces and the roles come from the generated head that
+   precedes this file, so nothing here names a colour. The faces ride along in vendor/fonts, so
+   an export looks the same on a machine that has neither installed */
+
+@font-face {
+  font-family: "Mya Nunito";
+  src: url("../vendor/fonts/MyaNunito.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mya Nunito";
+  src: url("../vendor/fonts/MyaNunito-Italic.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Departure Mono";
+  src: url("../vendor/fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.slidev-layout {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  font-family: var(--ddlc-font-prose);
+  font-size: 1.3rem;
+  line-height: 1.55;
+  color: var(--ddlc-text);
+  background-color: var(--ddlc-ground);
+  padding: 2.6rem 3.4rem 2.8rem;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* The paper's dots sit behind everything the slide draws, at the size a slide reads them */
+.slidev-layout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(var(--ddlc-dots) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3 {
+  font-family: var(--ddlc-font-prose);
+  font-weight: 900;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+}
+
+.slidev-layout h1 {
+  font-size: 2.25rem;
+  margin: 0 0 1.4rem;
+  color: var(--ddlc-text);
+}
+
+.slidev-layout h1::before {
+  content: "";
+  display: block;
+  width: 2.6rem;
+  height: 0.24rem;
+  background: var(--ddlc-accent);
+  margin-bottom: 1rem;
+}
+
+.slidev-layout h2 {
+  font-size: 1.25rem;
+  color: var(--ddlc-accent);
+  margin: 0 0 0.7rem;
+}
+
+.slidev-layout h3 {
+  font-size: 1.05rem;
+  margin: 0 0 0.4rem;
+}
+
+.slidev-layout p {
+  margin: 0 0 0.85rem;
+}
+
+.slidev-layout strong {
+  font-weight: 700;
+  color: var(--ddlc-accent);
+}
+
+.slidev-layout em {
+  font-style: italic;
+  color: var(--ddlc-link);
+}
+
+.slidev-layout a {
+  color: var(--ddlc-link);
+  text-decoration-color: var(--ddlc-line-live);
+  text-underline-offset: 0.16em;
+}
+
+.slidev-layout ul,
+.slidev-layout ol {
+  margin: 0.2rem 0 0.9rem;
+  padding-left: 1.35rem;
+}
+
+/* A marker is a sticker of the accent colour, as the kit marks a list */
+.slidev-layout ul > li {
+  list-style: none;
+  position: relative;
+  margin: 0.45rem 0;
+}
+
+.slidev-layout ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.05rem;
+  top: 0.6em;
+  width: 0.4rem;
+  height: 0.4rem;
+  background: var(--ddlc-accent);
+}
+
+.slidev-layout ol > li {
+  margin: 0.45rem 0;
+}
+
+.slidev-layout ol > li::marker {
+  color: var(--ddlc-accent);
+  font-family: var(--ddlc-font-data);
+}
+
+.slidev-layout code {
+  font-family: var(--ddlc-font-data);
+  font-size: 0.9em;
+  background: var(--ddlc-highlight);
+  border-radius: 0.15rem;
+  padding: 0.06em 0.28em;
+}
+
+/* A code block is the kitty window of ddlc-themes, dark on both sides, with its bar over the
+   first line. It keeps position: relative so the bar stays in the block and not in the slide */
+.slidev-layout pre {
+  position: relative;
+  background: linear-gradient(var(--ddlc-window-bar), var(--ddlc-window-bar)) top / 100% 2rem no-repeat, var(--ddlc-window-ground) !important;
+  color: var(--ddlc-window-text);
+  border: 1px solid var(--ddlc-window-border);
+  border-radius: 0.45rem;
+  padding: 2.7rem 1rem 1rem !important;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0.5rem 0 1rem;
+}
+
+.slidev-layout pre::before {
+  content: "●  ●  ●     terminal";
+  position: absolute;
+  top: 0.45rem;
+  left: 1rem;
+  color: var(--ddlc-window-title);
+  font-size: 0.65rem;
+}
+
+.slidev-layout pre code {
+  background: none;
+  padding: 0;
+  font-size: 1em;
+}
+
+.slidev-layout table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 1.02rem;
+  background: var(--ddlc-panel);
+  border: 2px solid var(--ddlc-line);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin: 0.4rem 0 1rem;
+}
+
+.slidev-layout th {
+  font-family: var(--ddlc-font-data);
+  font-weight: 400;
+  color: var(--ddlc-accent);
+  text-align: left;
+}
+
+.slidev-layout th,
+.slidev-layout td {
+  border-bottom: 1px solid var(--ddlc-line);
+  padding: 0.48rem 0.8rem;
+}
+
+/* A quote is the game's own pop-up: a pale ground in a thick frame */
+.slidev-layout blockquote {
+  position: relative;
+  border: 5px solid var(--ddlc-popup-frame);
+  border-radius: 0.55rem;
+  background: var(--ddlc-popup-ground);
+  margin: 1.5rem 0 0.7rem;
+  padding: 1.1rem 1.3rem;
+  color: var(--ddlc-popup-text);
+}
+
+/* A quote slide centres the pop-up and the line under it as one block */
+.slidev-layout.quote {
+  display: flex;
+  align-items: center;
+}
+
+.slidev-layout.quote > div {
+  width: 100%;
+}
+
+.slidev-layout.two-cols-header {
+  column-gap: 2.5rem;
+}
+
+/* Region: a picture. It hangs on the paper like a photo pinned to a board: a thin frame, a
+   strip of tape over the top edge, the caption inside the frame under a rule */
+.slidev-layout .ddlc-figure {
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--ddlc-ground);
+  border: 2px solid var(--ddlc-board-frame);
+  box-shadow: 0.25rem 0.3rem 0 var(--ddlc-board-drop);
+}
+
+.slidev-layout .ddlc-figure img {
+  display: block;
+  width: 100%;
+  max-height: 21rem;
+  object-fit: contain;
+}
+
+.slidev-layout .ddlc-figure figcaption {
+  border-top: 1px solid var(--ddlc-line);
+  margin-top: 0.35rem;
+  color: var(--ddlc-muted);
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 0.35rem 0 0;
+}
+
+.slidev-layout.cover.has-art {
+  position: relative;
+  justify-content: center;
+  padding-right: 40%;
+  padding-bottom: 3.4rem;
+}
+
+.slidev-layout.cover .ddlc-figure {
+  position: absolute;
+  top: 7.5rem;
+  right: 4.5rem;
+  width: 29%;
+  padding: 0.55rem 0.55rem 0;
+  border-radius: 0.35rem;
+  box-shadow: 0 0.9rem 1.8rem color-mix(in srgb, var(--ddlc-ink) 18%, transparent);
+  transform: rotate(2.5deg);
+}
+
+.slidev-layout.cover .ddlc-figure::before {
+  content: "";
+  position: absolute;
+  top: -0.95rem;
+  left: 50%;
+  width: 4.4rem;
+  height: 1.1rem;
+  margin-left: -2.2rem;
+  background: var(--ddlc-tape);
+  transform: rotate(-5deg);
+}
+
+.slidev-layout.cover .ddlc-figure img {
+  max-height: none;
+  object-fit: cover;
+  border-radius: 0.2rem;
+}
+
+.slidev-layout.cover .ddlc-figure figcaption {
+  margin-top: 0.35rem;
+  font-family: var(--ddlc-font-data);
+  font-size: 0.62rem;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  padding: 0.45rem 0.15rem 0.5rem;
+}
+
+/* Region: two things side by side, and a block laid over the text. A comment on a draft, a
+   warning, a note from the speaker: each is one of the two shapes the kit already carries */
+.slidev-layout .ddlc-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+.slidev-layout .ddlc-popup,
+.slidev-layout .ddlc-note {
+  position: relative;
+  padding: 1.2rem 1.5rem;
+}
+
+.slidev-layout .ddlc-popup {
+  box-shadow: 0 0.35rem 0.8rem color-mix(in srgb, var(--ddlc-ink) 18%, transparent);
+  background: var(--ddlc-popup-ground);
+  color: var(--ddlc-popup-text);
+  border: 6px solid var(--ddlc-popup-frame);
+  text-align: center;
+}
+
+.slidev-layout .ddlc-popup strong {
+  color: var(--ddlc-popup-accent);
+  font-weight: 900;
+}
+
+.slidev-layout .ddlc-note {
+  box-shadow: 0.25rem 0.3rem 0 var(--ddlc-board-drop);
+  background: var(--ddlc-board);
+  border: 2px solid var(--ddlc-board-frame);
+  transform: rotate(-2deg);
+}
+
+.slidev-layout .ddlc-note::before {
+  content: "";
+  position: absolute;
+  top: -0.65rem;
+  left: 2rem;
+  width: 4rem;
+  height: 1rem;
+  background: var(--ddlc-tape);
+  transform: rotate(-3deg);
+}
+
+/* The text a laid-over block leaves room for */
+.slidev-layout .ddlc-side {
+  max-width: 50%;
+}
+
+.slidev-layout .ddlc-overlay {
+  position: absolute;
+  top: 42%;
+  left: 43%;
+  width: 44%;
+}
+
+/* Region: dividers, the opening slide and the closing one */
+.slidev-layout.section,
+.slidev-layout.cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 4.2rem;
+}
+
+/* Region: one line, one number */
+.slidev-layout.statement {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 0 6rem;
+  font-family: var(--ddlc-font-prose);
+  font-size: 2.05rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ddlc-text);
+}
+
+.slidev-layout.statement p {
+  margin: 0;
+  max-width: 42rem;
+}
+
+.slidev-layout.fact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.slidev-layout.fact h1 {
+  font-size: 4.4rem;
+  color: var(--ddlc-accent);
+  margin: 0 0 0.5rem;
+}
+
+.slidev-layout.fact h1::before {
+  content: none;
+}
+
+.slidev-layout.fact p {
+  font-family: var(--ddlc-font-data);
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ddlc-muted);
+  margin: 0;
+  max-width: 32rem;
+}
+
+/* Region: links. The closing slide leaves the room a way back to its author */
+.slidev-layout.links {
+  display: block;
+  padding: 3rem 4.2rem;
+}
+
+.slidev-layout.links h2 {
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ddlc-muted);
+  margin: 0 0 1.6rem;
+}
+
+.slidev-layout.links .ddlc-contact {
+  display: inline-block;
+  vertical-align: top;
+  width: 43%;
+  margin: 0.4rem 1rem 0 0;
+  padding: 1.2rem 1.4rem;
+  background: var(--ddlc-popup-ground);
+  color: var(--ddlc-popup-text);
+  border: 4px solid var(--ddlc-popup-frame);
+  border-radius: 0.5rem;
+}
+
+.slidev-layout.links .ddlc-contact svg {
+  color: var(--ddlc-popup-accent);
+  width: 1.25em;
+  height: 1.25em;
+  display: inline-block;
+  vertical-align: -0.2em;
+  margin-right: 0.4rem;
+}
+
+.slidev-layout.links a {
+  display: inline-block;
+  font-family: var(--ddlc-font-prose);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ddlc-popup-accent);
+  overflow-wrap: anywhere;
+}
+
+.slidev-layout.links a:hover {
+  color: var(--ddlc-accent-live);
+}
+
+/* Region: the chrome a deck carries on every slide. The number is a sticker of the note
+   colour, tilted, as the kit sticks one on; the bar under it shows how far the deck is */
+.ddlc-chrome {
+  z-index: 10;
+  position: fixed;
+  inset: auto 0 0 0;
+  pointer-events: none;
+}
+
+.ddlc-progress {
+  height: 0.14rem;
+  background: var(--ddlc-line);
+}
+
+.ddlc-progress > div {
+  height: 100%;
+  background: var(--ddlc-accent);
+  transition: width 0.35s ease;
+}
+
+.ddlc-page {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 0.85rem;
+  font-family: var(--ddlc-font-prose);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ddlc-popup-text);
+  background: var(--ddlc-kind-note);
+  border: 2px solid color-mix(in srgb, var(--ddlc-kind-note) 65%, var(--ddlc-ink));
+  padding: 0.28rem 0.75rem;
+  transform: rotate(-3deg);
+  box-shadow: 0.15rem 0.2rem 0 var(--ddlc-board-shade);
+}

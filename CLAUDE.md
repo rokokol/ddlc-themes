@@ -2,9 +2,9 @@
 
 ## What this repo is
 
-The DDLC colours as themes for kitty, btop, matplotlib, Claude Code, opencode and Super Productivity, plus a web kit, a report stylesheet, letter styles and a syntax table, light and dark, rendered by `generate.sh` out of `ddlc-palette`. kitty and btop come from the base16 schemes, the rest from the flat `palette.env`, because they have more roles than sixteen slots. Nothing here is a taste call except which slot goes where. `dist/` holds the rendered files, committed for consumers without Nix
+The DDLC colours as themes for kitty, btop, matplotlib, Claude Code, opencode and Super Productivity, plus a web kit, a report stylesheet, letter styles, a syntax table and a deck theme, light and dark, rendered by `generate.sh` out of `ddlc-palette`. kitty and btop come from the base16 schemes, the rest from the flat `palette.env`, because they have more roles than sixteen slots. Nothing here is a taste call except which slot goes where. `dist/` holds the rendered files, committed for consumers without Nix
 
-Everything that is not a terminal reads two tables in `generate.sh`: `ui_roles` and `syntax_slots`. Other repositories depend on their names, so renaming or removing a role is a breaking release:
+Everything that is not a terminal reads two tables in `generate.sh`: `ui_roles` and `syntax_slots`. The deck theme adds a third, `shiki_scopes`, which maps each syntax role to the TextMate scopes an editor colours it by. Other repositories depend on their names, so renaming or removing a role is a breaking release:
 
 - `ddlc-obsidian-theme` vendors `dist/ddlc-tokens.css`
 - `ddlc.nvim` vendors `dist/ddlc-syntax.json`

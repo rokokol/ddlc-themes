@@ -190,8 +190,28 @@ def stacks(dist):
         elif "Doki" in plain.group(1) or not plain.group(1).startswith(prose.group(1)):
             fail(f'{sheet}: data-ddlc-heading="plain" sets {plain.group(1)!r}, not the prose stack without Doki')
 
-    # matplotlib draws the static family: of a variable font it reads the default instance
-    # alone, which is ExtraLight, so the variable family has no place in its stacks
+    # The deck theme carries the same two faces under the same name, over the whole axis, from
+    # the fonts inside itself, and reaches them through the prose stack of its generated head
+    css = (dist / "slidev/styles/index.css").read_text()
+    faces = []
+    for block in re.findall(r"@font-face\s*\{(.*?)\}", css, re.S):
+        faces.append(dict((k.strip(), v.strip()) for k, v in (line.split(":", 1) for line in block.split(";") if ":" in line)))
+    for style in FACES:
+        css_style = "italic" if style else "normal"
+        mine = [
+            f
+            for f in faces
+            if f.get("font-family") == f'"{FAMILY}"' and f.get("font-style", "normal") == css_style
+        ]
+        if len(mine) != 1:
+            fail(f"the deck theme: expected one {css_style} face named {FAMILY}, found {len(mine)}")
+        elif f"vendor/fonts/MyaNunito{style}.woff2" not in mine[0].get("src", "") or mine[0].get("font-weight") != "200 1000":
+            fail(f"the deck theme: the {css_style} face does not load MyaNunito{style}.woff2 from its own fonts over 200 1000")
+    prose = re.search(r"--ddlc-font-prose:\s*([^;]+);", css)
+    if not prose or not prose.group(1).startswith(f"'{FAMILY}', Nunito,"):
+        fail(f"the deck theme: the prose stack does not begin with {FAMILY} and then Nunito")
+
+    # matplotlib draws the static family: of a variable font it reads the default instance    # alone, which is ExtraLight, so the variable family has no place in its stacks
     for style_file in ("ddlc.mplstyle", "ddlc-dark.mplstyle"):
         params = dict(
             (k.strip(), v.strip())

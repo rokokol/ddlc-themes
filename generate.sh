@@ -5,12 +5,13 @@ here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 out="$here/dist"
 src="$here/src"
 vendor="$here/vendor"
+version="$(cat "$here/VERSION")"
 
 usage() {
   cat <<EOF
 generate.sh — render the kitty, btop, matplotlib, Claude Code, opencode and Super Productivity
-themes, the web kit, the report stylesheet, the letter styles, the syntax table and the
-polka-dot GIFs out of ddlc-palette
+themes, the web kit, the report stylesheet, the letter styles, the syntax table, the deck theme
+and the polka-dot GIFs out of ddlc-palette
 
 It writes dist/, committed for consumers without Nix: run it after the palette moves, or
 after an edit to src/, and commit the result with the rendered files. It reads src/ and
@@ -918,6 +919,84 @@ done | jq -Rn --arg banner "$named_banner" '
       dark: ($rows | map({ key: .[0], value: .[1] }) | from_entries),
       light: ($rows | map({ key: .[0], value: .[2] }) | from_entries) }' >"$out/ddlc-syntax.json"
 
+# --- deck theme ---------------------------------------------------------------------------------
+# A deck points `theme:` at the directory this writes. Its stylesheet is the generated head and
+# src/slidev.css, with no src/base.css: a slide is not a document. A code block is the dark
+# window on both sides, so one Shiki theme, taken from the syntax table's dark column, serves
+# both. The two faces ride along, so an export looks the same on a machine holding neither
+#
+# Each syntax role maps to the TextMate scopes an editor colours it by. The roles are the ones
+# the syntax table names, so a role added there and forgotten here stops the run
+shiki_scopes="
+comment     comment punctuation.definition.comment
+keyword     keyword storage.type storage.modifier keyword.operator.new
+function    entity.name.function support.function meta.function-call
+string      string string.quoted punctuation.definition.string
+number      constant.numeric
+type        entity.name.type entity.name.class support.type support.class
+text        variable variable.other
+builtin     support.function.builtin variable.language support.variable
+special     constant.language keyword.operator punctuation.special entity.name.tag
+delimiter   punctuation punctuation.separator punctuation.terminator
+heading     markup.heading
+link        markup.underline.link markup.link
+url         string.other.link
+link-label  markup.link.label
+raw         markup.raw
+list        markup.list
+quote       markup.quote
+"
+while read -r scope_role _; do
+  [[ -n ${syn["dark/$scope_role"]:-} ]] || {
+    echo "generate.sh: shiki_scopes names $scope_role, which the syntax table does not have" >&2
+    exit 1
+  }
+done < <(awk 'NF >= 2' <<<"$shiki_scopes")
+slidev_out="$out/slidev"
+rm -rf "$slidev_out"
+mkdir -p "$slidev_out"/{styles,syntax,setup,layouts,vendor/fonts}
+while read -r scope_role scope_list; do
+  printf '%s\t#%s\t%s\n' "$scope_role" "${syn["dark/$scope_role"]}" "$scope_list"
+done < <(awk 'NF >= 2' <<<"$shiki_scopes") | jq -Rn --arg banner "$named_banner" \
+  --arg ground "${slot["dark/base00"]}" '
+  [inputs | split("\t")] as $rows
+  | ($rows | map(select(.[0] == "text")) | .[0][1]) as $text
+  | { _generated: $banner,
+      name: "ddlc",
+      type: "dark",
+      colors: { "editor.background": $ground, "editor.foreground": $text },
+      tokenColors: ($rows | map({ scope: (.[2] | split(" ")), settings: { foreground: .[1] } })) }' \
+  >"$slidev_out/syntax/ddlc.json"
+{
+  echo "/* $named_banner */"
+  echo
+  sed -n '1,/\*\//p' "$src/slidev.css"
+  echo
+  css_head
+  echo
+  sed '1,/\*\//d' "$src/slidev.css"
+} >"$slidev_out/styles/index.css"
+for face in MyaNunito.woff2 MyaNunito-Italic.woff2 DepartureMono-Regular.woff2 \
+  MyaNunito-LICENSE.txt DepartureMono-LICENSE.txt; do
+  cat "$out/$face" >"$slidev_out/vendor/fonts/$face"
+done
+for asset in global-bottom.vue setup/shiki.ts layouts/links.vue; do
+  cat "$src/slidev/$asset" >"$slidev_out/$asset"
+done
+jq -n --arg banner "$named_banner" --arg version "$version" '{
+  _generated: $banner,
+  name: "slidev-theme-ddlc",
+  version: $version,
+  description: "The Doki Doki Literature Club colours for Slidev",
+  keywords: ["slidev-theme", "slidev"],
+  license: "MIT",
+  homepage: "https://github.com/rokokol/ddlc-themes",
+  repository: { type: "git", url: "git+https://github.com/rokokol/ddlc-themes.git" },
+  engines: { slidev: ">=52.0.0" },
+  slidev: { colorSchema: "both", defaults: { aspectRatio: "16/9", highlighter: "shiki" } },
+  files: ["styles", "syntax", "setup", "layouts", "vendor", "global-bottom.vue"]
+}' >"$slidev_out/package.json"
+
 # --- roles as data ------------------------------------------------------------------------------
 # The roles for a theme without CSS, such as a rofi window: every role a hex per variant, and the
 # paper's grid. A role laid over transparent becomes #RRGGBBAA. The window roles read the dark
@@ -1317,3 +1396,4 @@ echo "wrote, per variant, $out/{ddlc-kitty-VARIANT.conf,ddlc-btop-VARIANT.theme,
 echo "and $out/{ddlc.mplstyle,ddlc-dark.mplstyle,ddlc_cmaps.py,ddlc-opencode.json,ddlc-super-productivity.css}"
 echo "and $out/{ddlc-tokens.css,ddlc-ui.css,ddlc-report.css,ddlc-mail.json,ddlc-syntax.json,ddlc-roles.json,ddlc-theme.js,ddlc-cloud.js}"
 echo "and $out/ddlc-polka-VARIANT{,-2x,-1920x1080}.gif and $out/ddlc-polka-VARIANT-1920x1080.webp"
+echo "and $out/slidev/{package.json,styles/index.css,syntax/ddlc.json,setup/shiki.ts,layouts/links.vue,global-bottom.vue}"

@@ -119,6 +119,7 @@
         fileset = nixpkgs.lib.fileset.unions [
           ./dist/ddlc-ui.css
           ./dist/ddlc-report.css
+          ./dist/slidev/styles/index.css
           ./dist/ddlc.mplstyle
           ./dist/ddlc-dark.mplstyle
         ];
@@ -242,6 +243,9 @@
         opencode = ./dist/ddlc-opencode.json;
         # One stylesheet, both variants, uploaded in the app's own settings
         super-productivity = ./dist/ddlc-super-productivity.css;
+        # A deck: a Slidev theme directory that a slides.md points `theme:` at. It carries the
+        # stylesheet, the Shiki theme, the faces and the layouts
+        slidev = ./dist/slidev;
       };
 
       # A page laid out the way the DDLC web pages are: the bar, three columns of tools, stage
@@ -267,6 +271,22 @@
             ''
               mkdir -p $out/share/ddlc-themes
               cp -r ${dist}/. $out/share/ddlc-themes/
+            '';
+
+        # The deck theme as the directory a deck points at, so a link to this store path is a
+        # theme a slides.md can name
+        slidev =
+          pkgs.runCommand "slidev-theme-ddlc"
+            {
+              meta = {
+                description = "The Doki Doki Literature Club colours as a Slidev theme";
+                homepage = "https://github.com/rokokol/ddlc-themes";
+                license = pkgs.lib.licenses.mit;
+                platforms = pkgs.lib.platforms.all;
+              };
+            }
+            ''
+              cp -r ${dist}/slidev $out
             '';
       });
 
@@ -329,6 +349,8 @@
               install -m755 ${generator} generate.sh
               cp -r ${srcDir} src
               cp -r ${vendorDir} vendor
+              # generate.sh reads VERSION for the deck theme's manifest
+              cp ${versionFile} VERSION
               DDLC_BASE16_LIGHT=${schemes.light} DDLC_BASE16_DARK=${schemes.dark} \
                 DDLC_PALETTE_ENV=${palette} DDLC_NERD_DEPARTURE=${nerdDeparture pkgs} \
                 DDLC_MYA_NUNITO=${myaNunito pkgs} bash generate.sh >/dev/null
@@ -588,6 +610,34 @@
               fi
               touch $out
             '';
+
+        # A deck theme is usable when a deck can point at it: the manifest names the package,
+        # the stylesheet carries the roles and the paper, the Shiki theme colours every scope
+        # with a hex, and the faces a deck draws with travel beside it
+        slidev-theme = pkgs.runCommand "slidev-theme" { nativeBuildInputs = with pkgs; [ jq ]; } ''
+          jq -e '.name == "slidev-theme-ddlc"
+            and (.version | test("^[0-9]"))
+            and .slidev.colorSchema
+            and (.files | length > 0)' \
+            ${dist}/slidev/package.json >/dev/null \
+            || { echo "package.json does not describe a Slidev theme"; exit 1; }
+          css=${dist}/slidev/styles/index.css
+          for role in ground text dots accent line kind-note font-prose font-data; do
+            grep -q -- "--ddlc-$role:" "$css" || { echo "$css: no --ddlc-$role"; exit 1; }
+          done
+          grep -q 'radial-gradient' "$css" || { echo "$css: the paper draws no dots"; exit 1; }
+          jq -e '(.tokenColors | length > 0)
+            and ([.tokenColors[] | select((.scope | length) == 0
+              or (.settings.foreground | test("^#[0-9A-F]{6}$") | not))] == [])' \
+            ${dist}/slidev/syntax/ddlc.json >/dev/null \
+            || { echo "ddlc.json: a scope has no hex colour"; exit 1; }
+          for asset in setup/shiki.ts layouts/links.vue global-bottom.vue \
+            vendor/fonts/MyaNunito.woff2 vendor/fonts/MyaNunito-Italic.woff2 \
+            vendor/fonts/DepartureMono-Regular.woff2; do
+            [ -s "${dist}/slidev/$asset" ] || { echo "$asset is missing from the theme"; exit 1; }
+          done
+          touch $out
+        '';
       });
 
       devShells = forAllSystems (pkgs: {

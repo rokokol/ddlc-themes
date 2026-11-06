@@ -2,3 +2,4 @@ result
 result-*
 out/
 __pycache__/
+docs/.vite/
