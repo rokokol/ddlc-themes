@@ -3,7 +3,7 @@
    classes below are the whole vocabulary. Light or dark follows the system until
    data-theme="light|dark" on <html> pins a side; ddlc-theme.js cycles the three. A page's
    own heading reads --ddlc-font-heading, which data-ddlc-heading="plain" on <html> sets
-   to the prose face with no Doki. DepartureMono-Regular.woff2 is expected beside this file */
+   to the prose face. DepartureMono-Regular.woff2 is expected beside this file */
 
 @font-face {
   font-family: "Departure Mono";

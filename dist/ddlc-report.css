@@ -46,7 +46,7 @@
   --ddlc-base0E: #DD77BB;
   --ddlc-base0F: #8C1132;
   --ddlc-font-prose: 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --ddlc-font-heading: Doki, 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ddlc-font-heading: 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ddlc-font-data: 'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace;
   --ddlc-font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ddlc-ground: light-dark(var(--ddlc-paper), var(--ddlc-ink));
@@ -256,8 +256,8 @@ mark {
 }
 
 /* Prose is Mya Nunito Medium, and bold steps up to Black so it stands out from the text.
-   No face is ever emboldened by the browser: Doki and Departure Mono have one weight each,
-   and a synthetic bold smears them */
+   No face is ever emboldened by the browser: Departure Mono has one weight,
+   and a synthetic bold smears it */
 body {
   max-width: 46rem;
   margin: 0 auto;
@@ -271,17 +271,16 @@ strong {
   font-weight: 900;
 }
 
-/* A heading is Doki where it is installed, and Mya Nunito Black otherwise, or always with
-   data-ddlc-heading="plain" on <html>. Doki has one weight, and a synthetic bold smears it,
-   so the weight stays normal and Black comes through the weight axis, which only the
-   variable font has. The pop-up's title is set the same way: it is a title, not prose */
+/* A heading is Mya Nunito Black: the variable face reaches 900 on its weight axis, while
+   the fallback names a Black static where a system has one. The pop-up's title is set the
+   same way: it is a title, not prose */
 h1,
 h2,
 h3,
 h4,
 .ddlc-inform-title {
   font-family: var(--ddlc-font-heading);
-  font-weight: normal;
+  font-weight: 900;
   font-variation-settings: "wght" 900;
   line-height: 1.25;
 }

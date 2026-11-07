@@ -186,7 +186,7 @@ These have no switch and no installer, because they belong next to a page and no
 
 A deck takes the theme as a directory: see [Decks](#decks)
 
-Each stylesheet is one `<link>` and carries both variants: it follows the system until `data-theme="light|dark"` on `<html>` pins a side. A colour in a page's own rules comes from a `--ddlc-*` role, so it follows both sides too. A heading is Doki where it is installed, and `data-ddlc-heading="plain"` on `<html>` sets it in Mya Nunito instead
+Each stylesheet is one `<link>` and carries both variants: it follows the system until `data-theme="light|dark"` on `<html>` pins a side. A colour in a page's own rules comes from a `--ddlc-*` role, so it follows both sides too. A heading is Mya Nunito at Black; `data-ddlc-heading="plain"` on `<html>` keeps the same prose stack without the heading weight
 
 A letter gets literal styles because Gmail drops any declaration that carries `var()`:
 
