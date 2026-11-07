@@ -505,12 +505,13 @@ polka_period=8
 # every stack names the faces a reader may have installed and ends in an honest fallback.
 # Prose is Mya Nunito, which the report stylesheet carries and a system may have installed,
 # then Nunito, which draws everything but the mathematics the same; after them come the faces
-# each system draws its own interface in. A heading of a stylesheet is the prose stack at
-# Black, so its stack is built from the prose stack below the table. A stylesheet reaches Black through the
+# each system draws its own interface in. A heading of a stylesheet is Doki where it is
+# installed, since Doki may not be shared, and the prose stack at Black otherwise, so its
+# stack is built from the prose stack below the table. A stylesheet reaches Black through the
 # variable font it carries, while a letter can only name a face, so the letter's stack differs
 font_stacks="
 prose           'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif
-heading-letter  'Mya Nunito', 'Nunito Black', 'Segoe UI Black', 'Arial Black', sans-serif
+heading-letter  Doki, 'Nunito Black', 'Segoe UI Black', 'Arial Black', sans-serif
 data            'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace
 sans            system-ui, -apple-system, 'Segoe UI', sans-serif
 "
@@ -663,7 +664,7 @@ declare -A font
 while read -r f_name f_stack; do
   font[$f_name]="$f_stack"
 done < <(awk 'NF >= 2' <<<"$font_stacks")
-font[heading]="${font[prose]}"
+font[heading]="Doki, ${font[prose]}"
 
 # The roles as custom properties, two spaces in. A role that reads the same on both sides is
 # one value; the rest are light-dark(), which the element's color-scheme resolves
@@ -686,7 +687,7 @@ css_roles() {
 
 # What a self-contained stylesheet starts with: the palette, the dark base16 scheme, the faces
 # and the roles, then the switches. data-ddlc-heading="plain" on the root sets a heading in the
-# prose stack alone. The system decides the variant until data-theme on the root
+# prose stack alone, with no Doki. The system decides the variant until data-theme on the root
 # pins a side
 css_head() {
   local name f

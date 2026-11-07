@@ -5,7 +5,7 @@
    classes below are the whole vocabulary. Light or dark follows the system until
    data-theme="light|dark" on <html> pins a side; ddlc-theme.js cycles the three. A page's
    own heading reads --ddlc-font-heading, which data-ddlc-heading="plain" on <html> sets
-   to the prose face. DepartureMono-Regular.woff2 is expected beside this file */
+   to the prose face with no Doki. DepartureMono-Regular.woff2 is expected beside this file */
 
 :root {
   --ddlc-paper: #FFFFFF;
@@ -45,7 +45,7 @@
   --ddlc-base0E: #DD77BB;
   --ddlc-base0F: #8C1132;
   --ddlc-font-prose: 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --ddlc-font-heading: 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --ddlc-font-heading: Doki, 'Mya Nunito', Nunito, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --ddlc-font-data: 'Departure Mono', 'DepartureMono Nerd Font Mono', 'DepartureMono Nerd Font', ui-monospace, 'SF Mono', Menlo, monospace;
   --ddlc-font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ddlc-ground: light-dark(var(--ddlc-paper), var(--ddlc-ink));
