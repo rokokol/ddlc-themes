@@ -169,10 +169,10 @@ These have no switch and no installer, because they belong next to a page and no
 
 | file | for | in the flake |
 | --- | --- | --- |
-| `ddlc-ui.css` | a web page or a small app: the bar, three columns of tools, stage and readouts, cards, buttons, switches, fields, meters, dialogs | `lib.ui` |
+| `ddlc-ui.css` | a web page or a small app: the bar, three columns of tools, stage and readouts, cards, buttons, switches, fields, meters, dialogs, a photo taped to the page | `lib.ui` |
 | `ddlc-theme.js`, `ddlc-cloud.js` | the theme button that cycles system, light and dark; the pointer's dithered cloud and the colour reader for a canvas | `lib.js.{theme,cloud}` |
 | `DepartureMono-Regular.woff2` | the face the kit is drawn in, expected beside `ddlc-ui.css` | `lib.font` |
-| `ddlc-report.css` | an HTML report: prose, tables, code as a kitty window, the "Just Monika." pop-up, quotes taped on | `lib.report` |
+| `ddlc-report.css` | an HTML report: prose, tables, code as a kitty window, the "Just Monika." pop-up, quotes taped on, a photo taped to the page | `lib.report` |
 | `MyaNunito.woff2`, `MyaNunito-Italic.woff2` | the prose face of a report, expected beside `ddlc-report.css`: [Mya Nunito](#mya-nunito), which is Nunito with the Greek, arrows, operators, blackboard letters and indices it lacks. Its licence, the OFL with the notices of all three fonts, is `MyaNunito-LICENSE.txt` beside it | `lib.mya-nunito.{regular,italic}` |
 | `MyaNunito.ttf`, `MyaNunito-Italic.ttf` | Mya Nunito for the system, variable as on a page | `lib.mya-nunito.ttf.{regular,italic}` |
 | `MyaNunitoStatic-{Regular,Medium,Bold,Black}.ttf` and their `Italic`, `MediumItalic`, `BoldItalic`, `BlackItalic` | Mya Nunito at fixed weights, as a family of its own, Mya Nunito Static, so a system holding both sees each once: for matplotlib, which reads no variation axis and draws a variable font at its lightest. The matplotlib styles name it for text and formulas alike | `lib.mya-nunito.static.{regular,medium,bold,black,italic,medium-italic,bold-italic,black-italic}` |

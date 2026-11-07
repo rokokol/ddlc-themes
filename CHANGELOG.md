@@ -8,6 +8,7 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 - a deck theme in `dist/slidev/`, and `lib.slidev` for it: a [Slidev](https://sli.dev) theme directory that a `slides.md` points `theme:` at. It lays a slide on the dot paper with the prose face, draws a heading at Black under an accent rule, a list marker as a sticker, a quote as the game's own pop-up, a table in a rounded frame, a picture taped to the paper, the page number as a tilted sticker of the note colour and a progress bar under it. The code block is the kitty window of the report on both schemas, so one Shiki theme, taken from the syntax table's dark column, colours it; the faces travel inside the theme, so an export looks the same on a machine holding neither. Two calls decide what the number shows: it stays off the opening slide, the closing one and a slide with one number
 - `docs/slidev-demo.md`, the deck the theme is built with, and its renders in `docs/`
+- `.ddlc-snap`, a photograph taped to the page, in `ddlc-ui.css` and `ddlc-report.css` alike: a picture on a paper mount in a thin frame, a strip of clear tape over its top edge, a hard offset shadow and, with `.ddlc-snap-left` or `.ddlc-snap-right`, a slight tilt, the caption under a rule inside the mount. The picture keeps its own shape at any width, and a reader who asks for less motion gets straight edges. Both stylesheets carry the same block, so a page that vendors one of them gets the component of the other unchanged
 
 ### Fixed
 
