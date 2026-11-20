@@ -1,10 +1,11 @@
 name: release
 
 # A pushed tag v<x.y.z> is checked against VERSION, run through build.yml, and released with
-# the changelog's section as notes and every file of that tag's dist/ attached, so a theme is
-# one download from the release page. dist/ is attached whole: a list of its files here would
-# be a second one beside the directory. A dispatch with an existing tag attaches the files to
-# that tag's release, creating it if it is missing
+# the changelog's section as notes and everything in that tag's dist/ attached, so a theme is
+# one download from the release page. dist/ is attached whole: a list of its files here would be
+# a second one beside the directory. A subdirectory such as dist/slidev/ is an installable theme
+# rather than a file, so it travels as a zip of its own. A dispatch with an existing tag attaches
+# the assets to that tag's release, creating it if it is missing
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+"]
@@ -60,10 +61,23 @@ jobs:
             exit 1
           }
 
+      # gh uploads files, and a directory in dist/ fails the whole call with "is a directory",
+      # so a theme directory travels as a zip beside the loose files
+      - name: pack the directories in dist/
+        run: |
+          for dir in dist/*/; do
+            name=$(basename "$dir")
+            (cd dist && zip -qr "$name.zip" "$name")
+            echo "packed dist/$name.zip from dist/$name/"
+          done
+
       - name: publish the release with dist/
         run: |
+          assets=$(find dist -maxdepth 1 -type f | sort)
+          [ -n "$assets" ] || { echo "dist/ holds no files to attach" >&2; exit 1; }
+          echo "$assets" | tr '\n' ' '
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/* --clobber
+            gh release upload "$TAG" $assets --clobber
           else
-            gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md --verify-tag
+            gh release create "$TAG" $assets --title "$TAG" --notes-file notes.md --verify-tag
           fi

@@ -4,6 +4,12 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+## [3.6.1] - 2026-11-20
+
+### Changed
+
+- `.sound-mark` draws a beamed note instead of a speaker: the note is what a page's audio control shows, `data-state="off"` strikes that same note through
+
 ## [3.6.0] - 2026-11-20
 
 ### Added
