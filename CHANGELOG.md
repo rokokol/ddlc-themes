@@ -4,6 +4,8 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-11-20
+
 ### Added
 
 - `.copy-button`, a copy control whose visible face is an icon and whose label stays in the accessibility tree, and `.sr-only`, the utility that keeps that label for a screen reader. Both come from `base.css`, so the web kit and the report sheet carry them alike
