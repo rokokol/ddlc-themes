@@ -4,6 +4,12 @@ Kept in the shape of [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), v
 
 ## [Unreleased]
 
+## [3.6.2] - 2026-11-21
+
+### Changed
+
+- `.sound-mark` draws its note on the 8x8 grid the theme glyphs use, as whole pixels of the note and of the strike that marks the off state, instead of a stroke drawing at 24 units
+
 ## [3.6.1] - 2026-11-20
 
 ### Changed
